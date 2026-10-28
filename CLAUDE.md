@@ -1,6 +1,13 @@
 # Platewise
 
-Maksullinen mobiilisovellus (iOS + Android) yksin tai kaksin asuville. Käyttäjä antaa viikkobudjetin, lähikaupan, allergiat ja ruokavalion. Tekoäly generoi viikon annokset, joissa on ainesosat, makrot, hinta-arvio ja kuva. Tärkein laatuvaatimus on selkeys ja helppokäyttöisyys.
+Maksullinen mobiilisovellus (iOS + Android) yksin tai kaksin asuville. Käyttäjä antaa lähikaupan, allergiat ja ruokavalion. Tekoäly generoi päivälliset, joissa on ainesosat, makrot, hinta-arvio ja kuva, sekä niistä yhden ostoslistan. Tärkein laatuvaatimus on selkeys ja helppokäyttöisyys.
+
+Sovelluksessa on kaksi tilaa samalla moottorilla, **N päivällistä + budjetti → yksi ostoslista**:
+
+- **Viikkosuunnitelma:** esiasetus N = 7 ja profiilin viikkobudjetti.
+- **Kauppareissu:** käyttäjä valitsee 2–7 ateriaa ja budjetin yhdelle ostoskerralle.
+
+Budjetti kattaa vain sovelluksen ehdottamat ateriat. MVP:ssä generoidaan vain päivällisiä; lounas syntyy tuplaamalla päivällinen. Generointimalli ja rajat ovat ylläpidon asetuksia (`app_config`), eivät käyttäjän valintoja. Tarkemmin: [docs/GENERATION.md](docs/GENERATION.md) ja [docs/DATA_MODEL.md](docs/DATA_MODEL.md).
 
 Koko suunnitelma, vaiheet ja riskit: [docs/PLAN.md](docs/PLAN.md). Nykyinen vaihe: **MVP (vaihe 1)**.
 

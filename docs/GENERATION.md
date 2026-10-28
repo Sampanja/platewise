@@ -365,8 +365,5 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 3. Oletusmalli Sonnet 5.5, vaihdettavissa `app_config`-asetuksesta; Opus 5.5 vertailukohtana.
 4. Vaihtoraja 5 / 7 päivää, konfiguroitava.
 5. Varamalli (`fallbacks: "default"`) tarkistettu dokumentaatiosta ja pidetään, täydennettynä omalla uusintayrityksellä.
-
-**Avoinna:**
-
-1. **Suunnitelmaraja** `max_plans_per_7_days = 4`: sopiiko oletusarvo?
-2. **Mallin vaihto käyttöliittymästä:** "vaihdettavissa asetuksesta" on tässä tulkittu ylläpidon asetukseksi (`app_config`), ei loppukäyttäjän valinnaksi.
+6. Suunnitelmaraja `max_plans_per_7_days = 4`, konfiguroitava.
+7. Mallin vaihto on vain ylläpidon asetus (`app_config`), ei loppukäyttäjän valinta.

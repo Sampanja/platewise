@@ -501,10 +501,9 @@ Huomioita:
 2. **Ateriat:** MVP:ssä vain päivälliset. "Tee tuplana → huomisen lounas" tuplaa annokset ja lisää lounasrivin seuraavalle päivälle (`cook_double`, `leftover_from_item_id`). Tuplaus on mahdollinen kaikille päivällisille, myös viimeiselle.
 3. **Perusvarat:** käyttäjäkohtainen `profile_pantry_items`, oletuksena öljy, suola, pippuri, sokeri, vehnäjauho ja peruskuivamausteet. Ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa". Muut mausteet lasketaan kokonaisina pakkauksina.
 4. **Ruokavaliot:** `vegan`, `vegetarian`, `pescatarian`, `lactose_free`, `pork_free`, `alcohol_free`. Halal ja kosher eivät ole MVP:ssä.
-5. **Rajat ja malli konfiguroitavina** (`app_config`): generointimalli (oletus Sonnet 5.5), vaihtoraja (5 / 7 päivää) ym.
+5. **Rajat ja malli konfiguroitavina** (`app_config`, vain ylläpito): generointimalli (oletus Sonnet 5.5), vaihtoraja (5 / 7 päivää), suunnitelmaraja (4 / 7 päivää) ym.
 
 ## Avoimet kysymykset
 
 1. **Kotitalouden jakaminen** (vaihe 3) vaatii myöhemmin `households`-taulun ja `meal_plans.user_id` → `household_id`. Malli on tehty niin, että muutos on yksi migraatio.
 2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
-3. **Suunnitelmaraja:** onko `max_plans_per_7_days = 4` sopiva? Kauppareissutila mahdollistaa useita suunnitelmia viikossa, joten jokin raja tarvitaan kustannussyistä.
