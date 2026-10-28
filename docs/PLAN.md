@@ -57,14 +57,19 @@ Maksullinen mobiilisovellus (iOS + Android) yksin tai kaksin asuville. Käyttäj
 - Jos budjetti ylittyy, backend pyytää tekoälyä vaihtamaan kalleimmat ainesosat.
 - Reseptit tallennetaan ja niitä käytetään uudelleen muilla käyttäjillä, joilla on yhteensopiva profiili. Tekoälykustannukset laskevat ja vastaukset nopeutuvat.
 - Annoskoot ovat 1 tai 2 henkeä. Ostoslista optimoi ainesosien käytön koko viikon ajalle (esim. puolikas kaalinpää kahteen ruokaan).
+- MVP:ssä generoidaan vain päivällisiä. "Tee tuplana → huomisen lounas" tuplaa päivällisen annokset ja lisää lounaan seuraavalle päivälle; lounas ei maksa erikseen, koska kustannus on jo päivällisessä.
+- Perusvarat (öljy, suola, pippuri, sokeri, vehnäjauho, peruskuivamausteet) oletetaan löytyvän kotoa: ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa". Käyttäjä voi muokata listaa asetuksista. Muut mausteet lasketaan kokonaisina pakkauksina.
+- Generoinnin tarkempi kuvaus (prompt, JSON-skeema, budjetin korjaussilmukka, allergiatarkistus): [GENERATION.md](GENERATION.md).
 
 ## 4. Käyttöliittymä
 
 - **Onboarding enintään viidessä näytössä:** henkilömäärä (1/2), viikkobudjetti (liukusäädin), kauppa (logot), allergiat (valintasirut), ruokavalio (valintasirut). Ei vapaata tekstikenttää.
 - **Päänäkymä:** "Tämän viikon ruoat" kuvakortteina. Yläreunassa budjettimittari, esim. "42 € / 50 €".
-- **Reseptikortti:** kuva, hinta, aika ja makrot yhdellä rivillä. Ainesosat ja vaiheet numeroituina.
-- **Ostoslista** kaupan osastojen mukaan ryhmiteltynä ja rastittavana.
+- **Reseptikortti:** kuva, hinta, aika ja makrot yhdellä rivillä. Ainesosat ja vaiheet numeroituina. Perusvarat merkitty "kotoa".
+- **Ostoslista** kaupan osastojen mukaan ryhmiteltynä ja rastittavana. Perusvarat eivät näy listalla.
 - **Vaihda annos** -nappi jokaisessa kortissa.
+- **Tee tuplana → huomisen lounas** -valinta päivälliskortissa (ma–la). Lounas näkyy seuraavan päivän kohdalla, ja ostoslista ja budjettimittari päivittyvät heti.
+- **Asetukset → Perusvarat:** lista kotoa löytyvistä ainesosista, oletuksena valmiiksi täytetty.
 - Iso fontti, vähän värejä ja yksi pääkehotus per näkymä. Saavutettavuus (dynaaminen tekstikoko, kontrastit) alusta asti.
 
 ## 5. Vaiheittainen toteutussuunnitelma
@@ -81,12 +86,12 @@ Maksullinen mobiilisovellus (iOS + Android) yksin tai kaksin asuville. Käyttäj
 3. Kirjautuminen (Apple, Google, sähköposti) ja onboarding.
 4. `generate-plan`-funktio: Claude, allergiatarkistus, makrot, hinta ja budjettisilmukka.
 5. Kuvageneraatio asynkronisesti ja välimuistiin. Odotellessa näytetään paikkamerkki.
-6. Viikkonäkymä, reseptikortti, annoksen vaihto ja ostoslista.
+6. Viikkonäkymä, reseptikortti, annoksen vaihto, tuplaus huomisen lounaaksi, perusvarojen muokkaus ja ostoslista.
 7. RevenueCat: maksumuuri ja kokeilujakso.
 8. Tietosuojaseloste, käyttöehdot, allergiavastuuvapaus ja tilin poisto (App Store vaatii).
 9. Suljettu beta TestFlightissa ja Google Playn sisäisessä testauksessa 20–50 käyttäjällä.
 
-**MVP:stä jätetään pois:** sosiaaliset ominaisuudet, reaaliaikaiset hinnat, ruokapäiväkirja, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
+**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, ruokapäiväkirja, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
 
 ### Vaihe 2: Julkaisu ja oppiminen (4–6 viikkoa)
 - Julkaisu kauppoihin ja kauppasivujen optimointi (ASO).

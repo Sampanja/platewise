@@ -11,7 +11,7 @@ Postgres-tietomalli (Supabase) MVP:lle. Pohjana [PLAN.md](PLAN.md) ja [CLAUDE.md
 | Määrät | Grammoina `numeric(8,2)` (pääte `_g`). Nesteet muunnetaan grammoiksi ainesosan tiheydellä tuonnissa. |
 | Aika | `timestamptz`, aina UTC. Viikko = maanantaina alkava `date` (`week_start`). |
 | Aikaleimat | Jokaisessa taulussa `created_at`, muokattavissa tauluissa `updated_at` (triggeri). |
-| Kirjoitukset | Kaikki generointi, hinnoittelu ja viitedatan ylläpito tehdään Edge Functioneista `service_role`-avaimella (ohittaa RLS:n). Mobiilisovellus kirjoittaa suoraan vain omaan profiiliinsa, ruokavaliovalintoihinsa, palautteeseensa ja ostoslistan rasteihin. |
+| Kirjoitukset | Kaikki generointi, hinnoittelu ja viitedatan ylläpito tehdään Edge Functioneista `service_role`-avaimella (ohittaa RLS:n). Mobiilisovellus kirjoittaa suoraan vain omaan profiiliinsa, ruokavaliovalintoihinsa, perusvaroihinsa, palautteeseensa ja ostoslistan rasteihin. |
 | RLS | Päällä **jokaisessa** taulussa. Taulu ilman policyja = vain backend pääsee käsiksi. |
 | Tilin poisto | `auth.users`-poisto kaskadoi kaikkeen käyttäjädataan (`ON DELETE CASCADE`). Kustannusseuranta säilyy anonymisoituna (`ON DELETE SET NULL`). |
 
@@ -23,6 +23,8 @@ erDiagram
     profiles ||--o{ profile_allergens : ""
     profiles ||--o{ profile_diets : ""
     profiles ||--o{ profile_excluded_ingredients : ""
+    profiles ||--o{ profile_pantry_items : ""
+    ingredients ||--o{ profile_pantry_items : ""
     profiles ||--o| subscriptions : ""
     profiles ||--o{ meal_plans : ""
     profiles ||--o{ recipe_feedback : ""
@@ -50,7 +52,7 @@ erDiagram
 Taulut jakautuvat neljään ryhmään:
 
 1. **Viitedata** (jaettu, vain luku): kaupat, Fineli, ainesosat, allergeenit, ruokavaliot
-2. **Käyttäjädata** (oma, osin terveystietoa): profiili, allergiat, ruokavaliot, tilaus
+2. **Käyttäjädata** (oma, osin terveystietoa): profiili, allergiat, ruokavaliot, perusvarat, tilaus
 3. **Reseptit** (jaettu, uudelleenkäytettävä): reseptit, ainesosat, kuvat
 4. **Suunnitelmat ja seuranta** (oma / backend): viikkolistat, ostoslistat, palaute, generointiajot
 
@@ -102,7 +104,8 @@ Fineli-tuonti. Arvot per 100 g syötävää osaa.
 | `grams_per_unit` | `numeric(8,2)` | Pakollinen, jos `display_unit` ≠ `g` (esim. 1 sipuli = 80 g) |
 | `base_price_per_kg_cents` | `integer` NOT NULL | Perushinta kertoimella 1,0; CHECK > 0 |
 | `package_size_g` | `numeric(8,2)` NOT NULL | Tyypillinen pakkauskoko ostoslistaa varten |
-| `is_pantry_staple` | `boolean` NOT NULL DEFAULT false | Suola, öljy, mausteet: ei lasketa viikon budjettiin täysimääräisenä, merkitään ostoslistalla "kotoa löytyy" |
+| `pantry_eligible` | `boolean` NOT NULL DEFAULT false | Voiko käyttäjä lisätä ainesosan perusvaroihinsa (säilyvät kuivatuotteet, öljyt, mausteet) |
+| `is_default_pantry` | `boolean` NOT NULL DEFAULT false | Kuuluu oletusperusvaroihin: öljy, suola, pippuri, sokeri, vehnäjauho, peruskuivamausteet. CHECK: `NOT is_default_pantry OR pantry_eligible` |
 | `price_reviewed_at` | `date` NOT NULL | Milloin hinta tarkistettu viimeksi |
 | `is_active` | `boolean` NOT NULL DEFAULT true | Passivointi, ei poistoa (resepteillä viittauksia) |
 
@@ -144,6 +147,7 @@ Toissijainen varmistus: reseptin vapaat tekstit (nimi, kuvaus, vaiheet) skannata
 | `id` | `uuid` PK | |
 | `allergen_code` | `text` FK → `allergens` | |
 | `keyword` | `text` NOT NULL | Pienaakkosin, vartalo: `pähkinä`, `cashew`, `maapähkinä`, `vehnä`, `maito`, `kerma`… |
+| `except_phrases` | `text[]` NOT NULL DEFAULT `'{}'` | Ilmaukset, jotka poistetaan tekstistä ennen hakua, esim. `maito` → `{kookosmaito, kauramaito}`. Estää turhat hylkäykset; lisätään vain tarkistetusti. |
 | | | UNIQUE (`allergen_code`, `keyword`) |
 
 ### `ingredient_tags`
@@ -213,6 +217,18 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 | `user_id` | `uuid` FK → `profiles` ON DELETE CASCADE | PK (`user_id`, `ingredient_id`) |
 | `ingredient_id` | `uuid` FK → `ingredients` | |
 
+### `profile_pantry_items`
+Käyttäjän perusvarat: ainesosat, joiden oletetaan löytyvän kotoa. Ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa".
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` FK → `profiles` ON DELETE CASCADE | PK (`user_id`, `ingredient_id`) |
+| `ingredient_id` | `uuid` FK → `ingredients` | Vain `pantry_eligible = true` (tarkistetaan triggerillä) |
+
+- Täytetään profiilin luonnissa kaikilla `is_default_pantry`-ainesosilla. Käyttäjä voi poistaa ja lisätä asetuksista.
+- Perusvaroihin kuulumattomat mausteet ostetaan ja lasketaan budjettiin kokonaisina pakkauksina.
+- Perusvarat eivät vaikuta allergiatarkistukseen: myös kotoa löytyvä vehnäjauho hylätään gluteeniallergikolta.
+
 ### `subscriptions`
 Tilauksen tila. Kirjoittaa vain RevenueCat-webhookin Edge Function.
 
@@ -253,6 +269,8 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | `steps_fi` | `jsonb` NOT NULL | Taulukko merkkijonoja; validoitu Zodilla ennen tallennusta |
 | `cook_time_min` | `smallint` NOT NULL | CHECK BETWEEN 5 AND 120 |
 | `difficulty` | enum `difficulty` NOT NULL | `easy`, `medium` (MVP: ei vaikeita) |
+| `dish_type` | enum `dish_type` NOT NULL | `soup`, `stew`, `pasta`, `rice`, `potato`, `oven`, `stir_fry`, `salad`, `bowl`, `wrap`, `other`; vaihtelun ja kuvien uudelleenkäytön tunnistukseen |
+| `good_for_leftovers` | `boolean` NOT NULL | Säilyykö ja lämpeneekö seuraavan päivän lounaaksi. Vain näitä tarjotaan "tee tuplana" -päiville. |
 | `kcal_per_serving` | `numeric(7,1)` NOT NULL | **Laskettu Finelistä** tallennushetkellä, ei tekoälyltä |
 | `protein_g_per_serving` | `numeric(6,1)` NOT NULL | 〃 |
 | `carbs_g_per_serving` | `numeric(6,1)` NOT NULL | 〃 |
@@ -319,21 +337,26 @@ Käyttäjän viikkolista. Asetukset tallennetaan **snapshottina**, koska profiil
 | | | UNIQUE (`user_id`, `week_start`) |
 
 ### `meal_plan_items`
+MVP:ssä generoidaan vain päivällisiä. Lounas syntyy ainoastaan "tee tuplana → huomisen lounas" -valinnasta.
 
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
 | `id` | `uuid` PK | |
 | `meal_plan_id` | `uuid` NOT NULL FK → `meal_plans` ON DELETE CASCADE | |
 | `day_index` | `smallint` NOT NULL | 0 = ma … 6 = su |
-| `meal_slot` | enum `meal_slot` NOT NULL DEFAULT `'dinner'` | MVP: vain `dinner`; `lunch` myöhemmin |
+| `meal_slot` | enum `meal_slot` NOT NULL | `dinner`, `lunch` |
 | `recipe_id` | `uuid` NOT NULL FK → `recipes` | Ei kaskadia: reseptejä ei poisteta, vain `retired` |
-| `servings` | `smallint` NOT NULL | Yleensä = `household_size`; voi olla enemmän ("tee kahdeksi päiväksi") |
-| `estimated_cost_cents` | `integer` NOT NULL | Annoksen osuus (grammoina × ketjun kg-hinta), snapshot |
+| `servings` | `smallint` NOT NULL | Päivällinen: `household_size`, tuplana `2 × household_size`. Lounas: `household_size`. |
+| `cook_double` | `boolean` NOT NULL DEFAULT false | Vain päivälliselle. CHECK: `NOT cook_double OR (meal_slot = 'dinner' AND day_index < 6)` – sunnuntaita ei voi tuplata MVP:ssä, koska lounas osuisi seuraavalle viikolle. |
+| `leftover_from_item_id` | `uuid` FK → `meal_plan_items` ON DELETE CASCADE | Lounasrivillä viittaus edellisen päivän tuplattuun päivälliseen; muilla NULL. CHECK: `(meal_slot = 'lunch') = (leftover_from_item_id IS NOT NULL)` |
+| `estimated_cost_cents` | `integer` NOT NULL | Päivällisellä annosten osuus (sisältää tuplauksen). Lounaalla aina 0, koska kustannus on jo päivällisellä. |
 | `replaced_recipe_id` | `uuid` FK → `recipes` | Täytetään vaihdossa, palautteeksi |
 | | | UNIQUE (`meal_plan_id`, `day_index`, `meal_slot`) |
 
+Tuplauksen kytkeminen päälle tai pois tehdään Edge Functionilla (`recalculate-plan`), joka luo tai poistaa lounasrivin ja laskee ostoslistan ja budjetin uudelleen. Sovellus ei kirjoita tähän tauluun suoraan.
+
 ### `shopping_list_items`
-Backend muodostaa listan koko viikon ainesosista. Sama ainesosa yhdistetään yhdeksi riviksi ja pyöristetään pakkauksiin.
+Backend muodostaa listan koko viikon ainesosista (tuplaukset mukaan lukien). Sama ainesosa yhdistetään yhdeksi riviksi ja pyöristetään pakkauksiin. Käyttäjän perusvarat (`profile_pantry_items`) jätetään listalta ja budjetista kokonaan pois. Lista lasketaan uudelleen (`recalculate-plan`), kun käyttäjä muuttaa perusvarojaan tai tuplausvalintoja.
 
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
@@ -344,7 +367,6 @@ Backend muodostaa listan koko viikon ainesosista. Sama ainesosa yhdistetään yh
 | `packages` | `smallint` NOT NULL | `ceil(total_grams / package_size_g)` |
 | `estimated_cost_cents` | `integer` NOT NULL | `packages × package_size_g × kg-hinta`. **Tämä on budjettivertailun luku**, koska käyttäjä maksaa kokonaisista pakkauksista. |
 | `leftover_grams` | `numeric(10,2)` NOT NULL | Hävikkiarvio; generointi pyrkii minimoimaan tätä |
-| `is_pantry_staple` | `boolean` NOT NULL | Kopio ainesosalta; näytetään erillisenä "tarkista kotoa" -ryhmänä |
 | `checked` | `boolean` NOT NULL DEFAULT false | Ainoa kenttä, jota käyttäjä muokkaa |
 | `checked_at` | `timestamptz` | |
 | | | UNIQUE (`meal_plan_id`, `ingredient_id`) |
@@ -388,17 +410,17 @@ Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `aut
 |---|---|---|---|
 | `store_chains`, `allergens`, `diets` | R | `is_active` (kun kenttä on) | R (onboarding voi alkaa ennen kirjautumista) |
 | `fineli_foods`, `ingredient_chain_prices`, `ingredient_tags`, `diet_excluded_tags`, `allergen_keywords` | – | Vain backend | – |
-| `ingredients` | R | `is_active` (tarvitaan "en pidä tästä" -valintaan ja ostoslistan nimiin) | – |
+| `ingredients` | R | `is_active` (tarvitaan "en pidä tästä"- ja perusvaravalintoihin sekä ostoslistan nimiin) | – |
 | `ingredient_allergens` | R | Reseptinäkymän allergeenikorostusta varten | – |
 | `profiles` | R, U | `id = auth.uid()` | – |
 | `profile_allergens`, `profile_diets` | R, I, D | `user_id = auth.uid()`; I vaatii lisäksi `profiles.health_data_consent_at IS NOT NULL` | – |
-| `profile_excluded_ingredients` | R, I, D | `user_id = auth.uid()` | – |
+| `profile_excluded_ingredients`, `profile_pantry_items` | R, I, D | `user_id = auth.uid()`. Perusvarojen muutoksen jälkeen sovellus kutsuu `recalculate-plan`-funktiota. | – |
 | `subscriptions` | R | `user_id = auth.uid()` | – |
 | `revenuecat_events` | – | Vain backend | – |
 | `recipes`, `recipe_ingredients` | R | Resepti on jonkin oman `meal_plan_items`-rivin kohteena (EXISTS-alikysely `meal_plans.user_id = auth.uid()`). Estää koko reseptikannan lataamisen maksumuurin ohi. | – |
 | `recipe_images` | R | `status = 'ready'` | – |
 | `meal_plans` | R | `user_id = auth.uid()` | – |
-| `meal_plan_items` | R | Emo-`meal_plans` on oma | – |
+| `meal_plan_items` | R | Emo-`meal_plans` on oma. Tuplaus muutetaan Edge Functionin kautta, ei suoraan. | – |
 | `shopping_list_items` | R, U | Emo-`meal_plans` on oma. U rajataan sarakkeisiin: `GRANT UPDATE (checked, checked_at)` – RLS ei yksin rajaa sarakkeita. | – |
 | `recipe_feedback` | R, I, U, D | `user_id = auth.uid()` | – |
 | `generation_runs` | – | Vain backend | – |
@@ -431,20 +453,24 @@ Huomioita:
 
 ## Generoinnin tietovirta tauluihin
 
-1. Lue `profiles`, `profile_allergens`, `profile_diets`, `profile_excluded_ingredients`, `subscriptions`.
+1. Lue `profiles`, `profile_allergens`, `profile_diets`, `profile_excluded_ingredients`, `profile_pantry_items`, `subscriptions`.
 2. Luo `meal_plans`-rivi tilassa `generating`.
 3. **Uudelleenkäyttö:** hae `active`-reseptit, jotka läpäisevät esisuodattimen (allergeenit, tagit, poissuljetut ainesosat, hinta). Täytä niillä osa päivistä.
 4. **Generointi:** anna tekoälylle aktiivisten ainesosien `slug`-lista (jo valmiiksi suodatettuna käyttäjälle sopiviin) ja pyydä puuttuvat päivät. Validoi Zodilla.
 5. **Tarkistus** (koodissa, jokaiselle reseptille, myös uudelleenkäytetyille): tuntemattomat slugit → hylkäys; `ingredient_allergens` + `allergen_keywords` vapaasta tekstistä → hylkäys; `diet_excluded_tags` → hylkäys.
 6. Laske makrot (`fineli_foods`) ja hinnat (`ingredients` + `ingredient_chain_prices` + `store_chains`), tallenna uudet `recipes` + `recipe_ingredients`.
-7. Muodosta `shopping_list_items`, vertaa summaa budjettiin; ylityksessä vaihda kalleimpia (palaa kohtaan 3/4).
-8. Tallenna `meal_plan_items`, aseta `meal_plans.status = 'ready'`, kirjaa `generation_runs`.
+7. Muodosta `shopping_list_items` (tuplaukset mukaan, perusvarat pois), vertaa summaa budjettiin; ylityksessä vaihda kalleimpia (palaa kohtaan 3/4). Tarkempi kulku: [GENERATION.md](GENERATION.md).
+8. Tallenna `meal_plan_items` (tuplattujen päivien lounasrivit mukaan), aseta `meal_plans.status = 'ready'`, kirjaa `generation_runs`.
 9. Lisää puuttuvat kuvat `recipe_images`-jonoon (tai liitä olemassa oleva `dish_signature`-osuman perusteella).
+
+## Päätökset
+
+1. **Viikon rakenne:** MVP:ssä vain päivälliset (`dinners_per_week` 3–7). "Tee tuplana → huomisen lounas" tuplaa annokset ja lisää lounasrivin seuraavalle päivälle (`cook_double`, `leftover_from_item_id`).
+2. **Perusvarat:** käyttäjäkohtainen `profile_pantry_items`, oletuksena öljy, suola, pippuri, sokeri, vehnäjauho ja peruskuivamausteet. Ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa". Muut mausteet lasketaan kokonaisina pakkauksina.
+3. **Ruokavaliot:** `vegan`, `vegetarian`, `pescatarian`, `lactose_free`, `pork_free`, `alcohol_free`. Halal ja kosher eivät ole MVP:ssä.
 
 ## Avoimet kysymykset
 
-1. **Viikon rakenne:** riittääkö MVP:hen pelkkä päivällinen (`dinners_per_week` 3–7), vai tarvitaanko lounaat heti?
-2. **Pantry staples:** lasketaanko öljyt ja mausteet budjettiin osuutena, nollana vai kerran kuukaudessa?
-3. **Ruokavaliot:** onko yllä oleva lista (`vegan`, `vegetarian`, `pescatarian`, `lactose_free`, `pork_free`, `alcohol_free`) oikea MVP:hen? Esim. halal ja kosher vaativat tarkempia sääntöjä kuin tagit.
-4. **Kotitalouden jakaminen** (vaihe 3) vaatii myöhemmin `households`-taulun ja `meal_plans.user_id` → `household_id`. Malli on tehty niin, että muutos on yksi migraatio.
-5. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
+1. **Kotitalouden jakaminen** (vaihe 3) vaatii myöhemmin `households`-taulun ja `meal_plans.user_id` → `household_id`. Malli on tehty niin, että muutos on yksi migraatio.
+2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
+3. **Sunnuntain tuplaus:** sallitaanko myöhemmin, jolloin lounas siirtyy seuraavan viikon listaan?
