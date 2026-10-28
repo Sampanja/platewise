@@ -4,8 +4,9 @@
     "slug": "platewise",
     "version": "1.0.0",
     "orientation": "portrait",
+    "backgroundColor": "#161814",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },
