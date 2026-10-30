@@ -31,7 +31,8 @@
           "hidden": true,
           "style": "light"
         }
-      ]
+      ],
+      "expo-image"
     ],
     "scheme": "platewise",
     "experiments": {
