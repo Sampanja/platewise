@@ -1,10 +1,10 @@
 # Platewise – reseptien generointi
 
-Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system prompt, JSON-skeema (Zod), allergiatarkistuksen kulku ja budjetin korjaussilmukka. Pohjana [PLAN.md](PLAN.md), [DATA_MODEL.md](DATA_MODEL.md) ja [CLAUDE.md](../CLAUDE.md):n arkkitehtuuriperiaatteet. Tämä on suunnitelma; koodi kirjoitetaan myöhemmin Edge Functioneihin (TypeScript, `@anthropic-ai/sdk`).
+Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system prompt, JSON-skeema (Zod), allergiatarkistuksen kulku ja budjetin korjaussilmukka. Lisäksi reseptikirjaston esitäyttö (kohta 10) ja päiväkirjan ruokakuvan tunnistus kustannusrajoineen (kohta 11). Pohjana [PLAN.md](PLAN.md), [DATA_MODEL.md](DATA_MODEL.md) ja [CLAUDE.md](../CLAUDE.md):n arkkitehtuuriperiaatteet. Tämä on suunnitelma; koodi kirjoitetaan myöhemmin Edge Functioneihin (TypeScript, `@anthropic-ai/sdk`).
 
 ## 1. Periaatteet
 
-1. **Yksi moottori: N päivällistä + budjetti → yksi ostoslista.** Viikkosuunnitelma (N = 7, profiilin viikkobudjetti) ja kauppareissu (N = 2–7, oma budjetti) ovat saman putken esiasetuksia. Putki ei tiedä tilasta muuta kuin N:n ja budjetin.
+1. **Yksi moottori: N päivällistä + budjetti → yksi ostoslista.** Suunnittele-kysely (budjetti → syöjät 1–6 → ateriamäärä → allergiat ja ruokavalio → toiveet → kauppa) tuottaa putken syötteen. Viikkosuunnitelma (N = 7) ja kauppareissu (N = 2–6) ovat saman putken esiasetuksia. Putki ei tiedä tilasta muuta kuin N:n, syöjät, budjetin, toiveet ja kaupan.
 2. **Malli suunnittelee, koodi päättää.** Claude valitsee ruoat, ainesosat ja grammamäärät. Kaikki, mikä voi olla väärin vaarallisella tai harhaanjohtavalla tavalla (allergeenit, ruokavalio, makrot, hinta, budjetti), lasketaan ja tarkistetaan deterministisesti koodissa.
 3. **Suljettu ainesosalista kahdessa kerroksessa.** Skeema sallii vain katalogin slugit (`enum`), ja käyttäjälle kielletyt slugit suodatetaan jo ennen mallia. Koodi tarkistaa silti jokaisen reseptin.
 4. **Terveystiedot eivät lähde backendistä.** Mallille ei kerrota käyttäjän allergioita eikä ruokavaliota. Se saa vain listan slugeista, joita ei saa käyttää, ilman syytä.
@@ -14,15 +14,17 @@ Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system pro
 ## 2. Kulku yleiskuvana
 
 ```
-Sovellus: "Suunnittele viikko" (N = 7) tai "Kauppareissu" (N = 2–7)
-   │  POST /generate-plan { kind, meal_count, budget_cents, start_date }
+Sovellus: Suunnittele-kysely valmis
+   │  POST /generate-plan { meal_count, household_size, budget_cents, chain_code,
+   │                        craving_codes, extra_allergen_codes, extra_diet_codes, start_date }
    │  → palauttaa heti plan_id (status = generating)
    ▼
 Edge Function (taustatyö, EdgeRuntime.waitUntil)
    │
    ├─ 0. Tilaus voimassa? Suunnitelmaraja? Budjetti realistinen? (esitarkistus)
-   ├─ 1. Rakenna käyttäjän sääntöjoukko (allergeenit, ruokavaliot, inhokit, perusvarat)
-   ├─ 2. Uudelleenkäyttö: hae sopivat valmiit reseptit → täytä osa aterioista
+   ├─ 1. Rakenna sääntöjoukko (profiilin + kyselyssä lisätyt allergeenit ja ruokavaliot,
+   │     inhokit, perusvarat)
+   ├─ 2. Uudelleenkäyttö: hae sopivat valmiit reseptit (toiveet järjestävät) → täytä osa aterioista
    ├─ 3. Claude: generoi puuttuvat ateriat (strukturoitu JSON)
    │        │
    │        ▼
@@ -30,19 +32,22 @@ Edge Function (taustatyö, EdgeRuntime.waitUntil)
    ├─ 5. Allergia- ja ruokavaliotarkistus ┤ virheet → korjauspyyntö Claudelle
    ├─ 6. Makrot (Fineli) + hinnat         │   (enintään max_correction_rounds)
    ├─ 7. Ostoslista + budjettivertailu ───┘
-   ├─ 8. Tallenna reseptit, ateriat, ostoslista; status = ready
+   ├─ 8. Tallenna reseptit, ateriat, ostoslista ja valmiit vaihtoehdot; status = proposed
    └─ 9. Kuvat jonoon (tai liitä olemassa oleva kuva)
    ▼
-Sovellus kuuntelee meal_plans-riviä (Supabase Realtime) → näyttää suunnitelman
+Sovellus kuuntelee meal_plans-riviä (Supabase Realtime) → ehdotusnäkymä
+   │  Vaihda / Tee tuplana → swap-meal, recalculate-plan (summat päivittyvät)
+   ▼
+"Hyväksy" → POST /accept-plan → status = accepted → ostoslista
 ```
 
-Generointi on asynkroninen, koska se voi kestää kymmeniä sekunteja korjauskierroksineen. Sovellus näyttää sillä välin edistymisnäkymän ("Suunnitellaan aterioitasi…"). Edge Functionin aikaraja tarkistetaan toteutusvaiheessa. Jos se ei riitä, generointi siirretään jonotyöksi samalla tavalla kuin kuvat.
+Generointi on asynkroninen, koska se voi kestää kymmeniä sekunteja korjauskierroksineen. Sovellus näyttää sillä välin kyselyn generointianimaation ("Etsitään sopivia reseptejä…"). Edge Functionin aikaraja tarkistetaan toteutusvaiheessa. Jos se ei riitä, generointi siirretään jonotyöksi samalla tavalla kuin kuvat.
 
 ## 3. Malli ja API-asetukset
 
 | Asetus | Arvo | Perustelu |
 |---|---|---|
-| Malli | `app_config.generation_model`, oletus `claude-sonnet-5-5` | Hyvä laatu ja hinta. Vaihdettavissa ilman julkaisua. `claude-opus-5-5` on testiaineiston vertailukohta (kohta 12). |
+| Malli | `app_config.generation_model`, oletus `claude-sonnet-5-5` | Hyvä laatu ja hinta. Vaihdettavissa ilman julkaisua. `claude-opus-5-5` on testiaineiston vertailukohta (kohta 14). |
 | Kutsu | `client.beta.messages.create()` + `output_config.format` (Zod-skeemasta johdettu JSON-skeema), vastaus validoidaan omalla Zod-skeemalla | Beta-endpoint tarvitaan varamallin vuoksi. Jos SDK tarjoaa `parse()`-apufunktion myös beta-nimiavaruudessa, käytetään sitä; tarkistetaan toteutuksessa. Zod-validointi tehdään joka tapauksessa. |
 | Thinking | adaptiivinen (oletus, parametri jätetään pois) | Suunnittelu (pakkausten jako, vaihtelu, budjetti) hyötyy ajattelusta. |
 | Effort | `app_config.generation_effort`, aluksi `"medium"` | Sonnet 5.5:n oletus on `high`, mutta tasot on kalibroitu uudelleen. Testiaineistolla mitataan `low`, `medium` ja `high`. |
@@ -80,27 +85,28 @@ cumin_ground | juustokumina, jauhettu | spices_oils | 30 | 60.00 | kyllä
 ### Käyttäjäkohtainen osa (user message)
 Muuttuu joka pyynnöllä, eikä siksi ole välimuistissa:
 
-- henkilömäärä (1 tai 2)
+- syöjien määrä (1–6)
 - aterioiden kokonaismäärä N ja generoitavien aterioiden indeksit
 - jo valitut ateriat (uudelleenkäytetyt tai vaihdossa säilyvät): nimi ja ainesosat grammoina, jotta malli voi hyödyntää samoja pakkauksia
 - budjettitavoite **perushinnoissa**: `budjetti / ketjun kerroin`, jolloin katalogin hinnat pätevät suoraan
 - kotoa löytyvät slugit (käyttäjän perusvarat)
-- **"Älä käytä" -slugit**: allergeenit (myös "saattaa sisältää", jos `strict`), ruokavalion kieltämät tagit ja inhokit yhdessä listassa, ilman syytä
+- **"Älä käytä" -slugit**: allergeenit (myös "saattaa sisältää", jos `strict`; kyselyssä lisätyt aina `strict`), ruokavalion kieltämät tagit ja inhokit yhdessä listassa, ilman syytä
+- **toiveet** suomenkielisinä sanoina ("kana, nopea"), jos käyttäjä valitsi niitä. Toiveet eivät ole terveystietoa.
 - viimeaikaisten reseptien nimet toiston välttämiseksi
 
 ## 5. System prompt
 
-Versio `plan-v1`. Kirjoitettu suomeksi, koska tuotos on suomeksi ja tiimi ylläpitää sitä.
+Versio `plan-v2` (v1 → v2: 1–6 syöjää, toiveet, `cuisine` ja `main_protein`). Kirjoitettu suomeksi, koska tuotos on suomeksi ja tiimi ylläpitää sitä.
 
 ```text
-Olet Platewisen ruokasuunnittelija. Suunnittelet arkipäivällisiä yhden tai kahden hengen
+Olet Platewisen ruokasuunnittelija. Suunnittelet arkipäivällisiä 1–6 hengen
 talouksille Suomessa. Kaikki ainesosat ostetaan yhdellä kauppareissulla tavallisesta
 suomalaisesta ruokakaupasta, ja ateriat syödään peräkkäisinä päivinä.
 
 TEHTÄVÄ
-Saat käyttäjän viestissä aterioiden määrän, generoitavat ateriat, henkilömäärän,
-budjettitavoitteen, jo valitut ateriat, kotoa löytyvät perusvarat ja listan ainesosista,
-joita ei saa käyttää. Palauta jokaiselle generoitavalle aterialle yksi päivällisresepti
+Saat käyttäjän viestissä aterioiden määrän, generoitavat ateriat, syöjien määrän,
+budjettitavoitteen, toiveet, jo valitut ateriat, kotoa löytyvät perusvarat ja listan
+ainesosista, joita ei saa käyttää. Palauta jokaiselle generoitavalle aterialle yksi päivällisresepti
 annetun skeeman mukaisesti.
 
 AINESOSAT
@@ -127,6 +133,9 @@ RUOAT
 - Arkiruokaa: valmistusaika yleensä enintään 40 minuuttia, vaikeustaso helppo tai keskitaso.
 - Vaihtelua: ei samaa pääproteiinia eikä samaa ruokatyyppiä kahdessa peräkkäisessä ateriassa,
   eikä toistoa viimeaikaisista resepteistä.
+- Toiveet: jos käyttäjä antoi toiveita, vähintään puolet generoitavista aterioista vastaa
+  jotakin niistä. Budjetti ja "Älä käytä" -lista menevät aina toiveiden edelle.
+- Merkitse cuisine (keittiö) ja main_protein (pääproteiini) rehellisesti.
 - Vähintään puolet aterioista säilyy ja lämpenee hyvin seuraavan päivän lounaaksi.
   Merkitse good_for_leftovers rehellisesti.
 - Ruokaturvallisuus: kypsennä broileri, jauheliha ja kala kunnolla; mainitse tämä ohjeessa.
@@ -148,12 +157,13 @@ slug | nimi | osasto | pakkaus_g | hinta_eur_kg | perusvara_mahdollinen
 ### Käyttäjäviestin pohja
 
 ```text
-Henkilömäärä: {household_size}
+Syöjiä: {household_size}
 Aterioita yhteensä: {meal_count} (indeksit 0–{meal_count-1}, peräkkäiset päivät)
 Generoitavat ateriat: {meals_to_generate}           esim. "0, 1, 3"
 Budjettitavoite kaikille aterioille perushinnoin: noin {target_eur} €, enintään {max_eur} €
 Jo valitut ateriat:
 {fixed_meals}                                         esim. "2: Linssikeitto – red_lentils 80 g, carrot 100 g, …"
+Toiveet: {cravings_fi}                               esim. "kana, nopea" tai "ei toiveita"
 Kotoa löytyy: {pantry_slugs}
 Älä käytä: {forbidden_slugs}
 Viimeaikaiset ruoat (älä toista): {recent_titles}
@@ -179,6 +189,10 @@ const GeneratedRecipe = z.object({
   description_fi: z.string().max(160),
   dish_type: z.enum(["soup", "stew", "pasta", "rice", "potato", "oven",
                      "stir_fry", "salad", "bowl", "wrap", "other"]),
+  cuisine: z.enum(["finnish", "nordic", "italian", "asian", "mexican",
+                   "middle_eastern", "indian", "other"]),
+  main_protein: z.enum(["chicken", "beef", "pork", "minced_meat", "fish", "seafood",
+                        "egg", "dairy", "legumes", "tofu", "none"]),
   difficulty: z.enum(["easy", "medium"]),
   cook_time_min: z.number().int().min(5).max(120),
   good_for_leftovers: z.boolean(),
@@ -202,10 +216,10 @@ Huomiot:
 ## 7. Allergia- ja ruokavaliotarkistus
 
 ### 7.1 Sääntöjoukko (ennen generointia)
-`buildUserRules(userId)` muodostaa yhdestä paikasta:
+`buildUserRules(userId, planExtras)` muodostaa yhdestä paikasta:
 
-- `forbiddenAllergens`: käyttäjän allergeenikoodit sekä tieto, onko `strict` päällä
-- `forbiddenTags`: valittujen ruokavalioiden `diet_excluded_tags`-tagien unioni
+- `forbiddenAllergens`: profiilin allergeenikoodit sekä tieto, onko `strict` päällä, ja kyselyssä vain tälle suunnitelmalle lisätyt allergeenit (`extra_allergen_codes`, aina `strict`)
+- `forbiddenTags`: profiilin ja kyselyn ruokavalioiden `diet_excluded_tags`-tagien unioni
 - `dislikedIngredientIds`
 - `forbiddenIngredientIds`: aktiiviset ainesosat, joilla on kielletty allergeeni (strict-tilassa myös `may_contain`), kielletty tagi tai jotka ovat inhokkeja. Tästä tehdään promptin "Älä käytä" -lista.
 
@@ -235,7 +249,7 @@ Avainsanahaun (6) yksityiskohdat:
 - Jos ateria ei läpäise tarkistusta korjauskierrostenkaan jälkeen, se täytetään uudelleenkäytettävällä hyväksytyllä reseptillä. Jos sellaista ei ole, ateria jätetään tyhjäksi ja käyttäjä näkee viestin "Yhtä ateriaa ei saatu suunniteltua – kokeile Vaihda annos". Jos tyhjiä aterioita on yli puolet, suunnitelma merkitään `failed`.
 
 ### 7.4 Milloin tarkistus ajetaan uudelleen
-- **Uudelleenkäytössä** aina, vaikka resepti olisi hyväksytty aiemmin toiselle käyttäjälle. Taulukkokentät (`allergen_codes` ym.) ovat vain esisuodatin.
+- **Uudelleenkäytössä** aina, vaikka resepti olisi hyväksytty aiemmin toiselle käyttäjälle. Taulukkokentät (`allergen_codes` ym.) ovat vain esisuodatin. Sama koskee reseptikirjastoa (`list-recipes`) ja ehdotusnäkymän valmiita vaihtoehtoja.
 - **Kun käyttäjä muuttaa allergioitaan tai ruokavaliotaan**, keskeneräiset ja tulevat suunnitelmat tarkistetaan heti. Ristiriitaiset ateriat merkitään sovelluksessa varoituksella ja vaihdetaan automaattisesti. Nämä vaihdot eivät kuluta vaihtorajaa.
 - **Kun viitedata muuttuu** (ainesosan allergeenit, avainsanat, ruokavaliosäännöt), `checks_version` nousee. Taustatyö tarkistaa kaikki `active`-reseptit uudelleen ja siirtää rikkovat `retired`-tilaan, ja niitä käyttävät tulevat suunnitelmat tarkistetaan kuten edellä.
 
@@ -250,6 +264,8 @@ Avainsanahaun (6) yksityiskohdat:
 - isot kirjaimet, ääkköset ja NFD-muotoinen teksti → sama tulos kuin normaalissa tekstissä
 - vegaani + hunaja / gelatiini → hylkäys; pescetaristi + kala → hyväksyntä, + broileri → hylkäys
 - perusvaroissa oleva vehnäjauho gluteeniallergikolle → hylkäys
+- kyselyssä lisätty allergeeni (`planExtras`) → hylkäys myös "saattaa sisältää" -tasolla; profiilin ja kyselyn ruokavaliot yhdistyvät
+- `matchesCraving` jokaiselle toiveelle (DATA_MODEL.md, toiveiden kartoitus)
 - tuntematon ja passivoitu slug → hylkäys
 - useita rikkeitä samassa reseptissä → kaikki raportoidaan
 
@@ -265,7 +281,7 @@ Budjetti kattaa **vain sovelluksen ehdottamat ateriat**: suunnitelman päivälli
 4. **Aterian osuus** (kortissa näytettävä hinta ja korjauksen kohdistus): jokaisen ostettavan ainesosan pakkauskustannus jaetaan aterioille käytettyjen grammojen suhteessa. Aterioiden summa on siis sama kuin ostoslistan summa.
 
 ### 8.3 Esitarkistus
-Ennen generointia: jos `budjetti < N × henkilömäärä × min_cost_per_serving_cents` (`app_config`, aluksi 1,50 €), generointia ei aloiteta. Sovellus näyttää jo syöttövaiheessa realistisen vähimmäisbudjetin valitulla N:llä.
+Ennen generointia: jos `budjetti < N × syöjät × min_cost_per_serving_cents` (`app_config`, aluksi 1,50 €), generointia ei aloiteta. Kysely näyttää realistisen vähimmäisbudjetin heti, kun syöjät ja ateriamäärä tiedetään, ja palauttaa tarvittaessa budjettivaiheeseen. Esimerkki: 6 syöjää × 7 ateriaa × 1,50 € = 63 €.
 
 ### 8.4 Silmukka
 
@@ -287,18 +303,22 @@ toista:
 
 - **Korjauspyyntö jatkaa samaa keskustelua**: edellinen vastaus lisätään assistant-viestiksi ja korjaus uudeksi user-viestiksi. Mallilla on näin konteksti, ja välimuistissa oleva system prompt osuu edelleen. Historiaa ei muokata, vaan siihen vain lisätään.
 - **Korjauspyynnön sisältö** budjetin ylittyessä: hinta-arvio, budjetti, ylitys, kahden kalleimman aterian hinta ja kalleimmat ainesosat sekä ainesosat, joista jää ylijäämää. Pyydetään korvaamaan nimetyt ateriat edullisemmilla ja hyödyntämään jo ostettavia ainesosia. Rikkeet ja budjetti kerrotaan samassa viestissä, jotta yksi kierros korjaa molemmat.
-- **Paras tulos**, jos kierrokset loppuvat: valitaan versio, jossa on vähiten tyhjiä aterioita ja sitten pienin ylitys. Ylitetty suunnitelma tallennetaan `ready`-tilassa. Sovellus näyttää rehellisesti esim. "Ateriat ylittävät budjetin 3,20 € – vaihda jokin annos halvempaan" ja korostaa kalleimman aterian. `generation_runs.outcome = over_budget`.
+- **Paras tulos**, jos kierrokset loppuvat: valitaan versio, jossa on vähiten tyhjiä aterioita ja sitten pienin ylitys. Ylitetty suunnitelma tallennetaan `proposed`-tilassa. Sovellus näyttää rehellisesti esim. "Ateriat ylittävät budjetin 3,20 € – vaihda jokin annos halvempaan" ja korostaa kalleimman aterian. `generation_runs.outcome = over_budget`.
 - **Selvästi alle budjetin** (esim. alle 60 %) hyväksytään sellaisenaan, eikä silmukkaa ajeta. Säästö on käyttäjälle hyvä asia.
 
-## 9. Annoksen vaihto, tuplaus, perusvarat ja rajat
+## 9. Ehdotusnäkymä: vaihto, tuplaus, hyväksyntä, perusvarat ja rajat
 
 | Toiminto | Kulku | Tekoälykutsu? |
 |---|---|---|
-| **Vaihda annos** | Sama putki yhdelle aterialle: muut ateriat annetaan "jo valittuina". Ensin yritetään uudelleenkäyttöä. Budjetti tarkistetaan koko suunnitelmalle. Kirjataan `generation_runs`-riviksi (`kind = 'swap'`). | Vain jos uudelleenkäyttö ei löydä sopivaa |
+| **Vaihda (valmis vaihtoehto)** | Ehdotusvaiheessa otetaan aterian seuraava käyttämätön `meal_plan_alternatives`-rivi. `recalculate-plan` laskee ostoslistan, hinnan ja keskimääräiset makrot uudelleen (tavoite < 500 ms). Sovellus päivittää kortin ja summat animoidusti. Ei kuluta vaihtorajaa. | Ei |
+| **Vaihda annos** (vaihtoehdot loppuneet tai suunnitelma hyväksytty) | Sama putki yhdelle aterialle: muut ateriat annetaan "jo valittuina". Ensin yritetään uudelleenkäyttöä. Budjetti tarkistetaan koko suunnitelmalle. Kirjataan `generation_runs`-riviksi (`kind = 'swap'`). | Vain jos uudelleenkäyttö ei löydä sopivaa |
 | **Tee tuplana** | `recalculate-plan`: asetetaan `cook_double`, luodaan lounasrivi seuraavalle päivälle, lasketaan ostoslista ja budjetti uudelleen. Valinta näytetään, kun `good_for_leftovers = true`, myös suunnitelman viimeiselle aterialle. | Ei |
+| **Hyväksy** | `accept-plan`: tarkistaa, että suunnitelma on oma ja `proposed`, ajaa `checkRecipe`-tarkistuksen vielä kerran kaikille aterioille (profiili on voinut muuttua), asettaa `accepted` ja poistaa vaihtoehdot. Sovellus siirtyy ostoslistaan. | Ei |
 | **Perusvarojen muutos** | `recalculate-plan`: ostoslista ja budjetti lasketaan uudelleen, ja reseptinäkymän "kotoa"-merkinnät päivittyvät. | Ei |
 
 Tuplaus voi viedä suunnitelman yli budjetin. Silloin budjettimittari näyttää ylityksen, mutta mitään ei vaihdeta automaattisesti: käyttäjä teki valinnan itse.
+
+Kun "Vaihda" vaatii tekoälyä, kortti näyttää latausnäkymän (luurankokortti) ja muut kortit pysyvät käytettävinä. Summat päivittyvät, kun uusi ateria on valmis.
 
 **Rajat** (`app_config`, käyttäjäkohtaisia ja liukuvia 7 päivää, laskettu `generation_runs`-taulusta):
 
@@ -309,16 +329,143 @@ Tuplaus voi viedä suunnitelman yli budjetin. Silloin budjettimittari näyttää
 
 Allergiamuutoksen aiheuttamat automaattiset vaihdot (kohta 7.4) eivät kuluta rajaa.
 
-## 10. Kuvat
+## 10. Reseptikirjaston esitäyttö
+
+Reseptit-välilehti tarvitsee julkaisuhetkellä kattavan kirjaston, vaikka käyttäjiä ei vielä ole. Kirjasto esitäytetään samalla putkella ennen julkaisua:
+
+- **Noin 200 reseptiä**, jaettuna tasaisesti toiveiden (kohta 4), ruokavalioiden (sekasyöjä, kasvis, vegaani, pescetaristi) ja yleisten allergiayhdistelmien (gluteeniton, maidoton, kananmunaton) kesken. Jako kirjataan skriptiin, jotta täyttö on toistettavissa.
+- **Message Batches API** (50 % halvempi, ei kiirettä). Batches API ei tue palvelinpuolen varamallia, joten hylätyt pyynnöt jätetään pois ja korvataan seuraavassa erässä.
+- Jokainen resepti kulkee saman validoinnin, `checkRecipe`-tarkistuksen ja makro- ja hintalaskennan kautta. `generation_runs.kind = 'library_seed'`, `user_id` NULL.
+- **Ihmistarkistus:** jokainen esitäytetty resepti luetaan ennen julkaisua (nimi, ohjeen järkevyys, määrät). Hylätyt merkitään `retired`.
+- Kustannus: noin 40 pyyntöä × 5 reseptiä, arviolta alle 5 $ Sonnet 5.5:llä.
+
+Julkaisun jälkeen kirjasto kasvaa itsestään, kun käyttäjien suunnitelmiin generoidaan uusia reseptejä.
+
+## 11. Ruokakuvan tunnistus (päiväkirja)
+
+Päiväkirjan "Ota kuva" tunnistaa ruoat valokuvasta ja arvioi määrät. Periaatteet ovat samat kuin reseptigeneroinnissa: **malli valitsee suljetusta listasta ja arvioi grammat, makrot lasketaan Finelistä**. Mallin ilmoittamia ravintoarvoja ei pyydetä eikä näytetä.
+
+> **Nykyinen vaihe:** käyttöliittymä tehdään testidatalla. "Ota kuva" palauttaa kiinteän esimerkkituloksen lyhyen viiveen jälkeen. Oikea toteutus tehdään tekoälyvaiheessa tämän kohdan mukaan.
+
+### 11.1 Kulku
+
+```
+Sovellus: Päiväkirja → "Ota kuva" (kamera tai galleria)
+   │  kuva pienennetään laitteella: pitkä sivu 1024 px, JPEG ~0,7
+   │  (uudelleenkoodaus poistaa EXIF- ja sijaintitiedot)
+   │  POST /recognize-food-photo { image_base64, slot }
+   ▼
+Edge Function (synkroninen, tavoite < 6 s)
+   ├─ 0. Tilaus voimassa? Päivä- ja 30 päivän raja? Kustannuskatto? (kohta 11.4)
+   ├─ 1. Claude (photo_model): system prompt + Fineli-ehdokaslista (välimuistissa) + kuva
+   ├─ 2. Zod-validointi; tuntematon tai listaan kuulumaton fineli_id → rivi "tunnistamaton"
+   ├─ 3. Makrot Finelistä jokaiselle riville (esikatselua varten)
+   └─ 4. Kirjaa generation_runs (vain metatiedot); kuvaa ei tallenneta
+   ▼
+Sovellus: tulosnäkymä, jokainen rivi merkinnällä "arvio"
+   │  käyttäjä korjaa määrät, poistaa rivejä tai lisää hakemalla
+   ▼
+"Lisää päiväkirjaan" → diary_entries (source = photo, is_estimate = true)
+```
+
+Tunnistus on synkroninen, koska käyttäjä odottaa tulosta näkymässä. Odotuksen ajan sovellus näyttää kuvan himmennettynä ja skannausanimaation.
+
+### 11.2 Malli ja prompt
+
+| Asetus | Arvo |
+|---|---|
+| Malli | `app_config.photo_model`, oletus `claude-haiku-5-5`. `claude-sonnet-5-5` on testiaineiston vertailukohta (kohta 11.5). Kuvasyötteen tuki varmistetaan toteutuksessa Models API:n `capabilities`-kentästä. |
+| Effort | `app_config.photo_effort`, oletus `low` |
+| `max_tokens` | 2 000 |
+| Välimuisti | `cache_control` system promptin loppuun (ohjeet + ehdokaslista) |
+| Varamalli | Haiku 5.5:llä ei palvelinpuolen varamallia. Hylkäys (`refusal`) → käyttäjälle "Kuvasta ei löytynyt ruokaa – lisää ruoka hakemalla". |
+
+**Ehdokaslista:** `fineli_foods`-rivit, joilla `photo_candidate = true` (noin 600–900 yleistä ruokaa ja annosta, myös valmiita ruokia kuten "makaronilaatikko" ja "kaurapuuro"). Muoto `fineli_id | nimi | tyypillinen annos g`. Arvio noin 12 000 tokenia.
+
+System prompt (versio `photo-v1`, tiivistetysti):
+
+```text
+Tunnistat ruoat valokuvasta suomalaista ruokapäiväkirjaa varten.
+- Valitse jokaiselle kuvassa näkyvälle ruoalle tai juomalle lähin vaihtoehto alla olevasta
+  listasta ja anna sen fineli_id. Jos mikään ei sovi, fineli_id = null ja kerro label_fi:ssä,
+  mitä näet.
+- Arvioi syötävä määrä grammoina lautasen, aterimien ja pakkausten koon perusteella.
+  Käytä listan tyypillistä annosta lähtökohtana.
+- Yhdistelmäruoka (esim. makaronilaatikko) on yksi rivi, jos se löytyy listasta sellaisenaan.
+  Muuten erittele osat (esim. riisi, broileri, kastike).
+- confidence: high, jos ruoka ja määrä ovat selvät; low, jos arvaat.
+- Jos kuvassa ei ole ruokaa, is_food = false ja items on tyhjä.
+- Älä kommentoi ihmisiä, paikkaa tai muuta kuin ruokaa. Älä anna ravintoarvoja.
+
+LISTA (versio {photo_list_version})
+fineli_id | nimi | tyypillinen_annos_g
+{rows}
+```
+
+### 11.3 JSON-skeema (Zod)
+
+```ts
+// Luonnos – ei vielä toteutusta.
+const RecognizedItem = z.object({
+  fineli_id: z.number().int().nullable(),  // null = ei löytynyt listasta
+  label_fi: z.string().max(60),            // mitä malli näkee, näytetään tunnistamattomalle riville
+  grams: z.number().min(1).max(1500),
+  confidence: z.enum(["high", "medium", "low"]),
+});
+
+export const PhotoRecognition = z.object({
+  is_food: z.boolean(),
+  items: z.array(RecognizedItem).max(8),
+});
+```
+
+Koodissa lisäksi: `fineli_id` hyväksytään vain, jos se on ehdokaslistalla; muuten rivi käsitellään tunnistamattomana. `is_food = false` tai tyhjä `items` → `generation_runs.outcome = 'no_food_found'`.
+
+**UI:** `low`-rivit korostetaan ("Tarkista määrä"). Määrää korjataan Finelin annoskoilla (`fineli_food_units`) tai grammoina. Tunnistamaton rivi avaa nimihaun valmiiksi täytetyllä hakusanalla (`label_fi`).
+
+### 11.4 Kustannusraja
+
+Kuvan tokenimäärä on noin `leveys × korkeus / 784` (yksi token per 28 × 28 pikselin ruutu; tarkistetaan toteutushetkellä Vision-dokumentaatiosta). 1024 × 768 px → noin 1 000 tokenia.
+
+| Osa | Tokenit (arvio) |
+|---|---|
+| System prompt + ehdokaslista (välimuistista) | ~12 000 |
+| Kuva + käyttäjäviesti | ~1 200 |
+| Tuloste + ajattelu (effort `low`) | ~600 |
+
+| Malli | Listahinnat (per MTok) | Hinta / kuva (arvio) | 150 kuvaa / 30 pv |
+|---|---|---|---|
+| `claude-haiku-5-5` | $0,10 / $0,50 | ~0,001 $ (välimuistin kirjoituksella ~0,002 $) | ~0,15–0,30 $ |
+| `claude-sonnet-5-5` | $2 / $10, välimuistiluku $0,20 | ~0,011 $ (välimuistin kirjoituksella ~0,04 $) | ~1,7 $ |
+
+**Rajat** (`app_config`, käyttäjäkohtaiset):
+
+| Raja | Oletus | Kun raja täyttyy |
+|---|---|---|
+| `max_photo_recognitions_per_day` | 10 | "Kuvantunnistus on käytetty tältä päivältä – voit lisätä ruoat hakemalla." Haku ja reseptin lisäys toimivat aina. |
+| `max_photo_recognitions_per_30_days` | 150 | Sama viesti ja päivä, jolloin tunnistus palaa. |
+| `max_ai_cost_per_user_30_days_micro_usd` | 1 500 000 (1,50 $) | Käyttäjän **kaikkien** tekoälykutsujen summa liukuvalta 30 päivältä (`generation_runs.cost_micro_usd`). Ennen jokaista kuvantunnistusta tarkistetaan, ettei summa + tämän kutsun enimmäishinta ylitä kattoa. Ylityksessä kuvantunnistus keskeytyy. Suunnitelmia ja vaihtoja ei estetä katolla, koska niillä on omat rajansa ja ne ovat sovelluksen ydin; katon ylitys nostaa kuitenkin hälytyksen kustannusseurannassa. |
+
+- Haiku-oletuksella kuvantunnistus maksaa käyttäjää kohden enintään noin 0,30 $ kuukaudessa, eli selvästi alle tilausmaksun.
+- **Mallin vaihto Sonnetiin** on sallittu vain, jos samalla `max_photo_recognitions_per_30_days` lasketaan enintään 60:een. Kustannuskatto suojaa joka tapauksessa.
+- Laskettu kustannus kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`kind = 'food_photo'`), myös epäonnistuneista. Tunnistettuja ruokia ei kirjata.
+- Rajat lasketaan Edge Functionissa ennen API-kutsua. Sovellus saa jäljellä olevien tunnistusten määrän vastauksessa ja näyttää sen, kun jäljellä on alle 3.
+
+### 11.5 Laadunvarmistus
+- **Testiaineisto:** noin 100 kuvaa tavallisista suomalaisista kotiaterioista, joiden annokset on punnittu. Mitataan: oikein tunnistettujen ruokien osuus, grammavirhe (keskimääräinen suhteellinen virhe), kcal-virhe aterialle, tunnistamattomien osuus, kesto ja hinta.
+- Sama aineisto ajetaan Haikulla ja Sonnetilla. Haiku pysyy oletuksena, jos kcal-virhe ei ole selvästi suurempi; ero kirjataan päätökseksi.
+- **Yksikkötestit:** skeemavalidointi, ehdokaslistan ulkopuolisen ID:n käsittely, rajojen ja kustannuskaton laskenta, makrojen laskenta grammoista.
+
+## 12. Reseptikuvat
 
 1. Kun resepti tallennetaan, lasketaan `dish_signature` = `dish_type` + kolme grammamäärältään suurinta ei-perusvara-ainesosaa aakkosjärjestyksessä (esim. `stew:carrot,chickpeas,crushed_tomatoes`).
 2. Jos samalla signaturella on `ready`-kuva, se liitetään reseptiin heti.
 3. Muuten `recipe_images`-riville tulee `queued`, ja image-worker generoi kuvan kuvamallilla. Prompt = `image_prompt_en` + kiinteä tyylipohja (*"Overhead photo of a home-cooked dish on a simple plate, natural daylight, realistic, no text, no hands, no packaging"*).
 4. Kunnes kuva on valmis, sovellus näyttää `dish_type`-kohtaisen piirroskuvan.
 
-## 11. Kustannukset ja mallin valinta
+## 13. Kustannukset ja mallin valinta
 
-Karkea arvio yhdelle seitsemän päivällisen suunnitelmalle:
+Karkea arvio yhdelle seitsemän päivällisen suunnitelmalle (kuvantunnistus: kohta 11.4):
 
 | Osa | Tokenit (arvio) |
 |---|---|
@@ -329,34 +476,37 @@ Karkea arvio yhdelle seitsemän päivällisen suunnitelmalle:
 
 | Malli | Listahinnat (per MTok) | Hinta / suunnitelma (arvio) | Rooli |
 |---|---|---|---|
-| `claude-sonnet-5-5` | $2 / $10, välimuistiluku $0,10 | ~0,07–0,15 $ | **Oletus** |
+| `claude-sonnet-5-5` | $2 / $10, välimuistiluku $0,20 | ~0,07–0,15 $ | **Oletus** |
 | `claude-opus-5-5` | $4 / $20 | ~0,15–0,30 $ | Testiaineiston vertailukohta |
-| `claude-haiku-5-5` | $0,10 / $0,50 | < 0,01 $ | Mahdollinen myöhemmin vaihtoihin, jos laatu riittää. Ei palvelinpuolen varamallia. |
+| `claude-haiku-5-5` | $0,10 / $0,50 | < 0,01 $ | Mahdollinen myöhemmin vaihtoihin, jos laatu riittää. Ei palvelinpuolen varamallia. Kuvantunnistuksen oletus. |
 
-Kuukaudessa muutama suunnitelma ja vaihto per käyttäjä tarkoittaa Sonnetilla noin 0,3–0,8 $. Hinnat on tarkistettava julkaisuhetkellä [hinnastosta](https://platform.claude.com/docs/en/about-claude/pricing).
+Kuukaudessa muutama suunnitelma ja vaihto per käyttäjä tarkoittaa Sonnetilla noin 0,3–0,8 $. Kuuden syöjän suunnitelma ei juuri muuta tokenimäärää, koska määrät ovat annosta kohden. Valmiista vaihtoehdoista tehdyt vaihdot eivät maksa mitään. Kuvantunnistus Haikulla lisää enintään noin 0,30 $, ja käyttäjäkohtainen katto on 1,50 $ / 30 päivää (kohta 11.4). Hinnat on tarkistettava julkaisuhetkellä [hinnastosta](https://platform.claude.com/docs/en/about-claude/pricing).
 
 Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tokens`, `output_tokens`, `cost_micro_usd`, välimuistiosumat, vastannut malli), ja niitä seurataan käyttäjää kohden alusta asti.
 
-## 12. Laadunvarmistus
+## 14. Laadunvarmistus
 
 - **Yksikkötestit**: `checkRecipe`, `buildUserRules`, hinta- ja pakkauslaskenta, aterioiden osuuksien jako, tuplauksen ja perusvarojen vaikutus ostoslistaan, budjettisilmukan päätöslogiikka (mallin vastaukset mockattuina), rajojen laskenta.
-- **Testiaineisto** ennen julkaisua: noin 30 testiprofiilia, joissa vaihtelevat henkilömäärä (1/2), tila ja N (viikko N = 7, kauppareissu N = 2, 4 ja 5), budjetit, ketjut ja allergiayhdistelmät (myös vegaani + useampi allergia sekä tiukka budjetti). Jokaisesta mitataan:
+- **Testiaineisto** ennen julkaisua: noin 30 testiprofiilia, joissa vaihtelevat syöjät (1, 2, 4 ja 6), tila ja N (viikko N = 7, kauppareissu N = 2, 4 ja 5), toiveet (ei toiveita, yksi, useita), budjetit, ketjut ja allergiayhdistelmät (myös vegaani + useampi allergia sekä tiukka budjetti). Jokaisesta mitataan:
   - hyväksyttyjen reseptien osuus ensimmäisellä kierroksella
   - korjauskierrosten määrä
   - budjetissa pysyminen ja ylijäämägrammat
+  - toiveita vastaavien aterioiden osuus
   - kustannus ja kesto
   - ihmisarvio 1–5 (houkuttelevuus, realistisuus, ohjeiden selkeys)
 - **Opus vertailukohtana**: sama aineisto ajetaan `claude-opus-5-5`:llä ja oletusmallilla. Jos Sonnet jää selvästi jälkeen jossain mittarissa, se korjataan ensin promptilla tai effortilla; mallin vaihto on viimeinen keino. Myöhemmin samalla menetelmällä arvioidaan, riittäisikö Haiku.
 - Jokainen promptin muutos nostaa `prompt_version`-arvoa (`plan-v1` → `plan-v2`), ja tulos kirjataan.
 - **Tuotannossa**: hylkäysprosentti, ylitysprosentti, varamallin käyttö (`model ≠ requested_model`), peukut ja `retired`-reseptien määrä prompt-versioittain.
 
-## 13. Tietosuoja
+## 15. Tietosuoja
 
-- Anthropicille lähetetään vain katalogi, henkilömäärä, budjetti, aterioiden määrä, perusvarat ja kielletyt slugit ilman syytä. Allergia- ja ruokavaliotietoja ei lähetetä.
+- Anthropicille lähetetään vain katalogi, syöjien määrä, budjetti, aterioiden määrä, toiveet, perusvarat ja kielletyt slugit ilman syytä. Allergia- ja ruokavaliotietoja ei lähetetä, eivät myöskään kyselyssä lisätyt.
+- **Ruokakuva** lähetetään Anthropicille tunnistusta varten, mutta sitä ei tallenneta Platewisen järjestelmiin. Kuva pienennetään ja uudelleenkoodataan laitteella, jolloin EXIF- ja sijaintitiedot poistuvat. Tietosuojaselosteessa ja ensimmäisellä käyttökerralla kerrotaan, että kuva käsitellään tekoälypalvelussa.
+- Tunnistuksen tulos (mitä käyttäjä söi) on päiväkirjatietoa ja siten terveystietoa: sitä ei lokiteta, ei lähetetä analytiikkaan eikä Sentryyn.
 - Anthropic on henkilötietojen käsittelijä (DPA ja tietosuojaselosteeseen maininta). Pyyntöihin ei liitetä käyttäjän nimeä tai sähköpostia.
 - Lokeihin ja Sentryyn ei kirjata promptteja eikä mallin vastauksia sellaisenaan, koska "Älä käytä" -listasta voi päätellä allergioita. Vianselvitykseen tallennetaan vain `generation_runs`-rivin metatiedot.
 
-## 14. Päätökset ja avoimet kysymykset
+## 16. Päätökset ja avoimet kysymykset
 
 **Päätetty (2026-10-28):**
 
@@ -367,3 +517,16 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 5. Varamalli (`fallbacks: "default"`) tarkistettu dokumentaatiosta ja pidetään, täydennettynä omalla uusintayrityksellä.
 6. Suunnitelmaraja `max_plans_per_7_days = 4`, konfiguroitava.
 7. Mallin vaihto on vain ylläpidon asetus (`app_config`), ei loppukäyttäjän valinta.
+
+**Päätetty (2026-10-30):**
+
+8. Suunnittele-kysely korvaa kaksi aloitusnappia. Syöjiä 1–6, ateriamäärä 2–6 tai koko viikko (7).
+9. Toiveet ("mitä tekee mieli") ovat järjestämiskriteeri ja promptin pehmeä ohje, eivät suodatin.
+10. Kyselyssä voi lisätä allergioita ja ruokavalioita vain tälle suunnitelmalle, mutta ei poistaa profiilin allergioita.
+11. Suunnitelma on ehdotus, kunnes käyttäjä hyväksyy sen. Ehdotukseen lasketaan valmiiksi kaksi vaihtoehtoa per ateria; niistä tehty vaihto ei kuluta vaihtorajaa.
+12. Ruokakuvan tunnistus: Haiku 5.5, suljettu Fineli-ehdokaslista, makrot Finelistä, kuvaa ei tallenneta. Rajat 10 / päivä ja 150 / 30 päivää sekä käyttäjän kustannuskatto 1,50 $ / 30 päivää.
+
+**Avoimet:**
+
+- Ehdokaslistan koko ja sisältö kuvantunnistukseen (600–900 riviä) valitaan Fineli-tuonnin yhteydessä.
+- Riittääkö Haikun tarkkuus (kohta 11.5), vai tarvitaanko Sonnet pienemmällä rajalla.
