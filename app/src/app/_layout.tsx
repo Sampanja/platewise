@@ -5,14 +5,20 @@ import {
   DMSans_700Bold,
 } from '@expo-google-fonts/dm-sans';
 import { DMSerifDisplay_400Regular } from '@expo-google-fonts/dm-serif-display';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
+import { NavigationBar } from 'expo-navigation-bar';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { colors } from '@/theme';
 
 export default function RootLayout() {
+  const [queryClient] = useState(
+    () => new QueryClient({ defaultOptions: { queries: { staleTime: 60_000 } } }),
+  );
   const [fontsLoaded, fontError] = useFonts({
     DMSerifDisplay_400Regular,
     DMSans_400Regular,
@@ -27,9 +33,17 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+    <QueryClientProvider client={queryClient}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+        <Stack.Screen name="(tabs)" />
+      </Stack>
       <StatusBar style="light" />
-    </>
+      {/*
+        Android: hide the system navigation bar immersively. It reappears briefly
+        with a swipe up from the bottom edge. No-op on iOS, whose home indicator
+        apps cannot hide.
+      */}
+      <NavigationBar hidden style="light" />
+    </QueryClientProvider>
   );
 }

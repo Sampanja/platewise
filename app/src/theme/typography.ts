@@ -22,6 +22,8 @@ export const typography = {
   bodyStrong: { fontFamily: fontFamilies.bodySemiBold, fontSize: 16, lineHeight: 24 },
   label: { fontFamily: fontFamilies.bodyMedium, fontSize: 14, lineHeight: 20 },
   caption: { fontFamily: fontFamilies.body, fontSize: 13, lineHeight: 18 },
+  /** Bottom tab labels: five must fit side by side on a 360 dp screen. */
+  tabLabel: { fontFamily: fontFamilies.bodyMedium, fontSize: 12, lineHeight: 16 },
   overline: {
     fontFamily: fontFamilies.bodySemiBold,
     fontSize: 12,

@@ -15,7 +15,19 @@ const euroFormatter = new Intl.NumberFormat('fi-FI', {
   maximumFractionDigits: 2,
 });
 
+const integerFormatter = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: 0 });
+
 /** Formats a euro amount the Finnish way, e.g. 4.2 → "4,20 €". */
 export function formatEuro(amount: number): string {
   return `${euroFormatter.format(amount)} €`;
+}
+
+/** Formats cents as euros, e.g. 420 → "4,20 €". */
+export function formatCents(cents: number): string {
+  return formatEuro(cents / 100);
+}
+
+/** Rounds and groups thousands the Finnish way, e.g. 1240.4 → "1 240". */
+export function formatInteger(value: number): string {
+  return integerFormatter.format(Math.round(value));
 }

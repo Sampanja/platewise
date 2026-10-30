@@ -13,6 +13,8 @@ export type ProgressMeterProps = {
   accessibilityLabel: string;
   /** Plays a success haptic once when the meter reaches 100 %. */
   celebrateOnComplete?: boolean;
+  /** `thin` for compact rows such as macro breakdowns. */
+  size?: 'regular' | 'thin';
 };
 
 /** Animated horizontal meter for budget use, savings and week-plan progress. */
@@ -21,6 +23,7 @@ export function ProgressMeter({
   tone = 'accent',
   accessibilityLabel,
   celebrateOnComplete = false,
+  size = 'regular',
 }: ProgressMeterProps) {
   const clamped = Math.min(1, Math.max(0, value));
   const [width, setWidth] = useState(0);
@@ -46,7 +49,7 @@ export function ProgressMeter({
   return (
     <View
       onLayout={onLayout}
-      style={styles.track}
+      style={[styles.track, size === 'thin' && styles.thin]}
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={accessibilityLabel}
@@ -76,6 +79,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: colors.surfaceRaised,
     overflow: 'hidden',
+  },
+  thin: {
+    height: 6,
   },
   fill: {
     ...StyleSheet.absoluteFill,
