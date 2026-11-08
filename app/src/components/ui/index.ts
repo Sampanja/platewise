@@ -4,7 +4,7 @@ export { CheckRow, type CheckRowProps } from './CheckRow';
 export { Chip, type ChipProps } from './Chip';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { FadeInView, type FadeInViewProps } from './FadeInView';
-export { haptics } from './haptics';
+export { haptics, setHapticsEnabled } from './haptics';
 export { Icon, type IconName, type IconProps } from './Icon';
 export { PressableScale, type PressableScaleProps } from './PressableScale';
 export { ProgressMeter, type ProgressMeterProps } from './ProgressMeter';

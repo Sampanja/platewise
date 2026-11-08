@@ -10,9 +10,12 @@ import { useFonts } from 'expo-font';
 import { NavigationBar } from 'expo-navigation-bar';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { setHapticsEnabled } from '@/components/ui';
+import { useHydrated } from '@/data/hooks';
+import { useProfileStore } from '@/data/stores/profile';
 import { colors } from '@/theme';
 
 export default function RootLayout() {
@@ -26,9 +29,12 @@ export default function RootLayout() {
     DMSans_600SemiBold,
     DMSans_700Bold,
   });
+  const hydrated = useHydrated();
+  const hapticsEnabled = useProfileStore((s) => s.hapticsEnabled);
+  useEffect(() => setHapticsEnabled(hapticsEnabled), [hapticsEnabled]);
 
-  // Keep the dark background while fonts load; fall back to system fonts on error.
-  if (!fontsLoaded && !fontError) {
+  // Keep the dark background while fonts and saved data load; fall back to system fonts on error.
+  if ((!fontsLoaded && !fontError) || !hydrated) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 

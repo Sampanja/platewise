@@ -1,24 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchCurrentPlan, fetchMonthSavingsCents, fetchTodayNutrition } from './api';
-import { useDevScenario } from './devScenario';
+import { catalogRepository } from './repositories/catalog';
 
-/** Query keys include the dev scenario so switching it refetches. */
-function useScenarioKey() {
-  return useDevScenario((state) => state.scenario);
+/** Reference data changes rarely: load once per app session. */
+const REFERENCE = { staleTime: Infinity, gcTime: Infinity } as const;
+
+export function useRecipesQuery() {
+  return useQuery({ queryKey: ['catalog', 'recipes'], queryFn: catalogRepository.listRecipes, ...REFERENCE });
 }
 
-export function useCurrentPlan() {
-  const scenario = useScenarioKey();
-  return useQuery({ queryKey: ['plan', 'current', scenario], queryFn: fetchCurrentPlan });
-}
-
-export function useMonthSavings() {
-  const scenario = useScenarioKey();
-  return useQuery({ queryKey: ['plan', 'savings', scenario], queryFn: fetchMonthSavingsCents });
-}
-
-export function useTodayNutrition() {
-  const scenario = useScenarioKey();
-  return useQuery({ queryKey: ['diary', 'today', scenario], queryFn: fetchTodayNutrition });
+export function useFoodsQuery() {
+  return useQuery({ queryKey: ['catalog', 'foods'], queryFn: catalogRepository.listFoods, ...REFERENCE });
 }

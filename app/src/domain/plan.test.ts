@@ -21,6 +21,8 @@ function plan(meals: PlanMeal[], overrides: Partial<MealPlan> = {}): MealPlan {
     status: 'accepted',
     acceptedAt: null,
     meals,
+    extraAllergens: [],
+    extraDiets: [],
     ...overrides,
   };
 }
