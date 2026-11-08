@@ -11,6 +11,7 @@ import {
   minimumBudgetCents,
   NoRecipesError,
   proposalShoppingList,
+  replacePlanDinner,
   swapMeal,
 } from './generate';
 import { checkRecipe } from './recipes';
@@ -168,5 +169,36 @@ describe('acceptProposal', () => {
     const plan = acceptProposal(proposal, RECIPES_BY_ID, index, user.pantry, new Date());
     const list = proposalShoppingList(['chicken-curry', 'dal'], RECIPES_BY_ID, proposal.answers, index, user.pantry);
     expect(plan.estimatedTotalCents).toBe(list.totalCents);
+  });
+});
+
+describe('replacePlanDinner', () => {
+  const proposal: Proposal = {
+    id: 'p2',
+    createdAt: '',
+    startDate: '2026-11-08',
+    answers: answers({ mealCount: 2, cookDouble: true }),
+    meals: [
+      { dayOffset: 0, recipeId: 'chicken-curry', locked: false, alternatives: [] },
+      { dayOffset: 1, recipeId: 'dal', locked: false, alternatives: [] },
+    ],
+  };
+  const plan = acceptProposal(proposal, RECIPES_BY_ID, index, user.pantry, new Date());
+
+  it('swaps the dinner and its leftover lunch and recomputes the total', () => {
+    const next = replacePlanDinner(plan, 0, 'steak-potatoes', RECIPES_BY_ID, index, user.pantry);
+    const day0 = next.meals.filter((m) => m.dayOffset <= 1).map((m) => [m.dayOffset, m.slot, m.recipeId]);
+    expect(day0).toEqual(
+      expect.arrayContaining([
+        [0, 'dinner', 'steak-potatoes'],
+        [1, 'lunch', 'steak-potatoes'],
+        [1, 'dinner', 'dal'],
+      ]),
+    );
+    expect(next.estimatedTotalCents).toBeGreaterThan(plan.estimatedTotalCents);
+  });
+
+  it('leaves the plan unchanged for an unknown day', () => {
+    expect(replacePlanDinner(plan, 9, 'dal', RECIPES_BY_ID, index, user.pantry)).toBe(plan);
   });
 });

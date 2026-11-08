@@ -304,3 +304,45 @@ export function acceptProposal(
   };
 }
 
+
+/**
+ * "Lisää suunnitelmaan": replaces one day's dinner in an accepted plan (and the
+ * next day's leftover lunch if the dinner was doubled), then recomputes the
+ * meal cost and the whole-package list total.
+ */
+export function replacePlanDinner(
+  plan: MealPlan,
+  dayOffset: number,
+  recipeId: string,
+  recipesById: Readonly<Record<string, Recipe>>,
+  index: IngredientIndex,
+  pantry: ReadonlySet<string>,
+): MealPlan {
+  const multiplier = CHAINS_BY_CODE[plan.chainCode].priceMultiplier;
+  const recipe = recipesById[recipeId];
+  const target = plan.meals.find((meal) => meal.slot === 'dinner' && meal.dayOffset === dayOffset);
+  if (!recipe || !target) return plan;
+
+  const meals = plan.meals.map((meal) => {
+    if (meal === target) {
+      return {
+        ...meal,
+        recipeId,
+        costCents: recipeCostCents(recipe, index, pantry, multiplier, meal.servings),
+      };
+    }
+    if (target.cookDouble && meal.slot === 'lunch' && meal.dayOffset === dayOffset + 1) {
+      return { ...meal, recipeId };
+    }
+    return meal;
+  });
+  const list = buildShoppingList(
+    meals
+      .filter((meal) => meal.slot === 'dinner' && recipesById[meal.recipeId])
+      .map((meal) => ({ recipe: recipesById[meal.recipeId], servings: meal.servings })),
+    index,
+    pantry,
+    multiplier,
+  );
+  return { ...plan, meals, estimatedTotalCents: list.totalCents };
+}
