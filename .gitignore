@@ -16,3 +16,7 @@ Thumbs.db
 # logs
 *.log
 npm-debug.*
+
+# generated native project (npm run apk runs expo prebuild)
+app/android/
+app/ios/
