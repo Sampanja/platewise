@@ -133,6 +133,11 @@ export const fi = {
     dinner: 'Päivällinen',
     snack: 'Välipalat',
   },
+  priceLevels: {
+    low: 'Edullinen hintataso',
+    mid: 'Keskitason hintataso',
+    high: 'Korkeampi hintataso',
+  },
   budget: {
     explainer: 'Budjetti kattaa vain sovelluksen ehdottamat ateriat – ei muita ruokaostoksiasi.',
   },

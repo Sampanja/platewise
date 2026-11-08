@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { ToastHost } from '@/components/Toast';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
@@ -42,7 +43,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
       </Stack>
+      <ToastHost />
       <StatusBar style="light" />
       {/*
         Android: hide the system navigation bar immersively. It reappears briefly
