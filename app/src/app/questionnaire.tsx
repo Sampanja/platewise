@@ -137,7 +137,7 @@ export default function QuestionnaireScreen() {
             onBlur={() => setBudgetText(String(Math.round(answers.budgetCents / 100)))}
             trailing={
               <Text variant="title" color="textMuted">
-                €
+                {strings.common.euroSign}
               </Text>
             }
           />

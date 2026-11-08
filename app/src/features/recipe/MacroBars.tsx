@@ -50,7 +50,7 @@ export function MacroBars({ macros }: Props) {
                   {grams}
                   <Text variant="caption" color="textSubtle">
                     {'  '}
-                    {Math.round(share * 100)} %
+                    {format(strings.units.percent, { value: Math.round(share * 100) })}
                   </Text>
                 </Text>
               </View>

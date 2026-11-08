@@ -10,6 +10,7 @@ export const fi = {
     kcal: '{value} kcal',
     kcalUnit: 'kcal',
     gUnit: 'g',
+    euroSign: '€',
     grams: '{value} g',
     retry: 'Yritä uudelleen',
     comingSoon: 'Tulossa pian',
@@ -42,6 +43,7 @@ export const fi = {
     tbsp: '{value} rkl',
     pcs: '{value} kpl',
     euro: '{value} €',
+    percent: '{value} %',
   },
   dates: {
     today: 'Tänään',
@@ -585,17 +587,6 @@ export const fi = {
     termsBody: 'Käyttöehdot julkaistaan ennen sovelluksen julkaisua. Hinta-arviot ja ravintoarvot ovat suuntaa antavia. Tarkista allergeenit aina tuotteiden pakkausmerkinnöistä.',
     sourcesTitle: 'Lähteet',
     sourcesBody: 'Ravintoarvot: Fineli, THL (CC BY 4.0). Testiversiossa arvot ovat pyöristettyjä esimerkkiarvoja. Kuvat: Unsplash ja TheMealDB.',
-  },
-  /** Temporary texts for tabs that are still being built. */
-  placeholder: {
-    recipesTitle: 'Reseptikirjasto',
-    recipesBody: 'Selaa reseptejä, hae ja suodata hinnan, ajan, ruokavalion ja kalorien mukaan.',
-    planTitle: 'Suunnittele',
-    planBody: 'Kysely, josta syntyy päivällisehdotukset ja yksi ostoslista.',
-    diaryTitle: 'Päiväkirja',
-    diaryBody: 'Kalorit ja makrot päivältä. Lisää ruoka kuvasta, hakemalla tai omalta listalta.',
-    profileTitle: 'Profiili',
-    profileBody: 'Allergiat, ruokavalio, perusvarat, oletuskauppa ja kaloritavoitteet.',
   },
   errors: {
     genericTitle: 'Jotain meni pieleen',
