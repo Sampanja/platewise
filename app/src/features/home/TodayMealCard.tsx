@@ -1,21 +1,23 @@
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
 
-import { Card, Chip, Text } from '@/components/ui';
+import { openRecipe } from '@/components/RecipeCard';
+import { RecipeImage } from '@/components/RecipeImage';
+import { Card, Chip, Icon, PressableScale, Text } from '@/components/ui';
 import type { Recipe } from '@/data/types';
 import type { DatedMeal } from '@/domain/plan';
 import { format, formatCents, formatInteger, strings } from '@/i18n';
 import { relativeDayLabel, today } from '@/lib/dates';
-import { colors, gradients, radii, spacing } from '@/theme';
+import { radii, spacing } from '@/theme';
 
 type Props = {
   meal: DatedMeal;
   recipe: Recipe;
+  /** Today's leftover lunch from yesterday's doubled dinner, if any. */
+  lunchRecipe?: Recipe;
 };
 
 /** Large photo card for today's dinner (or the next one, if there is none today). */
-export function TodayMealCard({ meal, recipe }: Props) {
+export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
   const isToday = meal.date === today();
   const overline = isToday
     ? strings.home.tonight
@@ -23,61 +25,54 @@ export function TodayMealCard({ meal, recipe }: Props) {
   const pricePerServing = meal.costCents / meal.servings;
 
   return (
-    <Card padding="flush">
-      <View style={styles.hero}>
-        {recipe.imageUrl ? (
-          <Image
-            source={recipe.imageUrl}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            transition={300}
-            accessibilityLabel={format(strings.recipe.imageLabel, { title: recipe.title })}
-          />
-        ) : (
-          <LinearGradient
-            colors={[colors.surfaceRaised, colors.surface]}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
-        <LinearGradient
-          colors={gradients.scrim}
-          locations={[0.3, 0.6, 1]}
-          style={StyleSheet.absoluteFill}
-        />
-
-        <View style={styles.heroTop}>
-          <Chip tone="glass" label={format(strings.common.minutes, { count: recipe.cookTimeMin })} />
-          <Chip
-            tone="glass"
-            label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })}
-          />
-        </View>
-
-        <View style={styles.heroBottom}>
-          <Text variant="overline" color="accentText">
-            {overline}
-          </Text>
-          <Text variant="display" accessibilityRole="header">
-            {recipe.title}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.price}>
-          <Text variant="overline" color="textSubtle">
-            {strings.common.priceEstimate}
-          </Text>
-          <Text variant="number" color="accentText">
-            {formatCents(pricePerServing)}{' '}
-            <Text variant="caption" color="textSubtle">
-              {strings.common.perServing}
+    <PressableScale
+      onPress={() => openRecipe(recipe.id)}
+      accessibilityRole="button"
+      accessibilityLabel={`${overline}: ${recipe.title}`}
+    >
+      <Card padding="flush">
+        <View style={styles.hero}>
+          <RecipeImage recipe={recipe} scrim style={StyleSheet.absoluteFill} />
+          <View style={styles.heroTop}>
+            <Chip tone="glass" label={format(strings.common.minutes, { count: recipe.cookTimeMin })} />
+            <Chip
+              tone="glass"
+              label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })}
+            />
+          </View>
+          <View style={styles.heroBottom}>
+            <Text variant="overline" color="accentText">
+              {overline}
             </Text>
-          </Text>
+            <Text variant="display">{recipe.title}</Text>
+          </View>
         </View>
-        {meal.cookDouble ? <Chip tone="success" label={strings.recipe.cookDouble} /> : null}
-      </View>
-    </Card>
+
+        <View style={styles.footer}>
+          <View style={styles.price}>
+            <Text variant="overline" color="textSubtle">
+              {strings.common.priceEstimate}
+            </Text>
+            <Text variant="number" color="accentText">
+              {formatCents(pricePerServing)}{' '}
+              <Text variant="caption" color="textSubtle">
+                {strings.common.perServing}
+              </Text>
+            </Text>
+          </View>
+          {meal.cookDouble ? <Chip tone="success" label={strings.recipe.cookDouble} /> : null}
+          <Icon name="chevronRight" color="textSubtle" />
+        </View>
+        {lunchRecipe ? (
+          <View style={styles.lunch}>
+            <Icon name="pot" size={18} color="success" />
+            <Text variant="label" color="success" style={styles.flex}>
+              {format(strings.home.lunchToday, { title: lunchRecipe.title })}
+            </Text>
+          </View>
+        ) : null}
+      </Card>
+    </PressableScale>
   );
 }
 
@@ -110,5 +105,16 @@ const styles = StyleSheet.create({
   },
   price: {
     gap: spacing.xxs,
+    flex: 1,
+  },
+  lunch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.lg,
+  },
+  flex: {
+    flex: 1,
   },
 });

@@ -8,6 +8,7 @@ export const fi = {
     servings: '{count} annosta',
     servingsOne: '1 annos',
     kcal: '{value} kcal',
+    kcalUnit: 'kcal',
     grams: '{value} g',
     retry: 'Yritä uudelleen',
     comingSoon: 'Tulossa pian',

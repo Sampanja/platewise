@@ -163,7 +163,7 @@ export default function OnboardingScreen() {
                 accessibilityLabel={strings.profileEdit.kcal}
               />
               <Text variant="label" color="textSubtle">
-                kcal
+                {strings.common.kcalUnit}
               </Text>
               <Text variant="caption" color="textSubtle" style={styles.center}>
                 {format(t.goalHint, { min: formatInteger(MIN_KCAL_GOAL) })}

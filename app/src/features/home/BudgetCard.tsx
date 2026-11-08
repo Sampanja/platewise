@@ -1,18 +1,21 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Card, Icon, ProgressMeter, Text } from '@/components/ui';
+import { Button, Card, Icon, ProgressMeter, Text } from '@/components/ui';
 import type { MealPlan } from '@/data/types';
 import { budgetHeadroomCents } from '@/domain/plan';
 import { format, formatCents, strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
 type Props = {
   plan: MealPlan;
-  /** This month's savings across accepted plans; hidden when zero or unknown. */
-  monthSavingsCents: number | undefined;
+  /** Ticked / all items on the shopping list. */
+  shoppingDone: number;
+  shoppingTotal: number;
 };
 
-export function BudgetCard({ plan, monthSavingsCents }: Props) {
+/** "42 € / 50 €": the plan's price estimate against its budget, and the way to the shopping list. */
+export function BudgetCard({ plan, shoppingDone, shoppingTotal }: Props) {
   const t = strings.home;
   const headroom = budgetHeadroomCents(plan);
   const used = formatCents(plan.estimatedTotalCents);
@@ -21,12 +24,10 @@ export function BudgetCard({ plan, monthSavingsCents }: Props) {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <Text variant="heading" accessibilityRole="header">
+        <Text variant="heading" accessibilityRole="header" style={styles.flex}>
           {t.budgetTitle}
         </Text>
-        <Text variant="number" color="textMuted">
-          {format(t.budgetUsed, { used, total })}
-        </Text>
+        <Text variant="number">{format(t.budgetUsed, { used, total })}</Text>
       </View>
       <ProgressMeter
         value={plan.estimatedTotalCents / plan.budgetCents}
@@ -41,16 +42,17 @@ export function BudgetCard({ plan, monthSavingsCents }: Props) {
       <Text variant="caption" color="textSubtle">
         {strings.budget.explainer}
       </Text>
-
-      {monthSavingsCents && monthSavingsCents > 0 ? (
-        <View style={styles.savings}>
-          <View style={styles.savingsIcon}>
-            <Icon name="savings" size={20} color="success" />
-          </View>
-          <Text variant="label" color="success" style={styles.savingsText}>
-            {format(t.savings, { amount: formatCents(monthSavingsCents) })}
-          </Text>
-        </View>
+      <Button
+        label={t.shoppingList}
+        variant="secondary"
+        icon={<Icon name="basket" size={20} color="text" />}
+        onPress={() => router.push('/shopping-list')}
+        accessibilityHint={format(t.shoppingProgress, { done: shoppingDone, total: shoppingTotal })}
+      />
+      {shoppingTotal > 0 ? (
+        <Text variant="caption" color="textSubtle" style={styles.center}>
+          {format(t.shoppingProgress, { done: shoppingDone, total: shoppingTotal })}
+        </Text>
       ) : null}
     </Card>
   );
@@ -63,28 +65,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    justifyContent: 'space-between',
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  savings: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginTop: spacing.xs,
-    paddingTop: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  savingsIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.successSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  savingsText: {
+  flex: {
     flex: 1,
+  },
+  center: {
+    textAlign: 'center',
   },
 });
