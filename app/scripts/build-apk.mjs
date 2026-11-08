@@ -1,4 +1,4 @@
-// Builds a local release APK: expo prebuild + Gradle assembleRelease.
+// Builds a local release APK: expo prebuild (only when needed) + Gradle assembleRelease.
 // Signed with this machine's ~/.android/debug.keystore (same as Flutter's
 // default release signing), so every build has the same key and a new APK
 // installs over the previous one. Test builds only, not for store upload.
@@ -10,13 +10,23 @@
 //   even with LongPathsEnabled. We pin CMake 3.31.6 (ninja 1.12, long-path
 //   aware) via cmake.dir in local.properties and install it if missing.
 // - A Gradle daemon from a previous build keeps files in android/ locked, which
-//   makes prebuild fail with EBUSY, so the daemon is stopped first.
+//   makes prebuild fail with EBUSY, so the daemon is stopped before a prebuild.
+//
+// Incremental builds: prebuild regenerates android/ from scratch, which throws
+// away Gradle's compiled native code (10+ minutes to rebuild). It only runs when
+// android/ is missing or the native fingerprint changed. The fingerprint comes
+// from @expo/fingerprint (shipped with expo) and covers the whole Expo config
+// (app.json incl. name, package and versions), config plugins, icons and
+// autolinked native packages with their versions. It is stored in android/
+// after each prebuild. JS-only changes never need a prebuild.
+// `npm run apk:clean` (--clean) forces prebuild --clean and a Gradle clean.
 //
 // Only arm64-v8a is built: every current Android phone uses it, and building one
 // ABI instead of four makes the native compile several times faster.
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, readFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { homedir, platform } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +36,8 @@ const androidDir = join(projectRoot, 'android');
 const isWindows = platform() === 'win32';
 const CMAKE_VERSION = '3.31.6';
 const ARCHITECTURES = 'arm64-v8a';
+const FINGERPRINT_FILE = join(androidDir, '.native-fingerprint');
+const clean = process.argv.includes('--clean');
 
 function fail(message) {
   console.error(`\n✖ ${message}\n`);
@@ -124,6 +136,35 @@ function setCmakeDir(cmakeDir) {
   appendFileSync(localProperties, `${separator}cmake.dir=${value}\n`);
 }
 
+/** Hash of everything that affects the generated native project. */
+async function nativeFingerprint() {
+  // @expo/fingerprint is a dependency of expo; resolve it from there.
+  const requireFromExpo = createRequire(join(projectRoot, 'node_modules', 'expo', 'package.json'));
+  const { createFingerprintAsync, SourceSkips } = requireFromExpo('@expo/fingerprint');
+  const fingerprint = await createFingerprintAsync(projectRoot, {
+    platforms: ['android'],
+    // android/ is generated output; only its presence matters, not its contents.
+    ignorePaths: ['android/**/*', 'ios/**/*'],
+    // The default skips (meant for OTA update compatibility) leave out the app
+    // name, package, scheme and versions, which all change the generated native
+    // project. Skip only sources that never affect it.
+    sourceSkips:
+      SourceSkips.PackageJsonScriptsAll | SourceSkips.GitIgnore | SourceSkips.EasJson | SourceSkips.Easignore,
+    silent: true,
+  });
+  return fingerprint.hash;
+}
+
+/** Reason to run prebuild, or null when the existing android/ can be reused. */
+async function whyPrebuild(gradlew) {
+  if (clean) return 'clean build requested';
+  if (!existsSync(gradlew)) return 'android/ does not exist';
+  if (!existsSync(FINGERPRINT_FILE)) return 'no stored native fingerprint';
+  const stored = readFileSync(FINGERPRINT_FILE, 'utf8').trim();
+  const current = await nativeFingerprint();
+  return stored === current ? null : 'native config, plugins or packages changed';
+}
+
 const env = {
   ...process.env,
   JAVA_HOME: resolveJavaHome(),
@@ -132,14 +173,20 @@ const env = {
 console.log(`JAVA_HOME=${env.JAVA_HOME}\nANDROID_HOME=${env.ANDROID_HOME}`);
 
 const gradlew = join(androidDir, isWindows ? 'gradlew.bat' : 'gradlew');
-if (existsSync(gradlew)) {
-  // Release file locks held by a daemon from an earlier build (EBUSY in prebuild).
-  run(executable(gradlew), ['--stop'], androidDir, env, { allowFailure: true });
-}
-
 const cmakeDir = ensureCmake(env.ANDROID_HOME, env);
 
-run('npx', ['expo', 'prebuild', '--platform', 'android', '--no-install'], projectRoot, env);
+const prebuildReason = await whyPrebuild(gradlew);
+if (prebuildReason) {
+  console.log(`\n› Prebuild needed: ${prebuildReason}`);
+  if (existsSync(gradlew)) {
+    // Release file locks held by a daemon from an earlier build (EBUSY in prebuild).
+    run(executable(gradlew), ['--stop'], androidDir, env, { allowFailure: true });
+  }
+  run('npx', ['expo', 'prebuild', '--platform', 'android', '--no-install', '--clean'], projectRoot, env);
+  writeFileSync(FINGERPRINT_FILE, `${await nativeFingerprint()}\n`);
+} else {
+  console.log('\n› Native project is up to date: skipping prebuild (npm run apk:clean for a full build).');
+}
 
 const keystore = join(homedir(), '.android', 'debug.keystore');
 if (!existsSync(keystore)) {
@@ -157,7 +204,7 @@ setCmakeDir(cmakeDir);
 
 run(
   executable(gradlew),
-  ['assembleRelease', `-PreactNativeArchitectures=${ARCHITECTURES}`],
+  [...(clean ? ['clean'] : []), 'assembleRelease', `-PreactNativeArchitectures=${ARCHITECTURES}`],
   androidDir,
   env,
 );

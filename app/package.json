@@ -41,6 +41,7 @@
     "android": "expo start -a",
     "ios": "expo start -i",
     "apk": "node scripts/build-apk.mjs",
+    "apk:clean": "node scripts/build-apk.mjs --clean",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
