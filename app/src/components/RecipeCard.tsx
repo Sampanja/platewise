@@ -45,7 +45,7 @@ export function RecipeCard({ recipe, overline, showHeart = true, style, onPress 
               {overline}
             </Text>
           ) : null}
-          <Text variant="bodyStrong" numberOfLines={2} style={styles.title}>
+          <Text variant="cardTitle" numberOfLines={3} style={styles.title} hyphenate>
             {recipe.title}
           </Text>
           <Text variant="number" color="accentText">
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
-    minHeight: 48,
+    minHeight: 40,
   },
   meta: {
     flexDirection: 'row',

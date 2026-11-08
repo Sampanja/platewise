@@ -44,7 +44,9 @@ export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
             <Text variant="overline" color="accentText">
               {overline}
             </Text>
-            <Text variant="display">{recipe.title}</Text>
+            <Text variant="display" hyphenate>
+              {recipe.title}
+            </Text>
           </View>
         </View>
 

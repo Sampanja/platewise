@@ -113,7 +113,7 @@ export default function RecipeScreen() {
 
         <View style={styles.sheet}>
           <View style={styles.titleBlock}>
-            <Text variant="displayLarge" accessibilityRole="header">
+            <Text variant="displayLarge" accessibilityRole="header" hyphenate>
               {recipe.title}
             </Text>
             <Text variant="body" color="textMuted">

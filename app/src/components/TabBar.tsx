@@ -25,9 +25,13 @@ const MAX_LABEL_SCALE = 1.25;
 const BAR_HEIGHT = 66;
 const PRIMARY_SIZE = 60;
 /** How far the centre button rises above the bar. */
-const RISE = 22;
+const RISE = 25;
+/** Every label sits this far above the bar bottom, so the centre label lines up with the rest. */
+const LABEL_BOTTOM = 11;
 const SIDE_MARGIN = spacing.lg;
-const PILL_INSET = spacing.xs;
+const PILL_INSET = 6;
+/** Below this slot width (dp) labels use the compact size. */
+const COMPACT_SLOT = 72;
 
 /** Distance from the screen bottom to the bar: floats above the gesture area. */
 function barBottom(insetBottom: number): number {
@@ -56,6 +60,8 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
   const [pillX] = useState(() => new Animated.Value(0));
   const [pillOpacity] = useState(() => new Animated.Value(1));
 
+  // Narrow phones (about 360 dp) get a slightly smaller label so "Suunnittele" fits its slot.
+  const compact = slotWidth > 0 && slotWidth < COMPACT_SLOT;
   const focusedRoute = state.routes[state.index]?.name;
   const primaryFocused = focusedRoute === PRIMARY_ROUTE;
 
@@ -123,6 +129,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
           return route.name === PRIMARY_ROUTE ? (
             <PrimaryTab
               key={route.key}
+              compact={compact}
               label={label}
               focused={focused}
               onPress={onPress}
@@ -132,6 +139,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
           ) : (
             <Tab
               key={route.key}
+              compact={compact}
               icon={ICONS[route.name] ?? 'home'}
               label={label}
               focused={focused}
@@ -148,6 +156,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
 
 type TabProps = {
   label: string;
+  compact: boolean;
   focused: boolean;
   onPress: () => void;
   onLongPress: () => void;
@@ -176,7 +185,7 @@ function useFocusProgress(focused: boolean) {
   return progress;
 }
 
-function Tab({ icon, label, focused, ...pressable }: TabProps & { icon: IconName }) {
+function Tab({ icon, label, focused, compact, ...pressable }: TabProps & { icon: IconName }) {
   const progress = useFocusProgress(focused);
   const color = focused ? 'accentText' : 'textSubtle';
 
@@ -197,6 +206,7 @@ function Tab({ icon, label, focused, ...pressable }: TabProps & { icon: IconName
         color={color}
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
+        style={[styles.label, compact && styles.labelCompact]}
       >
         {label}
       </Text>
@@ -204,7 +214,7 @@ function Tab({ icon, label, focused, ...pressable }: TabProps & { icon: IconName
   );
 }
 
-function PrimaryTab({ label, focused, ...pressable }: TabProps) {
+function PrimaryTab({ label, focused, compact, ...pressable }: TabProps) {
   const reducedMotion = useReducedMotion();
   const [rotation] = useState(() => new Animated.Value(focused ? 1 : 0));
 
@@ -238,6 +248,7 @@ function PrimaryTab({ label, focused, ...pressable }: TabProps) {
         color={focused ? 'accentText' : 'textMuted'}
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
+        style={[styles.label, compact && styles.labelCompact]}
       >
         {label}
       </Text>
@@ -267,8 +278,8 @@ const styles = StyleSheet.create({
   pill: {
     position: 'absolute',
     left: PILL_INSET,
-    top: PILL_INSET + 2,
-    bottom: PILL_INSET + 2,
+    top: PILL_INSET,
+    bottom: PILL_INSET,
     borderRadius: radii.pill,
     backgroundColor: colors.accentSoft,
   },
@@ -281,16 +292,26 @@ const styles = StyleSheet.create({
     flex: 1,
     height: BAR_HEIGHT,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
+    justifyContent: 'flex-end',
+    paddingBottom: LABEL_BOTTOM,
+    gap: 4,
   },
   primaryTab: {
     flex: 1,
     height: BAR_HEIGHT + RISE,
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingBottom: spacing.sm,
-    gap: spacing.xxs,
+    paddingBottom: LABEL_BOTTOM,
+    gap: 4,
+  },
+  label: {
+    alignSelf: 'stretch',
+    textAlign: 'center',
+    paddingHorizontal: 1,
+  },
+  labelCompact: {
+    fontSize: 11,
+    letterSpacing: -0.1,
   },
   primaryButton: {
     width: PRIMARY_SIZE,

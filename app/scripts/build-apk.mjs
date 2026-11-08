@@ -35,7 +35,9 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const androidDir = join(projectRoot, 'android');
 const isWindows = platform() === 'win32';
 const CMAKE_VERSION = '3.31.6';
-const ARCHITECTURES = 'arm64-v8a';
+// APK_ABIS=arm64-v8a,x86_64 adds the emulator ABI (x86_64 emulator images cannot
+// run this app's arm64 libraries through translation).
+const ARCHITECTURES = process.env.APK_ABIS || 'arm64-v8a';
 const FINGERPRINT_FILE = join(androidDir, '.native-fingerprint');
 const clean = process.argv.includes('--clean');
 

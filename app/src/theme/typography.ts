@@ -18,6 +18,8 @@ export const typography = {
   display: { fontFamily: fontFamilies.display, fontSize: 28, lineHeight: 34 },
   title: { fontFamily: fontFamilies.display, fontSize: 22, lineHeight: 28 },
   heading: { fontFamily: fontFamilies.bodySemiBold, fontSize: 17, lineHeight: 24 },
+  /** Titles inside narrow cards (two-column grid): long Finnish compounds must fit. */
+  cardTitle: { fontFamily: fontFamilies.bodySemiBold, fontSize: 15, lineHeight: 20 },
   body: { fontFamily: fontFamilies.body, fontSize: 16, lineHeight: 24 },
   bodyStrong: { fontFamily: fontFamilies.bodySemiBold, fontSize: 16, lineHeight: 24 },
   label: { fontFamily: fontFamilies.bodyMedium, fontSize: 14, lineHeight: 20 },

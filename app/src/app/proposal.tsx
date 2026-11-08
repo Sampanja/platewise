@@ -252,7 +252,7 @@ function MealCard({
             <Text variant="overline" color="accentText">
               {format(t.day, { index: meal.dayOffset + 1 })} · {day}
             </Text>
-            <Text variant="bodyStrong" numberOfLines={2}>
+            <Text variant="bodyStrong" numberOfLines={3} hyphenate>
               {recipe.title}
             </Text>
             <Text variant="caption" color="textSubtle">

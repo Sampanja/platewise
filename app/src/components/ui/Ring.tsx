@@ -73,6 +73,8 @@ export function Ring({
           stroke={color}
           strokeWidth={thickness}
           strokeLinecap="round"
+          // A round cap draws a dot even for an empty arc; hide the arc at zero.
+          strokeOpacity={clamped > 0 ? 1 : 0}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={progress.interpolate({
