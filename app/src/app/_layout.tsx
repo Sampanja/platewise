@@ -43,6 +43,8 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="generating" options={{ gestureEnabled: false, animation: 'fade' }} />
+        <Stack.Screen name="questionnaire" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
       </Stack>
       <ToastHost />
