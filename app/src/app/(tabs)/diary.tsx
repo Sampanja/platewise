@@ -21,7 +21,7 @@ import {
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
 import type { DiaryEntry, DiaryMeal } from '@/data/types';
-import { DIARY_MEALS, entriesOn, entryMacros, sumEntries, weekKcal } from '@/domain/diary';
+import { copyMealEntries, DIARY_MEALS, entriesOn, entryMacros, sumEntries, weekKcal } from '@/domain/diary';
 import { entryAmount } from '@/features/diary/entryAmount';
 import { WeekChart } from '@/features/diary/WeekChart';
 import { format, formatInteger, strings } from '@/i18n';
@@ -30,11 +30,15 @@ import { showToast } from '@/lib/toast';
 import { colors, radii, spacing } from '@/theme';
 
 const t = strings.diary;
+/** Days a meal can be copied to, relative to the shown day. */
+const COPY_OFFSETS = [-1, 1, 2, 3, 4, 5, 6, 7];
 
 export default function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
   const [addFor, setAddFor] = useState<DiaryMeal | null>(null);
+  const [copyFor, setCopyFor] = useState<DiaryMeal | null>(null);
+  const addMany = useDiaryStore((s) => s.addMany);
   const entries = useDiaryStore((s) => s.entries);
   const removeEntry = useDiaryStore((s) => s.remove);
   const restoreEntry = useDiaryStore((s) => s.restore);
@@ -67,6 +71,14 @@ export default function DiaryScreen() {
       },
     }),
   );
+
+  const copyMeal = (target: LocalDate) => {
+    if (!copyFor) return;
+    addMany(copyMealEntries(entries, { date, meal: copyFor }, { date: target, meal: copyFor }));
+    haptics.success();
+    showToast(format(strings.copyMeal.done, { meal: strings.diaryMeals[copyFor], day: diaryDayLabel(target) }));
+    setCopyFor(null);
+  };
 
   const deleteEntry = (entry: DiaryEntry) => {
     const removed = removeEntry(entry.id);
@@ -157,6 +169,16 @@ export default function DiaryScreen() {
                           : format(t.mealTotal, { value: formatInteger(mealKcal) })}
                     </Text>
                   </View>
+                  {mealEntries.length > 0 ? (
+                    <IconButton
+                      icon="copy"
+                      variant="plain"
+                      accessibilityLabel={format(strings.copyMeal.actionA11y, {
+                        meal: strings.diaryMeals[meal].toLowerCase(),
+                      })}
+                      onPress={() => setCopyFor(meal)}
+                    />
+                  ) : null}
                   <IconButton
                     icon="plus"
                     variant="accent"
@@ -226,6 +248,29 @@ export default function DiaryScreen() {
             <OptionRow icon="recipes" title={t.methodRecipe} hint={t.methodRecipeHint} selected={false} action onPress={() => openAdd(addFor, 'recipes')} />
           </>
         ) : null}
+      </Sheet>
+
+      <Sheet
+        visible={copyFor !== null}
+        onClose={() => setCopyFor(null)}
+        title={copyFor ? format(strings.copyMeal.title, { meal: strings.diaryMeals[copyFor].toLowerCase() }) : ''}
+      >
+        <Text variant="body" color="textMuted">
+          {strings.copyMeal.body}
+        </Text>
+        {COPY_OFFSETS.map((offset) => {
+          const target = addDays(date, offset);
+          return (
+            <OptionRow
+              key={offset}
+              icon="calendar"
+              title={diaryDayLabel(target)}
+              selected={false}
+              action
+              onPress={() => copyMeal(target)}
+            />
+          );
+        })}
       </Sheet>
     </SafeAreaView>
   );

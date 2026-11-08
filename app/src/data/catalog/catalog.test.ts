@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { recognizePhoto } from '@/domain/photoRecognition';
+import { testDataPlate } from '@/services/foodRecognitionTestData';
 
 import { FOODS, FOODS_BY_ID, INGREDIENTS, INGREDIENTS_BY_ID, RECIPES } from '.';
 
@@ -43,7 +43,7 @@ describe('test catalog', () => {
 
   it('only recognises foods that exist in the food list', () => {
     for (let i = 0; i < 30; i++) {
-      for (const food of recognizePhoto(`file:///photo-${i}.jpg`)) {
+      for (const food of testDataPlate(`file:///photo-${i}.jpg`)) {
         expect(FOODS_BY_ID[food.foodId]).toBeDefined();
       }
     }

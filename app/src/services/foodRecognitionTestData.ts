@@ -1,11 +1,9 @@
 /**
- * Test stand-in for the `recognize-food-photo` Edge Function. The real model
- * picks foods from the closed Fineli list and estimates grams; here a plate
- * is chosen deterministically from the photo's URI, so the same photo always
- * gives the same estimate. Results are always shown with the label "arvio".
+ * Test data for the food recognition service: plausible plates chosen
+ * deterministically from the photo URI, so the same photo gives the same result.
  */
 
-export type RecognizedFood = { foodId: string; grams: number };
+import type { RecognizedFood } from './foodRecognition';
 
 const PLATES: readonly (readonly RecognizedFood[])[] = [
   [
@@ -56,6 +54,6 @@ function hash(text: string): number {
   return h >>> 0;
 }
 
-export function recognizePhoto(photoUri: string): RecognizedFood[] {
+export function testDataPlate(photoUri: string): RecognizedFood[] {
   return PLATES[hash(photoUri) % PLATES.length].map((food) => ({ ...food }));
 }

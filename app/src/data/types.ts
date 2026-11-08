@@ -265,7 +265,9 @@ export type DiaryMeal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 /** What a diary entry's macros are computed from. */
 export type DiaryBasis =
   | { kind: 'food'; foodId: string; per100g: Macros }
-  | { kind: 'recipe'; recipeId: string; perServing: Macros };
+  | { kind: 'recipe'; recipeId: string; perServing: Macros }
+  /** "Pikalisäys": calories only, no food; quantity is the kcal. */
+  | { kind: 'quick' };
 
 export type DiaryEntry = {
   id: string;
@@ -273,7 +275,7 @@ export type DiaryEntry = {
   meal: DiaryMeal;
   name: string;
   basis: DiaryBasis;
-  /** Grams for foods, servings for recipes. */
+  /** Grams for foods, servings for recipes, kcal for quick entries. */
   quantity: number;
   /** Added from photo recognition: shown with the label "arvio". */
   estimate: boolean;

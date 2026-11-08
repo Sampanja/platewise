@@ -13,6 +13,9 @@ type DiaryState = {
   entries: DiaryEntry[];
   /** Most recently used food ids, newest first (search shows these first). */
   recentFoodIds: string[];
+  /** Foods starred in the food view, shown first in search. */
+  favoriteFoodIds: string[];
+  toggleFavoriteFood: (foodId: string) => void;
   add: (entry: NewDiaryEntry) => DiaryEntry;
   addMany: (entries: NewDiaryEntry[]) => void;
   update: (id: string, patch: Partial<Pick<DiaryEntry, 'quantity' | 'meal' | 'date'>>) => void;
@@ -35,6 +38,13 @@ export const useDiaryStore = create<DiaryState>()(
     (set, get) => ({
       entries: [],
       recentFoodIds: [],
+      favoriteFoodIds: [],
+      toggleFavoriteFood: (foodId) =>
+        set((state) => ({
+          favoriteFoodIds: state.favoriteFoodIds.includes(foodId)
+            ? state.favoriteFoodIds.filter((id) => id !== foodId)
+            : [foodId, ...state.favoriteFoodIds],
+        })),
       add: (input) => {
         const entry: DiaryEntry = { ...input, id: newId(), createdAt: new Date().toISOString() };
         set((state) => ({
@@ -64,7 +74,7 @@ export const useDiaryStore = create<DiaryState>()(
         set((state) =>
           state.entries.some((e) => e.id === entry.id) ? state : { entries: [...state.entries, entry] },
         ),
-      reset: () => set({ entries: [], recentFoodIds: [] }),
+      reset: () => set({ entries: [], recentFoodIds: [], favoriteFoodIds: [] }),
     }),
     { name: `${STORAGE_PREFIX}diary`, storage: deviceStorage, version: 1 },
   ),

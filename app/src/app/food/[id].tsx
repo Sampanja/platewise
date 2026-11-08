@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Button, EmptyState, haptics, Text } from '@/components/ui';
+import { Button, EmptyState, haptics, IconButton, Text } from '@/components/ui';
 import { FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
@@ -21,6 +21,8 @@ export default function FoodScreen() {
   const food = FOODS_BY_ID[params.id];
   const addEntry = useDiaryStore((s) => s.add);
   const removeEntry = useDiaryStore((s) => s.remove);
+  const toggleFavorite = useDiaryStore((s) => s.toggleFavoriteFood);
+  const isFavorite = useDiaryStore((s) => s.favoriteFoodIds.includes(params.id));
   const [grams, setGrams] = useState(food?.portions[0]?.grams ?? 100);
   const [meal, setMeal] = useState<DiaryMeal>(params.meal ?? 'snack');
 
@@ -53,7 +55,21 @@ export default function FoodScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScreenHeader title={food.name} />
+      <ScreenHeader
+        title={food.name}
+        trailing={
+          <IconButton
+            icon="heart"
+            variant="plain"
+            iconColor={isFavorite ? 'danger' : 'textMuted'}
+            fill={isFavorite ? 'danger' : undefined}
+            accessibilityLabel={isFavorite ? strings.foodFavorites.remove : strings.foodFavorites.add}
+            accessibilityState={{ selected: isFavorite }}
+            haptic="select"
+            onPress={() => toggleFavorite(food.id)}
+          />
+        }
+      />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.titleBlock}>
           <Text variant="display" accessibilityRole="header">

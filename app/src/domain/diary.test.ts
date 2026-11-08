@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { DiaryEntry } from '@/data/types';
 
-import { entryMacros, mealForHour, sumEntries, weekKcal } from './diary';
+import { copyMealEntries, entryMacros, mealForHour, sumEntries, weekKcal } from './diary';
 
 const per100g = { kcal: 200, proteinG: 10, carbsG: 20, fatG: 5 };
 
@@ -56,5 +56,20 @@ describe('diary', () => {
     expect(mealForHour(12)).toBe('lunch');
     expect(mealForHour(18)).toBe('dinner');
     expect(mealForHour(15)).toBe('snack');
+  });
+});
+
+describe('quick entries and copying', () => {
+  it('counts a quick entry as calories only', () => {
+    expect(entryMacros({ basis: { kind: 'quick' }, quantity: 300 })).toEqual({ kcal: 300, proteinG: 0, carbsG: 0, fatG: 0 });
+  });
+
+  it('copies one meal to another day without touching other meals', () => {
+    const lunch = { ...entry('2026-11-08', 150), meal: 'lunch' as const };
+    const dinner = { ...entry('2026-11-08', 200), meal: 'dinner' as const };
+    const copies = copyMealEntries([lunch, dinner], { date: '2026-11-08', meal: 'lunch' }, { date: '2026-11-09', meal: 'lunch' });
+    expect(copies).toEqual([
+      { name: 'x', basis: lunch.basis, quantity: 150, estimate: false, date: '2026-11-09', meal: 'lunch' },
+    ]);
   });
 });

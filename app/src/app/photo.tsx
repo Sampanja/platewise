@@ -14,25 +14,25 @@ import {
   haptics,
   Icon,
   IconButton,
+  PressableScale,
   Skeleton,
   Text,
+  TextField,
 } from '@/components/ui';
+import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
 import { entryMacros, sumEntries } from '@/domain/diary';
-import { recognizePhoto, type RecognizedFood } from '@/domain/photoRecognition';
+import { foodRecognition, type RecognizedFood } from '@/services/foodRecognition';
 import { format, formatInteger, strings } from '@/i18n';
-import { formatGrams } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing } from '@/theme';
 
 const t = strings.photo;
-/** Simulated recognition time with test data. */
-const ANALYZE_MS = 1600;
 
-type Phase = 'pick' | 'analyzing' | 'result' | 'denied';
+type Phase = 'pick' | 'analyzing' | 'result' | 'denied' | 'error';
 
 /**
  * Food from a photo. The real camera or gallery is used; recognition is test
@@ -47,14 +47,26 @@ export default function PhotoScreen() {
   const [uri, setUri] = useState<string | null>(null);
   const [items, setItems] = useState<RecognizedFood[]>([]);
 
+  const [replacing, setReplacing] = useState<number | null>(null);
+
   useEffect(() => {
     if (phase !== 'analyzing' || !uri) return;
-    const timer = setTimeout(() => {
-      setItems(recognizePhoto(uri).filter((item) => FOODS_BY_ID[item.foodId]));
-      haptics.success();
-      setPhase('result');
-    }, ANALYZE_MS);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+    foodRecognition
+      .recognize(uri)
+      .then((result) => {
+        if (cancelled) return;
+        // Only foods from the closed list are accepted.
+        setItems(result.filter((item) => FOODS_BY_ID[item.foodId]));
+        haptics.success();
+        setPhase('result');
+      })
+      .catch(() => {
+        if (!cancelled) setPhase('error');
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [phase, uri]);
 
   const pick = async (source: 'camera' | 'gallery') => {
@@ -128,6 +140,16 @@ export default function PhotoScreen() {
           </View>
         ) : null}
 
+        {phase === 'error' ? (
+          <EmptyState
+            icon="alert"
+            tone="danger"
+            title={t.errorTitle}
+            body={t.errorBody}
+            action={{ label: strings.common.retry, variant: 'secondary', onPress: () => setPhase('analyzing') }}
+          />
+        ) : null}
+
         {phase === 'denied' ? (
           <EmptyState icon="camera" tone="danger" title={t.permissionTitle} body={t.permissionBody} />
         ) : null}
@@ -165,12 +187,22 @@ export default function PhotoScreen() {
                 }).kcal;
                 return (
                   <Card key={`${item.foodId}-${index}`} style={styles.item}>
-                    <View style={styles.flex}>
-                      <Text variant="bodyStrong">{food.name}</Text>
+                    <PressableScale
+                      onPress={() => setReplacing(index)}
+                      accessibilityRole="button"
+                      accessibilityLabel={format(t.changeFood, { name: food.name })}
+                      style={styles.flex}
+                    >
+                      <View style={styles.nameRow}>
+                        <Text variant="bodyStrong" style={styles.shrink}>
+                          {food.name}
+                        </Text>
+                        <Icon name="pencil" size={14} color="accentText" />
+                      </View>
                       <Text variant="caption" color="textSubtle">
                         {format(strings.common.kcal, { value: formatInteger(kcal) })}
                       </Text>
-                    </View>
+                    </PressableScale>
                     <IconButton
                       icon="minus"
                       size={40}
@@ -178,9 +210,19 @@ export default function PhotoScreen() {
                       accessibilityLabel={`${strings.food.minus10}: ${food.name}`}
                       onPress={() => setGrams(index, item.grams - 10)}
                     />
-                    <Text variant="number" style={styles.grams}>
-                      {formatGrams(item.grams)}
-                    </Text>
+                    <TextField
+                      value={item.grams > 0 ? String(item.grams) : ''}
+                      onChangeText={(text) => setGrams(index, Math.min(2000, Number(text.replace(/\D/g, ''))))}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      accessibilityLabel={format(t.gramsFor, { name: food.name })}
+                      style={styles.gramsField}
+                      trailing={
+                        <Text variant="caption" color="textSubtle">
+                          {strings.common.gUnit}
+                        </Text>
+                      }
+                    />
                     <IconButton
                       icon="plus"
                       size={40}
@@ -236,6 +278,17 @@ export default function PhotoScreen() {
           </>
         )}
       </View>
+      <FoodPickerSheet
+        visible={replacing !== null}
+        onClose={() => setReplacing(null)}
+        title={t.changeTitle}
+        onPick={(foodId) => {
+          if (replacing === null) return;
+          const portion = FOODS_BY_ID[foodId]?.portions[0]?.grams ?? 100;
+          setItems((current) => current.map((item, i) => (i === replacing ? { foodId, grams: portion } : item)));
+          setReplacing(null);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -283,9 +336,18 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.md,
   },
-  grams: {
-    minWidth: 56,
-    textAlign: 'center',
+  gramsField: {
+    width: 92,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  shrink: {
+    flexShrink: 1,
   },
   total: {
     textAlign: 'right',

@@ -7,9 +7,25 @@ export const DIARY_MEALS: readonly DiaryMeal[] = ['breakfast', 'lunch', 'dinner'
 
 /** Macros of one entry: per-100 g values × grams, or per-serving values × servings. */
 export function entryMacros(entry: Pick<DiaryEntry, 'basis' | 'quantity'>): Macros {
-  return entry.basis.kind === 'food'
-    ? scaleMacros(entry.basis.per100g, entry.quantity / 100)
-    : scaleMacros(entry.basis.perServing, entry.quantity);
+  switch (entry.basis.kind) {
+    case 'food':
+      return scaleMacros(entry.basis.per100g, entry.quantity / 100);
+    case 'recipe':
+      return scaleMacros(entry.basis.perServing, entry.quantity);
+    case 'quick':
+      return { kcal: entry.quantity, proteinG: 0, carbsG: 0, fatG: 0 };
+  }
+}
+
+/** Copies a meal's entries to another day (and optionally another meal) as new entries. */
+export function copyMealEntries(
+  entries: readonly DiaryEntry[],
+  from: { date: LocalDate; meal: DiaryMeal },
+  to: { date: LocalDate; meal: DiaryMeal },
+): Omit<DiaryEntry, 'id' | 'createdAt'>[] {
+  return entries
+    .filter((entry) => entry.date === from.date && entry.meal === from.meal)
+    .map(({ name, basis, quantity, estimate }) => ({ name, basis, quantity, estimate, date: to.date, meal: to.meal }));
 }
 
 export function sumEntries(entries: readonly Pick<DiaryEntry, 'basis' | 'quantity'>[]): Macros {

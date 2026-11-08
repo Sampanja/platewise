@@ -24,6 +24,7 @@ import type { DiaryMeal, Food, Recipe } from '@/data/types';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
+import { searchFoods } from '@/features/diary/searchFoods';
 import { colors, radii, spacing } from '@/theme';
 
 const t = strings.diaryAdd;
@@ -45,13 +46,10 @@ const POPULAR_IDS = [
 ];
 
 type Row =
+  | { type: 'quick'; key: string }
   | { type: 'heading'; key: string; title: string }
   | { type: 'food'; key: string; food: Food }
   | { type: 'recipe'; key: string; recipe: Recipe };
-
-function normalize(text: string): string {
-  return text.toLocaleLowerCase('fi').trim();
-}
 
 export default function DiaryAddScreen() {
   const params = useLocalSearchParams<{ meal?: DiaryMeal; date?: string; tab?: 'search' | 'recipes' }>();
@@ -61,6 +59,7 @@ export default function DiaryAddScreen() {
   const [query, setQuery] = useState('');
   const foodsQuery = useFoodsQuery();
   const recentIds = useDiaryStore((s) => s.recentFoodIds);
+  const favoriteFoodIds = useDiaryStore((s) => s.favoriteFoodIds);
   const addEntry = useDiaryStore((s) => s.add);
   const removeEntry = useDiaryStore((s) => s.remove);
   const plan = useActivePlan();
@@ -69,29 +68,29 @@ export default function DiaryAddScreen() {
   const searchRows = useMemo<Row[]>(() => {
     const foods = foodsQuery.data ?? [];
     const byId = new Map(foods.map((food) => [food.id, food]));
-    const q = normalize(query);
-    if (q) {
-      const matches = foods
-        .filter((food) => normalize(food.name).includes(q))
-        .sort((a, b) => {
-          const aStarts = normalize(a.name).startsWith(q) ? 0 : 1;
-          const bStarts = normalize(b.name).startsWith(q) ? 0 : 1;
-          return aStarts - bStarts || a.name.localeCompare(b.name, 'fi');
-        });
-      return matches.map((food) => ({ type: 'food', key: food.id, food }));
+    if (query.trim()) {
+      return searchFoods(foods, query).map((food) => ({ type: 'food', key: food.id, food }));
     }
-    const rows: Row[] = [];
-    const recent = recentIds.map((id) => byId.get(id)).filter((f): f is Food => f !== undefined);
+    const rows: Row[] = [{ type: 'quick', key: 'quick' }];
+    const favorites = favoriteFoodIds.map((id) => byId.get(id)).filter((f): f is Food => f !== undefined);
+    if (favorites.length > 0) {
+      rows.push({ type: 'heading', key: 'h-fav-foods', title: strings.foodFavorites.title });
+      favorites.forEach((food) => rows.push({ type: 'food', key: `f-${food.id}`, food }));
+    }
+    const recent = recentIds
+      .filter((id) => !favoriteFoodIds.includes(id))
+      .map((id) => byId.get(id))
+      .filter((f): f is Food => f !== undefined);
     if (recent.length > 0) {
       rows.push({ type: 'heading', key: 'h-recent', title: t.recent });
       recent.forEach((food) => rows.push({ type: 'food', key: `r-${food.id}`, food }));
     }
     rows.push({ type: 'heading', key: 'h-popular', title: t.popular });
     POPULAR_IDS.map((id) => byId.get(id))
-      .filter((f): f is Food => f !== undefined && !recentIds.includes(f.id))
+      .filter((f): f is Food => f !== undefined && !recentIds.includes(f.id) && !favoriteFoodIds.includes(f.id))
       .forEach((food) => rows.push({ type: 'food', key: `p-${food.id}`, food }));
     return rows;
-  }, [foodsQuery.data, query, recentIds]);
+  }, [foodsQuery.data, query, recentIds, favoriteFoodIds]);
 
   const recipeRows = useMemo<Row[]>(() => {
     const rows: Row[] = [];
@@ -193,6 +192,27 @@ export default function DiaryAddScreen() {
           keyboardDismissMode="on-drag"
           contentContainerStyle={styles.list}
           renderItem={({ item }) => {
+            if (item.type === 'quick') {
+              return (
+                <PressableScale
+                  onPress={() => router.push({ pathname: '/quick-add', params: { meal, date } })}
+                  accessibilityRole="button"
+                  accessibilityHint={strings.quickAdd.actionHint}
+                  style={styles.quick}
+                >
+                  <View style={styles.quickIcon}>
+                    <Icon name="flame" size={20} color="accentText" />
+                  </View>
+                  <View style={styles.flex}>
+                    <Text variant="bodyStrong">{strings.quickAdd.action}</Text>
+                    <Text variant="caption" color="textSubtle">
+                      {strings.quickAdd.actionHint}
+                    </Text>
+                  </View>
+                  <Icon name="chevronRight" size={18} color="textSubtle" />
+                </PressableScale>
+              );
+            }
             if (item.type === 'heading') {
               return (
                 <Text variant="overline" color="textSubtle" accessibilityRole="header" style={styles.heading}>
@@ -306,6 +326,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
+  },
+  quick: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: 64,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+  },
+  quickIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   thumb: {
     width: 48,

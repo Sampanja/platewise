@@ -75,6 +75,15 @@ export default function EntryScreen() {
             onMealChange={setMeal}
             preview={preview}
           />
+        ) : entry.basis.kind === 'quick' ? (
+          <AmountEditor
+            kind="quick"
+            kcal={quantity}
+            onKcalChange={setQuantity}
+            meal={meal}
+            onMealChange={setMeal}
+            preview={preview}
+          />
         ) : (
           <AmountEditor
             kind="recipe"

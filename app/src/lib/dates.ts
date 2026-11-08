@@ -62,5 +62,6 @@ export function diaryDayLabel(value: LocalDate, now: LocalDate = today()): strin
   if (value === now) return strings.dates.today;
   if (value === addDays(now, -1)) return strings.dates.yesterday;
   if (value === addDays(now, 1)) return strings.dates.tomorrow;
-  return longDate(value);
+  const label = longDate(value);
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
