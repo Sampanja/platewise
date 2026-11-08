@@ -56,3 +56,11 @@ export function greeting(hour: number = new Date().getHours()): string {
   if (hour >= 17 && hour < 23) return g.evening;
   return g.night;
 }
+
+/** Diary heading: "Tänään", "Eilen", "Huomenna" or e.g. "torstai 30.10.". */
+export function diaryDayLabel(value: LocalDate, now: LocalDate = today()): string {
+  if (value === now) return strings.dates.today;
+  if (value === addDays(now, -1)) return strings.dates.yesterday;
+  if (value === addDays(now, 1)) return strings.dates.tomorrow;
+  return longDate(value);
+}

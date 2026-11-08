@@ -33,7 +33,15 @@
           "style": "light"
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Platewise käyttää valitsemaasi kuvaa ruoan tunnistamiseen päiväkirjaan. Kuvaa ei tallenneta.",
+          "cameraPermission": "Platewise käyttää kameraa ruoka-annoksen kuvaamiseen päiväkirjaa varten. Kuvaa ei tallenneta.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "scheme": "platewise",
     "experiments": {
