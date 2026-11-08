@@ -14,6 +14,7 @@ import {
   useUserRules,
 } from '@/data/hooks';
 import { useRecipesQuery } from '@/data/queries';
+import { useDiaryStore } from '@/data/stores/diary';
 import { useFavoritesStore } from '@/data/stores/favorites';
 import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
@@ -41,6 +42,8 @@ export default function HomeScreen() {
   const now = today();
   const name = useProfileStore((s) => s.name);
   const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
+  const hideCalories = useProfileStore((s) => s.hideCalories);
+  const todayEntryCount = useDiaryStore((s) => s.entries.filter((e) => e.date === now).length);
   const plan = useActivePlan();
   const proposal = usePlansStore((s) => s.proposal);
   const savings = useMonthSavingsCents();
@@ -96,7 +99,13 @@ export default function HomeScreen() {
         )}
 
         <FadeInView delay={delay()} style={styles.padded}>
-          <NutritionCard nutrition={nutrition} hasGoal={hasGoal} onOpenDiary={goToDiary} />
+          <NutritionCard
+            nutrition={nutrition}
+            hasGoal={hasGoal}
+            hideCalories={hideCalories}
+            entryCount={todayEntryCount}
+            onOpenDiary={goToDiary}
+          />
         </FadeInView>
 
         <FadeInView delay={delay()} style={styles.padded}>

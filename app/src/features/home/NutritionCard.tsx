@@ -9,11 +9,14 @@ type Props = {
   nutrition: DayNutrition;
   /** Without a calorie goal the card shows plain totals, no progress against a target. */
   hasGoal: boolean;
+  /** "Piilota kalorit": show only how many entries were logged, no numbers. */
+  hideCalories?: boolean;
+  entryCount?: number;
   onOpenDiary: () => void;
 };
 
 /** Today's calories and macros against the user's goals. Taps through to the diary. */
-export function NutritionCard({ nutrition, hasGoal, onOpenDiary }: Props) {
+export function NutritionCard({ nutrition, hasGoal, hideCalories = false, entryCount = 0, onOpenDiary }: Props) {
   const t = strings.home;
   const { eaten, goals } = nutrition;
   const isEmpty = eaten.kcal === 0;
@@ -39,6 +42,13 @@ export function NutritionCard({ nutrition, hasGoal, onOpenDiary }: Props) {
           </View>
         </View>
 
+        {hideCalories ? (
+          <Text variant="body" color="textMuted">
+            {entryCount > 0
+              ? format(strings.hideCalories.homeEntries, { count: entryCount })
+              : strings.hideCalories.homeEntriesNone}
+          </Text>
+        ) : (
         <View style={styles.body}>
           <Ring
             value={hasGoal ? eaten.kcal / goals.kcal : 0}
@@ -67,6 +77,7 @@ export function NutritionCard({ nutrition, hasGoal, onOpenDiary }: Props) {
             </View>
           )}
         </View>
+        )}
       </Card>
     </PressableScale>
   );

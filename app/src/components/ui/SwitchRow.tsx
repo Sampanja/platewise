@@ -29,7 +29,7 @@ export function SwitchRow({ label, hint, value, onValueChange }: SwitchRowProps)
       onAccessibilityTap={() => change(!value)}
     >
       <View style={styles.texts}>
-        <Text variant="bodyStrong">{label}</Text>
+        <Text variant="body">{label}</Text>
         {hint ? (
           <Text variant="caption" color="textSubtle">
             {hint}

@@ -17,6 +17,8 @@ export type OptionRowProps = {
   trailing?: ReactNode;
   role?: 'radio' | 'checkbox';
   disabled?: boolean;
+  /** An action that opens something (chevron) rather than a choice (radio mark). */
+  action?: boolean;
 };
 
 /** Large selectable card row for one-question-per-screen answers. */
@@ -29,14 +31,15 @@ export function OptionRow({
   trailing,
   role = 'radio',
   disabled,
+  action = false,
 }: OptionRowProps) {
   return (
     <PressableScale
       haptic="select"
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole={role}
-      accessibilityState={{ checked: selected, disabled }}
+      accessibilityRole={action ? 'button' : role}
+      accessibilityState={action ? { disabled } : { checked: selected, disabled }}
       accessibilityLabel={hint ? `${title}, ${hint}` : title}
       style={[styles.row, selected && styles.selected]}
     >
@@ -54,9 +57,13 @@ export function OptionRow({
         ) : null}
       </View>
       {trailing}
-      <View style={[role === 'radio' ? styles.radio : styles.checkbox, selected && styles.markSelected]}>
-        {selected ? <Icon name="check" size={16} color="textOnAccent" strokeWidth={3} /> : null}
-      </View>
+      {action ? (
+        <Icon name="chevronRight" size={20} color="textSubtle" />
+      ) : (
+        <View style={[role === 'radio' ? styles.radio : styles.checkbox, selected && styles.markSelected]}>
+          {selected ? <Icon name="check" size={16} color="textOnAccent" strokeWidth={3} /> : null}
+        </View>
+      )}
     </PressableScale>
   );
 }

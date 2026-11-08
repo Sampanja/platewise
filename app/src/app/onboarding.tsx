@@ -9,6 +9,7 @@ import {
   haptics,
   Icon,
   NumberChoice,
+  OptionRow,
   Stepper,
   SwitchRow,
   Text,
@@ -144,6 +145,22 @@ export default function OnboardingScreen() {
       title: t.goalTitle,
       body: t.goalBody,
       node: (
+        <View style={styles.gap}>
+          <OptionRow
+            icon="target"
+            title={t.calculate}
+            hint={t.calculateHint}
+            selected={false}
+            action
+            onPress={() => {
+              // Save what was chosen so far; the calculator completes onboarding.
+              update({ ...draft, name: draft.name.trim() });
+              router.push({ pathname: '/calculator', params: { from: 'onboarding' } });
+            }}
+          />
+          <Text variant="overline" color="textSubtle">
+            {t.manualGoal}
+          </Text>
         <Card style={styles.gap}>
           <SwitchRow
             label={t.goalToggle}
@@ -171,6 +188,7 @@ export default function OnboardingScreen() {
             </View>
           ) : null}
         </Card>
+        </View>
       ),
     },
   };

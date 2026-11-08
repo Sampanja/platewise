@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { strings } from '@/i18n';
@@ -19,6 +20,8 @@ export type StepperProps = {
   size?: 'regular' | 'large';
 };
 
+const REPEAT_MS = 90;
+
 /** − value + control. Adjustable for screen readers (swipe up / down). */
 export function Stepper({
   value,
@@ -31,9 +34,31 @@ export function Stepper({
   size = 'regular',
 }: StepperProps) {
   const text = format ? format(value) : String(value);
-  const dec = () => onChange(Math.max(min, value - step));
-  const inc = () => onChange(Math.min(max, value + step));
+  const clamp = (next: number) => Math.min(max, Math.max(min, Number(next.toFixed(2))));
+  const dec = () => onChange(clamp(value - step));
+  const inc = () => onChange(clamp(value + step));
   const buttonSize = size === 'large' ? 56 : 44;
+
+  // Press and hold repeats the step, so big changes (height, weight) are quick.
+  const valueRef = useRef(value);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+  const stopRepeat = () => {
+    if (timer.current) clearInterval(timer.current);
+    timer.current = null;
+  };
+  useEffect(() => stopRepeat, []);
+  const startRepeat = (direction: 1 | -1) => {
+    stopRepeat();
+    timer.current = setInterval(() => {
+      const next = clamp(valueRef.current + direction * step);
+      if (next === valueRef.current) return stopRepeat();
+      valueRef.current = next;
+      onChange(next);
+    }, REPEAT_MS);
+  };
 
   return (
     <View
@@ -49,6 +74,8 @@ export function Stepper({
         icon="minus"
         accessibilityLabel={strings.common.decrease}
         onPress={dec}
+        onLongPress={() => startRepeat(-1)}
+        onPressOut={stopRepeat}
         disabled={value <= min}
         haptic="select"
         size={buttonSize}
@@ -64,6 +91,8 @@ export function Stepper({
         icon="plus"
         accessibilityLabel={strings.common.increase}
         onPress={inc}
+        onLongPress={() => startRepeat(1)}
+        onPressOut={stopRepeat}
         disabled={value >= max}
         haptic="select"
         size={buttonSize}
@@ -79,7 +108,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   value: {
-    minWidth: 44,
+    // Fixed width keeps the buttons of stacked steppers aligned.
+    minWidth: 76,
     textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },

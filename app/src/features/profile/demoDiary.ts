@@ -57,3 +57,16 @@ export function demoDiaryEntries(endDate: LocalDate): NewDiaryEntry[] {
   }
   return entries;
 }
+
+/** Three weeks of plausible weigh-ins drifting down with daily water-weight noise. */
+export function demoWeightEntries(endDate: LocalDate, startKg: number): { date: LocalDate; kg: number }[] {
+  const random = seededRandom(Date.parse(endDate) / 86_400_000 + 7);
+  const entries: { date: LocalDate; kg: number }[] = [];
+  for (let day = 20; day >= 0; day--) {
+    if (random() < 0.3) continue;
+    const trend = startKg - (20 - day) * 0.07;
+    const noise = (random() - 0.5) * 1.2;
+    entries.push({ date: addDays(endDate, -day), kg: Math.round((trend + noise) * 10) / 10 });
+  }
+  return entries;
+}

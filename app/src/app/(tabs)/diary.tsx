@@ -40,6 +40,7 @@ export default function DiaryScreen() {
   const restoreEntry = useDiaryStore((s) => s.restore);
   const goals = useProfileStore((s) => s.goals);
   const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
+  const hideCalories = useProfileStore((s) => s.hideCalories);
 
   const dayEntries = useMemo(() => entriesOn(entries, date), [entries, date]);
   const totals = useMemo(() => sumEntries(dayEntries), [dayEntries]);
@@ -112,6 +113,13 @@ export default function DiaryScreen() {
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
         <View {...swipe.panHandlers} style={styles.swipeArea}>
+          {hideCalories ? (
+            <Card style={styles.hiddenNote}>
+              <Text variant="body" color="textMuted">
+                {strings.hideCalories.diaryNote}
+              </Text>
+            </Card>
+          ) : (
           <FadeInView key={date}>
             <Card style={styles.summary}>
               <Ring value={hasGoal ? totals.kcal / goals.kcal : 0} size={128} thickness={12} accessibilityLabel={kcalA11y}>
@@ -129,6 +137,7 @@ export default function DiaryScreen() {
               </View>
             </Card>
           </FadeInView>
+          )}
 
           {DIARY_MEALS.map((meal) => {
             const mealEntries = dayEntries.filter((entry) => entry.meal === meal);
@@ -141,7 +150,11 @@ export default function DiaryScreen() {
                       {strings.diaryMeals[meal]}
                     </Text>
                     <Text variant="caption" color="textSubtle">
-                      {mealEntries.length === 0 ? t.mealEmpty : format(t.mealTotal, { value: formatInteger(mealKcal) })}
+                      {mealEntries.length === 0
+                        ? t.mealEmpty
+                        : hideCalories
+                          ? format(t.entryCount, { count: mealEntries.length })
+                          : format(t.mealTotal, { value: formatInteger(mealKcal) })}
                     </Text>
                   </View>
                   <IconButton
@@ -159,11 +172,15 @@ export default function DiaryScreen() {
                           onPress={() => router.push({ pathname: '/entry/[id]', params: { id: entry.id } })}
                           accessibilityRole="button"
                           accessibilityHint={t.swipeHint}
-                          accessibilityLabel={format(t.entryA11y, {
-                            name: entry.name,
-                            amount: entryAmount(entry),
-                            kcal: formatInteger(entryMacros(entry).kcal),
-                          })}
+                          accessibilityLabel={
+                            hideCalories
+                              ? `${entry.name}, ${entryAmount(entry)}`
+                              : format(t.entryA11y, {
+                                  name: entry.name,
+                                  amount: entryAmount(entry),
+                                  kcal: formatInteger(entryMacros(entry).kcal),
+                                })
+                          }
                           style={styles.entry}
                         >
                           <View style={styles.flex}>
@@ -177,9 +194,11 @@ export default function DiaryScreen() {
                               {entry.estimate ? <Chip label={strings.common.estimate} tone="accent" /> : null}
                             </View>
                           </View>
-                          <Text variant="label" style={styles.tabular}>
-                            {format(strings.common.kcal, { value: formatInteger(entryMacros(entry).kcal) })}
-                          </Text>
+                          {hideCalories ? null : (
+                            <Text variant="label" style={styles.tabular}>
+                              {format(strings.common.kcal, { value: formatInteger(entryMacros(entry).kcal) })}
+                            </Text>
+                          )}
                         </PressableScale>
                       </SwipeToDelete>
                     ))}
@@ -189,7 +208,9 @@ export default function DiaryScreen() {
             );
           })}
 
-          <WeekChart days={week} selected={date} goal={hasGoal ? goals.kcal : null} onSelect={setDate} />
+          {hideCalories ? null : (
+            <WeekChart days={week} selected={date} goal={hasGoal ? goals.kcal : null} onSelect={setDate} />
+          )}
         </View>
       </ScrollView>
 
@@ -200,9 +221,9 @@ export default function DiaryScreen() {
       >
         {addFor ? (
           <>
-            <OptionRow icon="camera" title={t.methodPhoto} hint={t.methodPhotoHint} selected={false} onPress={() => openAdd(addFor, 'photo')} />
-            <OptionRow icon="search" title={t.methodSearch} hint={t.methodSearchHint} selected={false} onPress={() => openAdd(addFor, 'search')} />
-            <OptionRow icon="recipes" title={t.methodRecipe} hint={t.methodRecipeHint} selected={false} onPress={() => openAdd(addFor, 'recipes')} />
+            <OptionRow icon="camera" title={t.methodPhoto} hint={t.methodPhotoHint} selected={false} action onPress={() => openAdd(addFor, 'photo')} />
+            <OptionRow icon="search" title={t.methodSearch} hint={t.methodSearchHint} selected={false} action onPress={() => openAdd(addFor, 'search')} />
+            <OptionRow icon="recipes" title={t.methodRecipe} hint={t.methodRecipeHint} selected={false} action onPress={() => openAdd(addFor, 'recipes')} />
           </>
         ) : null}
       </Sheet>
@@ -268,6 +289,9 @@ const styles = StyleSheet.create({
   },
   swipeArea: {
     gap: spacing.lg,
+  },
+  hiddenNote: {
+    padding: spacing.lg,
   },
   summary: {
     flexDirection: 'row',

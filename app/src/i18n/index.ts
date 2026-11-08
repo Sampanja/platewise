@@ -31,3 +31,15 @@ export function formatCents(cents: number): string {
 export function formatInteger(value: number): string {
   return integerFormatter.format(Math.round(value));
 }
+
+const decimalFormatters = new Map<number, Intl.NumberFormat>();
+
+/** Finnish decimal with up to `digits` decimals, e.g. 75.5 → "75,5". */
+export function formatDecimal(value: number, digits = 1): string {
+  let formatter = decimalFormatters.get(digits);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: digits });
+    decimalFormatters.set(digits, formatter);
+  }
+  return formatter.format(value);
+}

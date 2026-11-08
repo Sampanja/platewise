@@ -10,8 +10,9 @@ import { CHAINS_BY_CODE } from '@/data/catalog';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
-import { demoDiaryEntries } from '@/features/profile/demoDiary';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { useWeightStore } from '@/data/stores/weight';
+import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
+import { format, formatCents, formatDecimal, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, touchTarget } from '@/theme';
@@ -26,6 +27,8 @@ export default function ProfileScreen() {
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore();
   const addMany = useDiaryStore((s) => s.addMany);
+  const latestWeight = useWeightStore((s) => s.entries.at(-1)?.kg);
+  const logWeight = useWeightStore((s) => s.log);
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   const listOr = (items: string[]) => (items.length > 0 ? items.join(', ') : t.noneSelected);
@@ -45,6 +48,9 @@ export default function ProfileScreen() {
 
   const fillDemo = () => {
     addMany(demoDiaryEntries(today()));
+    for (const entry of demoWeightEntries(today(), (profile.body.weightKg ?? 76) + 1.5)) {
+      logWeight(entry.date, entry.kg);
+    }
     haptics.success();
     showToast(t.demoDataDone);
   };
@@ -115,8 +121,22 @@ export default function ProfileScreen() {
                 : t.goalsOff
             }
             href={edit('goals')}
-            last
           />
+          <Row icon="flame" label={t.calculator} value={t.calculatorHint} href="/calculator" />
+          <Row
+            icon="chart"
+            label={t.weight}
+            value={latestWeight !== undefined ? format(strings.calculator.weightValue, { value: formatDecimal(latestWeight) }) : t.weightNone}
+            href="/weight"
+          />
+          <View style={[styles.switchRow, styles.lastSwitch]}>
+            <SwitchRow
+              label={strings.hideCalories.label}
+              hint={strings.hideCalories.hint}
+              value={profile.hideCalories}
+              onValueChange={(hideCalories) => profile.update({ hideCalories })}
+            />
+          </View>
         </Section>
         <Text variant="caption" color="textSubtle" style={styles.note}>
           {t.healthNote}
@@ -264,6 +284,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
+  },
+  lastSwitch: {
+    borderBottomWidth: 0,
   },
   note: {
     marginTop: -spacing.md,

@@ -305,6 +305,7 @@ export default function RecipeScreen() {
               title={day.dayLabel}
               hint={day.currentTitle}
               selected={false}
+              action
               onPress={() => {
                 setSheet(null);
                 actions.replaceInPlan(day.dayOffset);
