@@ -1,6 +1,8 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTabBarSpace } from '@/components/TabBar';
+
 import { Chip, EmptyState, FadeInView, Text, type IconName } from '@/components/ui';
 import { strings } from '@/i18n';
 import { colors, spacing } from '@/theme';
@@ -13,9 +15,10 @@ type Props = {
 
 /** Temporary screen for tabs that are built in a later part of the UI phase. */
 export function PlaceholderScreen({ title, body, icon }: Props) {
+  const tabBarSpace = useTabBarSpace();
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
         <Text variant="displayLarge" accessibilityRole="header" style={styles.title}>
           {title}
         </Text>

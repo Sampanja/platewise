@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTabBarSpace } from '@/components/TabBar';
+
 import { EmptyState, FadeInView, Text } from '@/components/ui';
 import { RECIPES_BY_ID } from '@/data/catalog';
 import { useActivePlan, useDayNutrition, useMonthSavingsCents } from '@/data/hooks';
@@ -21,6 +23,7 @@ const t = strings.home;
 const STAGGER_MS = 70;
 
 export default function HomeScreen() {
+  const tabBarSpace = useTabBarSpace();
   const plan = useActivePlan();
   const monthSavingsCents = useMonthSavingsCents();
   const nutrition = useDayNutrition(today());
@@ -30,7 +33,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
         <View style={[styles.padded, styles.header]}>
           <Text variant="overline" color="accentText">
             {longDate(today())}

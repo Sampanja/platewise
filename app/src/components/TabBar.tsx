@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, PressableScale, Text, useReducedMotion, type IconName } from '@/components/ui';
 import { format, strings } from '@/i18n';
@@ -19,62 +20,128 @@ const ICONS: Record<string, IconName> = {
 const PRIMARY_ROUTE = 'plan';
 
 /** Tab labels may grow with the system text size, but only this much, so five still fit. */
-const MAX_LABEL_SCALE = 1.3;
+const MAX_LABEL_SCALE = 1.25;
 
-export function TabBar({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
+const BAR_HEIGHT = 66;
+const PRIMARY_SIZE = 60;
+/** How far the centre button rises above the bar. */
+const RISE = 22;
+const SIDE_MARGIN = spacing.lg;
+const PILL_INSET = spacing.xs;
+
+/** Distance from the screen bottom to the bar: floats above the gesture area. */
+function barBottom(insetBottom: number): number {
+  return Math.max(insetBottom, spacing.md) + spacing.xs;
+}
+
+/**
+ * Space scrollable screens must leave at the bottom so their last item clears
+ * the floating bar.
+ */
+export function useTabBarSpace(): number {
+  const insets = useSafeAreaInsets();
+  return barBottom(insets.bottom) + BAR_HEIGHT + spacing.lg;
+}
+
+/**
+ * Floating, rounded tab bar detached from the screen edges. A soft pill slides
+ * behind the active tab; the centre "Suunnittele" button rises above the bar.
+ * Screens outside the tabs (recipe, questionnaire, camera) cover it, so it is
+ * hidden there.
+ */
+export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
+  const [slotWidth, setSlotWidth] = useState(0);
+  const [pillX] = useState(() => new Animated.Value(0));
+  const [pillOpacity] = useState(() => new Animated.Value(1));
+
+  const focusedRoute = state.routes[state.index]?.name;
+  const primaryFocused = focusedRoute === PRIMARY_ROUTE;
+
+  useEffect(() => {
+    if (slotWidth === 0) return;
+    const toX = state.index * slotWidth;
+    const animations = [
+      reducedMotion
+        ? Animated.timing(pillX, { toValue: toX, duration: 0, useNativeDriver: true })
+        : Animated.spring(pillX, { toValue: toX, useNativeDriver: true, speed: 18, bounciness: 7 }),
+      Animated.timing(pillOpacity, {
+        toValue: primaryFocused ? 0 : 1,
+        duration: reducedMotion ? 0 : motion.durationFast,
+        useNativeDriver: true,
+      }),
+    ];
+    const animation = Animated.parallel(animations);
+    animation.start();
+    return () => animation.stop();
+  }, [state.index, slotWidth, primaryFocused, pillX, pillOpacity, reducedMotion]);
+
+  const onBarLayout = (event: LayoutChangeEvent) =>
+    setSlotWidth(event.nativeEvent.layout.width / state.routes.length);
+
   return (
     <View
       role="tablist"
-      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}
+      pointerEvents="box-none"
+      style={[styles.container, { bottom: barBottom(insets.bottom) }]}
     >
-      {/*
-        The bar's surface starts below the raised centre button. Keeping the button
-        inside the bar's bounds matters on Android, which ignores touches that fall
-        outside a parent view.
-      */}
-      <View style={styles.surface} pointerEvents="none" />
-      {state.routes.map((route, index) => {
-        const focused = index === state.index;
-        const { options } = descriptors[route.key];
-        const label = options.title ?? route.name;
-
-        const onPress = () => {
-          const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!focused && !event.defaultPrevented) navigateToTab(route.key);
-        };
-        const onLongPress = () => emitter.emit({ type: 'tabLongPress', target: route.key });
-
-        const a11y = {
-          accessibilityRole: 'tab' as const,
-          accessibilityState: { selected: focused },
-          accessibilityLabel: format(strings.tabs.a11yPosition, {
-            label,
-            index: index + 1,
-            count: state.routes.length,
-          }),
-        };
-
-        return route.name === PRIMARY_ROUTE ? (
-          <PrimaryTab
-            key={route.key}
-            label={label}
-            focused={focused}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            {...a11y}
+      <View style={styles.bar} onLayout={onBarLayout}>
+        {slotWidth > 0 ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.pill,
+              { width: slotWidth - PILL_INSET * 2, opacity: pillOpacity, transform: [{ translateX: pillX }] },
+            ]}
           />
-        ) : (
-          <Tab
-            key={route.key}
-            icon={ICONS[route.name] ?? 'home'}
-            label={label}
-            focused={focused}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            {...a11y}
-          />
-        );
-      })}
+        ) : null}
+      </View>
+
+      <View style={styles.tabs} pointerEvents="box-none">
+        {state.routes.map((route, index) => {
+          const focused = index === state.index;
+          const { options } = descriptors[route.key];
+          const label = options.title ?? route.name;
+
+          const onPress = () => {
+            const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+          };
+          const onLongPress = () => emitter.emit({ type: 'tabLongPress', target: route.key });
+
+          const a11y = {
+            accessibilityRole: 'tab' as const,
+            accessibilityState: { selected: focused },
+            accessibilityLabel: format(strings.tabs.a11yPosition, {
+              label,
+              index: index + 1,
+              count: state.routes.length,
+            }),
+          };
+
+          return route.name === PRIMARY_ROUTE ? (
+            <PrimaryTab
+              key={route.key}
+              label={label}
+              focused={focused}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              {...a11y}
+            />
+          ) : (
+            <Tab
+              key={route.key}
+              icon={ICONS[route.name] ?? 'home'}
+              label={label}
+              focused={focused}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              {...a11y}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -99,7 +166,7 @@ function useFocusProgress(focused: boolean) {
       : Animated.spring(progress, {
           toValue: focused ? 1 : 0,
           useNativeDriver: true,
-          speed: 22,
+          speed: 20,
           bounciness: 10,
         });
     animation.start();
@@ -115,22 +182,19 @@ function Tab({ icon, label, focused, ...pressable }: TabProps & { icon: IconName
 
   return (
     <PressableScale haptic="select" style={styles.tab} {...pressable}>
-      <View style={styles.iconWrap}>
-        {/* Soft pill behind the active icon, grows in from the centre. */}
-        <Animated.View
-          style={[
-            styles.activePill,
-            {
-              opacity: progress,
-              transform: [{ scaleX: progress.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) }],
-            },
-          ]}
-        />
-        <Icon name={icon} color={color} strokeWidth={focused ? 2.2 : 1.8} />
-      </View>
+      <Animated.View
+        style={{
+          transform: [
+            { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) },
+            { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, -1] }) },
+          ],
+        }}
+      >
+        <Icon name={icon} size={22} color={color} strokeWidth={focused ? 2.2 : 1.8} />
+      </Animated.View>
       <Text
         variant="tabLabel"
-        color={focused ? 'accentText' : 'textSubtle'}
+        color={color}
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
       >
@@ -156,15 +220,17 @@ function PrimaryTab({ label, focused, ...pressable }: TabProps) {
   }, [focused, reducedMotion, rotation]);
 
   return (
-    <PressableScale haptic="tap" style={styles.tab} {...pressable}>
+    <PressableScale haptic="tap" style={styles.primaryTab} {...pressable}>
       <View style={styles.primaryButton}>
         {/* A quarter turn of the plus marks the active state without changing the shape. */}
         <Animated.View
           style={{
-            transform: [{ rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) }],
+            transform: [
+              { rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) },
+            ],
           }}
         >
-          <Icon name="plus" size={28} color="textOnAccent" strokeWidth={2.4} />
+          <Icon name="plus" size={30} color="textOnAccent" strokeWidth={2.6} />
         </Animated.View>
       </View>
       <Text
@@ -179,55 +245,59 @@ function PrimaryTab({ label, focused, ...pressable }: TabProps) {
   );
 }
 
-const PRIMARY_SIZE = 58;
-/** Height of the icon area of ordinary tabs (the active pill). */
-const ICON_AREA = 32;
-const BAR_PADDING_TOP = spacing.xs;
-/**
- * Tabs are bottom-aligned, so ordinary tabs start (PRIMARY_SIZE − ICON_AREA)
- * lower than the centre button. The surface begins a little above them, and
- * the centre button rises above the surface by the difference.
- */
-const SURFACE_TOP = BAR_PADDING_TOP + PRIMARY_SIZE - ICON_AREA - spacing.sm;
-
 const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    left: SIDE_MARGIN,
+    right: SIDE_MARGIN,
+    // The container includes the space above the bar where the centre button
+    // rises: Android ignores touches outside a parent's bounds.
+    height: BAR_HEIGHT + RISE,
+    justifyContent: 'flex-end',
+  },
   bar: {
+    height: BAR_HEIGHT,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.glassBorder,
+    justifyContent: 'center',
+    ...shadows.card,
+  },
+  pill: {
+    position: 'absolute',
+    left: PILL_INSET,
+    top: PILL_INSET + 2,
+    bottom: PILL_INSET + 2,
+    borderRadius: radii.pill,
+    backgroundColor: colors.accentSoft,
+  },
+  tabs: {
+    ...StyleSheet.absoluteFill,
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: colors.bg,
-    paddingTop: BAR_PADDING_TOP,
-    paddingHorizontal: spacing.xs,
-  },
-  surface: {
-    ...StyleSheet.absoluteFill,
-    top: SURFACE_TOP,
-    backgroundColor: colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.glassBorder,
   },
   tab: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacing.xs,
-  },
-  iconWrap: {
-    width: 56,
-    height: ICON_AREA,
+    height: BAR_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 3,
   },
-  activePill: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accentSoft,
+  primaryTab: {
+    flex: 1,
+    height: BAR_HEIGHT + RISE,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: spacing.sm,
+    gap: spacing.xxs,
   },
   primaryButton: {
     width: PRIMARY_SIZE,
     height: PRIMARY_SIZE,
     borderRadius: PRIMARY_SIZE / 2,
     backgroundColor: colors.accent,
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
