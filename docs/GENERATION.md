@@ -15,7 +15,7 @@ Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system pro
 
 ```
 Sovellus: Suunnittele-kysely valmis
-   │  POST /generate-plan { meal_count, household_size, budget_cents, chain_code,
+   │  POST /generate-plan { meal_count, eaters, budget_cents, chain_code,
    │                        craving_codes, extra_allergen_codes, extra_diet_codes, start_date }
    │  → palauttaa heti plan_id (status = generating)
    ▼
@@ -157,7 +157,7 @@ slug | nimi | osasto | pakkaus_g | hinta_eur_kg | perusvara_mahdollinen
 ### Käyttäjäviestin pohja
 
 ```text
-Syöjiä: {household_size}
+Syöjiä: {eaters}
 Aterioita yhteensä: {meal_count} (indeksit 0–{meal_count-1}, peräkkäiset päivät)
 Generoitavat ateriat: {meals_to_generate}           esim. "0, 1, 3"
 Budjettitavoite kaikille aterioille perushinnoin: noin {target_eur} €, enintään {max_eur} €

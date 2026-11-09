@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 
 import { DEFAULT_GOALS, MIN_KCAL_GOAL, normalizeChainCode } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
+import { dropHouseholdSize } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import {
   DEFAULT_CYCLING,
@@ -88,7 +89,6 @@ export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
 
 export type Profile = {
   name: string;
-  householdSize: number;
   weeklyBudgetCents: number;
   allergens: AllergenCode[];
   diets: DietCode[];
@@ -114,7 +114,6 @@ export type Profile = {
 
 export const DEFAULT_PROFILE: Profile = {
   name: '',
-  householdSize: 2,
   weeklyBudgetCents: 7500,
   allergens: [],
   diets: [],
@@ -172,10 +171,11 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 4,
+      version: 5,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
+      // v5: the household size was removed (single-person app; eaters are chosen per plan).
       migrate: (persisted) => {
-        const saved = persisted as Partial<Profile>;
+        const saved = dropHouseholdSize((persisted ?? {}) as Partial<Profile>);
         return {
           ...DEFAULT_PROFILE,
           ...saved,

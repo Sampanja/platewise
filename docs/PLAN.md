@@ -1,6 +1,6 @@
 # Platewise – suunnitelma
 
-Maksullinen mobiilisovellus (iOS + Android) pienille talouksille. Pääkohderyhmä on yksin tai kaksin asuvat, mutta suunnitelman voi tehdä 1–6 syöjälle. Käyttäjä syöttää budjetin, lähikauppansa, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
+Maksullinen mobiilisovellus (iOS + Android), yksilösovellus: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Suunnitelman voi tehdä 1–6 syöjälle (oletus 1), ja määrä valitaan vain kyselyssä. Käyttäjä syöttää budjetin, lähikauppansa, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
 
 Suunnittelussa on yksi moottori: **N päivällistä + budjetti → yksi ostoslista**. Käyttäjä käy sen läpi yhdellä kyselyllä (Suunnittele-välilehti, kohta 4.3). Kyselyn ateriamäärä ratkaisee tilan:
 
@@ -109,7 +109,7 @@ Alapalkissa viisi välilehteä:
 Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa vaiheessa. Arvot esitäytetään edellisestä kyselystä tai profiilista, joten tavallisesti käyttäjä vain vahvistaa.
 
 1. **Budjetti** – liukusäädin ja lukukenttä. Budjetin selitys näkyy säätimen alla. Realistinen vähimmäisbudjetti näytetään, kun syöjät ja ateriamäärä tiedetään (vaihe 3); liian pieni budjetti palauttaa tähän vaiheeseen selityksen kanssa.
-2. **Syöjien määrä** – 1–6, isot napit. Oletus profiilin talouden koosta.
+2. **Syöjien määrä** – 1–6, isot napit, oletus 1 (yksilösovellus). Kokkauskerran annosmäärä (syöjät × tuplaus) näkyy tuplausvaiheessa ja yhteenvedossa.
 3. **Ruokakertojen määrä** – 2–6 tai "Koko viikko (7)". Koko viikko esitäyttää budjetiksi profiilin viikkobudjetin, jos käyttäjä ei ole muuttanut budjettia.
 4. **Allergiat ja ruokavalio** – esitäytetty profiilista, käyttäjä vahvistaa. Tässä voi **lisätä** allergioita tai ruokavalion vain tälle suunnitelmalle (esim. vieras), mutta profiilin allergioita ei voi poistaa tässä: poisto tehdään profiilissa. Näin turvallisuusasetus ei katoa vahingossa.
 5. **Mitä tekee mieli** – valintasirut, useampi sallittu, voi ohittaa: kana, kala, jauheliha, kasvis, pasta, keitto, aasialainen, meksikolainen, nopea, uunissa.
@@ -158,7 +158,7 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 
 ### 4.6 Profiili
 
-- Profiilin tiedot (nimi, talouden koko eli oletussyöjät, viikkobudjetti)
+- Profiilin tiedot (nimi, viikkobudjetti). Platewise on yksilösovellus: syöjien määrä valitaan vain kyselyssä suunnitelmakohtaisesti.
 - Allergiat ja ruokavalio (terveystietosuostumus)
 - Perusvarat
 - Oletuskauppa
@@ -222,7 +222,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 1. Projektipohja: Expo, Supabase (EU), CI ja EAS Build.
 2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen.
 3. Fineli-tuonti ja oma ainesosataulu: noin 300 ainesosaa ja ketjukohtaiset hintakertoimet (alussa 3–4 ketjua). Finelin annoskoot päiväkirjaa varten.
-4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (allergiat, ruokavalio, kauppa, talouden koko).
+4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (allergiat, ruokavalio, kauppa).
 5. `generate-plan`-funktio: Claude, allergiatarkistus, makrot, hinta ja budjettisilmukka. Ehdotus → hyväksyntä → ostoslista.
 6. Reseptikirjaston esitäyttö ennen julkaisua (noin 200 tarkistettua reseptiä) ja `list-recipes`-funktio.
 7. Kuvageneraatio asynkronisesti ja välimuistiin. Odotellessa näytetään paikkamerkki.
@@ -242,7 +242,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 ### Vaihe 3: Laajennukset
 - Ruokahävikin minimointi: "mitä jääkaapissa on" -syöte.
 - Tarkemmat hinnat: kuittiskannaus (OCR) tai kumppanuudet kauppaketjujen kanssa.
-- Kotitalouden jakaminen kahden käyttäjän kesken.
+- Ostoslistan jakaminen toiselle sovelluksen käyttäjälle.
 - Ruotsin ja englannin kieli, myöhemmin muut Pohjoismaat.
 - Ilmoitukset ("huomenna on kanapastaa, ota kana sulamaan").
 

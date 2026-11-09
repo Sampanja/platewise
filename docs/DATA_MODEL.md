@@ -215,7 +215,6 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 |---|---|---|
 | `id` | `uuid` PK, FK → `auth.users` ON DELETE CASCADE | |
 | `display_name` | `text` | Valinnainen, näytetään profiilissa ja Kodin tervehdyksessä. CHECK pituus ≤ 40 |
-| `household_size` | `smallint` NOT NULL DEFAULT 1 | Talouden koko eli kyselyn oletussyöjät. CHECK BETWEEN 1 AND 6 |
 | `weekly_budget_cents` | `integer` | Viikkosuunnitelman (7 päivällistä) budjetti. CHECK BETWEEN 1000 AND 50000; NULL ennen onboardingia |
 | `chain_code` | `text` FK → `store_chains` | Oletuskauppa. NULL ennen onboardingia |
 | `last_meal_count` | `smallint` | Edellisen kyselyn ateriamäärä esitäyttöä varten. CHECK BETWEEN 2 AND 7 |
@@ -468,7 +467,7 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän muita ruoka
 | `kind` | enum `plan_kind` NOT NULL | `week`, `trip`. CHECK `(kind = 'week') = (meal_count = 7)` |
 | `start_date` | `date` NOT NULL | Ensimmäisen aterian päivä (oletus: tänään) |
 | `meal_count` | `smallint` NOT NULL | N päivällistä. CHECK BETWEEN 2 AND 7 |
-| `household_size` | `smallint` NOT NULL | Syöjien määrä tässä suunnitelmassa (kyselyn vaihe 2). CHECK BETWEEN 1 AND 6 |
+| `eaters` | `smallint` NOT NULL DEFAULT 1 | Syöjien määrä tässä suunnitelmassa (kyselyn vaihe 2, oletus 1). CHECK BETWEEN 1 AND 6 |
 | `budget_cents` | `integer` NOT NULL | Snapshot |
 | `chain_code` | `text` NOT NULL FK → `store_chains` | Snapshot (kyselyn vaihe 6) |
 | `craving_codes` | `text[]` NOT NULL DEFAULT `'{}'` | "Mitä tekee mieli" -toiveet. Arvot tarkistetaan koodissa tunnettua listaa vasten. |
@@ -506,7 +505,7 @@ MVP:ssä generoidaan vain päivällisiä. Lounas syntyy ainoastaan "tee tuplana 
 | `day_offset` | `smallint` NOT NULL | Päivä = `start_date + day_offset`. Päivälliset 0 … `meal_count − 1`; lounas voi olla `meal_count` (viimeisen päivällisen tuplaus). |
 | `meal_slot` | enum `meal_slot` NOT NULL | `dinner`, `lunch` |
 | `recipe_id` | `uuid` NOT NULL FK → `recipes` | Ei kaskadia: reseptejä ei poisteta, vain `retired` |
-| `servings` | `smallint` NOT NULL | Päivällinen: `household_size` (1–6), tuplana `2 × household_size`. Lounas: `household_size`. CHECK BETWEEN 1 AND 12 |
+| `servings` | `smallint` NOT NULL | Päivällinen: `eaters` (1–6), tuplana `2 × eaters`. Lounas: `eaters`. CHECK BETWEEN 1 AND 12 |
 | `cook_double` | `boolean` NOT NULL DEFAULT false | CHECK: `NOT cook_double OR meal_slot = 'dinner'` |
 | `leftover_from_item_id` | `uuid` FK → `meal_plan_items` ON DELETE CASCADE | Lounasrivillä viittaus edellisen päivän tuplattuun päivälliseen; muilla NULL. CHECK: `(meal_slot = 'lunch') = (leftover_from_item_id IS NOT NULL)`. Triggeri varmistaa, että lounaan `day_offset` = päivällisen `day_offset + 1`. |
 | `estimated_cost_cents` | `integer` NOT NULL | Päivällisellä annosten osuus (sisältää tuplauksen). Lounaalla aina 0, koska kustannus on jo päivällisellä. |
@@ -746,7 +745,7 @@ Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `aut
 Huomioita:
 
 - **`profiles.insert`** tehdään `auth.users`-triggerillä (`security definer`), ei sovelluksesta.
-- **`profiles.update`**: sovellus ei saa muuttaa `id`:tä. Toteutetaan sarakekohtaisella `GRANT UPDATE (display_name, household_size, weekly_budget_cents, chain_code, last_meal_count, last_budget_cents, last_eaters, last_craving_codes, health_data_consent_at, onboarding_completed_at, locale)`.
+- **`profiles.update`**: sovellus ei saa muuttaa `id`:tä. Toteutetaan sarakekohtaisella `GRANT UPDATE (display_name, weekly_budget_cents, chain_code, last_meal_count, last_budget_cents, last_eaters, last_craving_codes, health_data_consent_at, onboarding_completed_at, locale)`.
 - **Suostumuksen peruminen** (`health_data_consent_at` → NULL) poistaa `profile_allergens`-, `profile_diets`-, `profile_nutrition_goals`-, `profile_body`-, `profile_weight_goals`-, `profile_workouts`-, `weight_entries`-, `diary_entries`-, `user_foods`-, `saved_meals`- ja `user_recipes`-rivit triggerillä. Sovellus kertoo tämän ennen vahvistusta.
 - **Suunnitelman hyväksyntä ja vaihdot** tehdään Edge Functioneilla (`accept-plan`, `swap-meal`, `recalculate-plan`); sovellus ei kirjoita `meal_plans`-tauluun.
 - **Maksumuuria ei toteuteta RLS:llä.** Edge Functionit tarkistavat `subscriptions`-tilan ennen generointia. Vanhentuneen tilauksen käyttäjä näkee yhä aiemmat listansa (lukuoikeus säilyy), mutta ei saa uusia.
@@ -779,7 +778,7 @@ Huomioita:
 ## Generoinnin tietovirta tauluihin
 
 1. Lue kyselyn vastaukset sekä `profiles`, `profile_allergens`, `profile_diets`, `profile_excluded_ingredients`, `profile_pantry_items`, `subscriptions`. Säännöt = profiilin allergiat ja ruokavaliot ∪ kyselyssä lisätyt.
-2. Tarkista rajat (`app_config`, `generation_runs`) ja luo `meal_plans`-rivi tilassa `generating` (`kind`, `meal_count`, `household_size`, `budget_cents`, `chain_code`, `craving_codes`, `extra_*`). Päivitä profiilin `last_*`-esitäyttökentät.
+2. Tarkista rajat (`app_config`, `generation_runs`) ja luo `meal_plans`-rivi tilassa `generating` (`kind`, `meal_count`, `eaters`, `budget_cents`, `chain_code`, `craving_codes`, `extra_*`). Päivitä profiilin `last_*`-esitäyttökentät.
 3. **Uudelleenkäyttö:** hae `active`-reseptit, jotka läpäisevät esisuodattimen (allergeenit, tagit, poissuljetut ainesosat, hinta). Täytä niillä osa päivistä.
 4. **Generointi:** anna tekoälylle aktiivisten ainesosien `slug`-lista (jo valmiiksi suodatettuna käyttäjälle sopiviin) ja pyydä puuttuvat päivät. Validoi Zodilla.
 5. **Tarkistus** (koodissa, jokaiselle reseptille, myös uudelleenkäytetyille): tuntemattomat slugit → hylkäys; `ingredient_allergens` + `allergen_keywords` vapaasta tekstistä → hylkäys; `diet_excluded_tags` → hylkäys.
@@ -796,7 +795,7 @@ Huomioita:
 3. **Perusvarat:** käyttäjäkohtainen `profile_pantry_items`, oletuksena öljy, suola, pippuri, sokeri, vehnäjauho ja peruskuivamausteet. Ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa". Muut mausteet lasketaan kokonaisina pakkauksina.
 4. **Ruokavaliot:** `vegan`, `vegetarian`, `pescatarian`, `lactose_free`, `pork_free`, `alcohol_free`. Halal ja kosher eivät ole MVP:ssä.
 5. **Rajat ja malli konfiguroitavina** (`app_config`, vain ylläpito): generointimalli (oletus Sonnet 5.5), kuvantunnistusmalli (oletus Haiku 5.5), vaihtoraja (5 / 7 päivää), suunnitelmaraja (4 / 7 päivää), kuvantunnistusrajat (10 / päivä, 150 / 30 päivää) ja käyttäjän kustannuskatto (1,50 $ / 30 päivää).
-6. **Syöjiä 1–6** (`household_size` profiilissa oletuksena, suunnitelmassa snapshotina).
+6. **Yksilösovellus:** profiilissa ei ole kotitalouden kokoa. Syöjien määrä (1–6, oletus 1) valitaan jokaiselle suunnitelmalle kyselyssä (`meal_plans.eaters`).
 7. **Kyselyssä lisätyt allergiat ja ruokavaliot** koskevat vain sitä suunnitelmaa (`extra_*`). Profiilin allergioita ei voi poistaa kyselyssä.
 8. **Päiväkirja** viittaa Fineliin tai reseptiin; makrot laskee triggeri. Ruokakuvaa ei tallenneta. Päiväkirja ja ravintotavoitteet ovat terveystietoa samalla suostumuksella kuin allergiat.
 9. **Reseptikirjasto** haetaan Edge Functionilla, joka ajaa allergiatarkistuksen jokaiselle reseptille; RLS ei avaa koko reseptikantaa.
@@ -813,6 +812,6 @@ Huomioita:
 
 ## Avoimet kysymykset
 
-1. **Kotitalouden jakaminen** (vaihe 3) vaatii myöhemmin `households`-taulun ja `meal_plans.user_id` → `household_id`. Malli on tehty niin, että muutos on yksi migraatio.
+1. **Suunnitelman jakaminen toiselle** (vaihe 3): Platewise on yksilösovellus, mutta valmiin ostoslistan voi jakaa tekstinä. Varsinainen jaettu suunnitelma vaatisi oman taulun, eikä sitä suunnitella nyt.
 2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
 3. **Viivakoodituotteiden jakaminen käyttäjien kesken:** nyt jokaisella on oma välimuistinsa (`user_foods`). Yhteinen, tarkistettu tuotetaulu vähentäisi hakuja ja virheitä, mutta vaatii moderoinnin.

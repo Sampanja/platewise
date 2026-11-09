@@ -20,7 +20,6 @@ import {
 } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
 import { useServingPrice, useUserRules } from '@/data/hooks';
-import { useProfileStore } from '@/data/stores/profile';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS, mealForHour } from '@/domain/diary';
 import { MacroBars } from '@/features/recipe/MacroBars';
@@ -36,12 +35,12 @@ export default function RecipeScreen() {
   const recipe = id ? RECIPES_BY_ID[id] : undefined;
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const householdSize = useProfileStore((s) => s.householdSize);
   const rules = useUserRules();
   const servingPrice = useServingPrice();
   const actions = useRecipeActions(recipe);
 
-  const [servings, setServings] = useState(householdSize);
+  // Single-person app: start from one serving; the stepper scales the amounts.
+  const [servings, setServings] = useState(1);
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
   const [sheet, setSheet] = useState<'diary' | 'plan' | null>(null);
   const [scrollY] = useState(() => new Animated.Value(0));

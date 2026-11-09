@@ -1,6 +1,6 @@
 # Platewise
 
-Maksullinen mobiilisovellus (iOS + Android) pienille talouksille: pääkohderyhmä on yksin tai kaksin asuvat, mutta suunnitelman voi tehdä 1–6 syöjälle. Käyttäjä antaa lähikaupan, allergiat ja ruokavalion. Tekoäly generoi päivälliset, joissa on ainesosat, makrot, hinta-arvio ja kuva, sekä niistä yhden ostoslistan. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja), johon ruoan voi lisätä kuvasta, nimihaulla tai omalta listalta. Tärkein laatuvaatimus on selkeys ja helppokäyttöisyys.
+Maksullinen mobiilisovellus (iOS + Android), **yksilösovellus**: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Kotitalouden kokoa ei ole; syöjien määrä (1–6, oletus 1) valitaan vain Suunnittele-kyselyssä suunnitelmakohtaisesti. Käyttäjä antaa lähikaupan, allergiat ja ruokavalion. Tekoäly generoi päivälliset, joissa on ainesosat, makrot, hinta-arvio ja kuva, sekä niistä yhden ostoslistan. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja), johon ruoan voi lisätä kuvasta, nimihaulla tai omalta listalta. Tärkein laatuvaatimus on selkeys ja helppokäyttöisyys.
 
 Alapalkissa on viisi välilehteä: Koti, Reseptit, Suunnittele (keskellä, korostettu), Päiväkirja ja Profiili. Suunnittele on kysely (budjetti → syöjät 1–6 → ateriamäärä 2–7 → allergiat ja ruokavalio → toiveet → kauppa), jonka tuloksena syntyy ehdotus. Ehdotus hyväksytään erikseen, ja siitä tulee ostoslista. Moottori on yksi, **N päivällistä + budjetti → yksi ostoslista**:
 

@@ -86,13 +86,7 @@ export default function ProfileScreen() {
           </View>
         </PressableScale>
 
-        <Section title={t.sectionHousehold}>
-          <Row
-            icon="users"
-            label={t.household}
-            value={format(t.householdValue, { count: profile.householdSize })}
-            href={edit('household')}
-          />
+        <Section title={t.sectionShopping}>
           <Row icon="wallet" label={t.weeklyBudget} value={formatCents(profile.weeklyBudgetCents)} href={edit('budget')} />
           <Row icon="store" label={t.store} value={CHAINS_BY_CODE[profile.chainCode].name} href={edit('store')} last />
         </Section>

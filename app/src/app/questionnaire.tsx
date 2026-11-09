@@ -21,7 +21,7 @@ import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
 import type { AllergenCode, CravingCode, DietCode, PlanAnswers } from '@/data/types';
 import { tightBudgetFixes } from '@/domain/feasibility';
-import { minimumBudgetCents } from '@/domain/generate';
+import { dinnerServings, minimumBudgetCents } from '@/domain/generate';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatCents, formatWholeEuros, strings } from '@/i18n';
@@ -53,7 +53,7 @@ export default function QuestionnaireScreen() {
 
   const [answers, setAnswers] = useState<PlanAnswers>(() => ({
     budgetCents: lastAnswers?.budgetCents ?? profile.weeklyBudgetCents,
-    eaters: lastAnswers?.eaters ?? profile.householdSize,
+    eaters: lastAnswers?.eaters ?? 1,
     mealCount: lastAnswers?.mealCount ?? 7,
     cookDouble: lastAnswers?.cookDouble ?? false,
     // Plan-only additions (e.g. a guest) are not carried over to the next plan.
@@ -219,6 +219,9 @@ export default function QuestionnaireScreen() {
             selected={!answers.cookDouble}
             onPress={() => patch({ cookDouble: false })}
           />
+          <Text variant="label" color="textMuted" accessibilityLiveRegion="polite">
+            {format(t.double.servings, { count: dinnerServings(answers) })}
+          </Text>
         </View>
       ),
     },
@@ -315,6 +318,11 @@ export default function QuestionnaireScreen() {
               label={t.summary.double}
               value={answers.cookDouble ? strings.common.yes : strings.common.no}
               onEdit={() => goTo(3)}
+            />
+            <SummaryRow
+              label={t.summary.servings}
+              value={format(t.double.servings, { count: dinnerServings(answers) })}
+              onEdit={() => goTo(1)}
             />
             <SummaryRow
               label={t.summary.diet}

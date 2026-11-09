@@ -9,7 +9,6 @@ import {
   Card,
   haptics,
   Icon,
-  NumberChoice,
   OptionRow,
   Stepper,
   SwitchRow,
@@ -25,15 +24,15 @@ import { format, formatInteger, strings } from '@/i18n';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.onboarding;
-const STEPS = ['welcome', 'household', 'diet', 'store', 'goal'] as const;
+const STEPS = ['welcome', 'diet', 'store', 'goal'] as const;
 type Step = (typeof STEPS)[number];
 
 type Draft = Pick<
   Profile,
-  'name' | 'householdSize' | 'allergens' | 'diets' | 'chainCode' | 'goals' | 'hasCalorieGoal'
+  'name' | 'allergens' | 'diets' | 'chainCode' | 'goals' | 'hasCalorieGoal'
 >;
 
-/** First-run setup: at most five screens, each one skippable. Shown only once. */
+/** First-run setup: a few short screens, each one skippable. Shown only once. */
 export default function OnboardingScreen() {
   const profile = useProfileStore.getState();
   const update = useProfileStore((s) => s.update);
@@ -41,7 +40,6 @@ export default function OnboardingScreen() {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [draft, setDraft] = useState<Draft>({
     name: profile.name,
-    householdSize: profile.householdSize,
     allergens: profile.allergens,
     diets: profile.diets,
     chainCode: profile.chainCode,
@@ -97,20 +95,6 @@ export default function OnboardingScreen() {
             maxLength={30}
           />
         </View>
-      ),
-    },
-    household: {
-      title: t.householdTitle,
-      body: t.householdBody,
-      node: (
-        <NumberChoice
-          options={[1, 2, 3, 4, 5, 6]}
-          value={draft.householdSize}
-          onChange={(householdSize) => patch({ householdSize })}
-          accessibilityLabelFor={(n) =>
-            n === 1 ? strings.plan.eaters.one : format(strings.plan.eaters.many, { count: n })
-          }
-        />
       ),
     },
     diet: {

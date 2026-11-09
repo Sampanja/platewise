@@ -238,7 +238,8 @@ export type MealPlan = {
   kind: 'week' | 'trip';
   startDate: LocalDate;
   mealCount: number;
-  householdSize: number;
+  /** People eating in this plan (chosen in the questionnaire). */
+  eaters: number;
   budgetCents: number;
   chainCode: ChainCode;
   /** Shopping list total in whole packages: the number compared with the budget. */

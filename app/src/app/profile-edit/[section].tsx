@@ -8,7 +8,6 @@ import {
   Button,
   Card,
   EmptyState,
-  NumberChoice,
   OptionRow,
   Slider,
   Stepper,
@@ -32,7 +31,7 @@ const THEME_OPTIONS = [
   { value: 'dark', hint: 'darkHint', icon: 'moon' },
 ] as const;
 
-type Section = 'name' | 'household' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
+type Section = 'name' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
 
 /**
  * Edits one profile setting. Changes are saved as they are made (to the local
@@ -57,18 +56,6 @@ export default function ProfileEditScreen() {
           maxLength={30}
           returnKeyType="done"
           onSubmitEditing={() => router.back()}
-        />
-      ),
-    },
-    household: {
-      title: t.householdTitle,
-      body: t.householdBody,
-      node: (
-        <NumberChoice
-          options={[1, 2, 3, 4, 5, 6]}
-          value={profile.householdSize}
-          onChange={(householdSize) => profile.update({ householdSize })}
-          accessibilityLabelFor={(n) => format(strings.profile.householdValue, { count: n })}
         />
       ),
     },

@@ -307,7 +307,7 @@ export function acceptProposal(
     kind: answers.mealCount === 7 ? 'week' : 'trip',
     startDate: proposal.startDate,
     mealCount: answers.mealCount,
-    householdSize: answers.eaters,
+    eaters: answers.eaters,
     budgetCents: answers.budgetCents,
     chainCode: answers.chainCode,
     estimatedTotalCents: list.totalCents,
