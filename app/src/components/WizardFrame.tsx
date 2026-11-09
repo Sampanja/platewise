@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconButton, PressableScale, ProgressMeter, Text, useReducedMotion } from '@/components/ui';
 import { format, strings } from '@/i18n';
-import { colors, spacing, touchTarget } from '@/theme';
+import { colors, spacing, themedStyles, touchTarget } from '@/theme';
 
 export type WizardFrameProps = {
   /** 1-based. */
@@ -149,50 +149,52 @@ function StepTransition({ direction, children }: { direction: 1 | -1; children: 
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  headerSpacer: {
-    width: touchTarget,
-  },
-  progress: {
-    flex: 1,
-  },
-  skip: {
-    minHeight: touchTarget,
-    minWidth: touchTarget,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xs,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  step: {
-    gap: spacing.xl,
-  },
-  question: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    headerSpacer: {
+      width: touchTarget,
+    },
+    progress: {
+      flex: 1,
+    },
+    skip: {
+      minHeight: touchTarget,
+      minWidth: touchTarget,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xs,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.xxl,
+    },
+    step: {
+      gap: spacing.xl,
+    },
+    question: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      gap: spacing.sm,
+    },
+  }),
+);

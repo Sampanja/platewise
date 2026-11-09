@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
-import { colors, motion, radii } from '@/theme';
+import { colors, motion, radii, themedStyles } from '@/theme';
 
 import { haptics } from './haptics';
 
@@ -73,18 +73,20 @@ export function ProgressMeter({
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    height: 12,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surfaceRaised,
-    overflow: 'hidden',
-  },
-  thin: {
-    height: 6,
-  },
-  fill: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: radii.pill,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    track: {
+      height: 12,
+      borderRadius: radii.pill,
+      backgroundColor: colors.surfaceRaised,
+      overflow: 'hidden',
+    },
+    thin: {
+      height: 6,
+    },
+    fill: {
+      ...StyleSheet.absoluteFill,
+      borderRadius: radii.pill,
+    },
+  }),
+);

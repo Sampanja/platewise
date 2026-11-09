@@ -4,7 +4,7 @@ import { RecipeImage } from '@/components/RecipeImage';
 import { Button, Card, Text } from '@/components/ui';
 import { RECIPES_BY_ID } from '@/data/catalog';
 import { strings } from '@/i18n';
-import { radii, spacing } from '@/theme';
+import { radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
   onCreate: () => void;
@@ -38,21 +38,23 @@ export function EmptyPlanCard({ onCreate }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    aspectRatio: 16 / 10,
-    justifyContent: 'flex-end',
-    borderTopLeftRadius: radii.card,
-    borderTopRightRadius: radii.card,
-    overflow: 'hidden',
-  },
-  heroText: {
-    padding: spacing.xl,
-    paddingBottom: spacing.md,
-  },
-  body: {
-    padding: spacing.xl,
-    paddingTop: spacing.md,
-    gap: spacing.lg,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    hero: {
+      aspectRatio: 16 / 10,
+      justifyContent: 'flex-end',
+      borderTopLeftRadius: radii.card,
+      borderTopRightRadius: radii.card,
+      overflow: 'hidden',
+    },
+    heroText: {
+      padding: spacing.xl,
+      paddingBottom: spacing.md,
+    },
+    body: {
+      padding: spacing.xl,
+      paddingTop: spacing.md,
+      gap: spacing.lg,
+    },
+  }),
+);

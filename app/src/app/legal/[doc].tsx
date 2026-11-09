@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Chip, Text } from '@/components/ui';
 import { strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 type Doc = 'privacy' | 'terms' | 'sources';
 
@@ -37,17 +37,19 @@ export default function LegalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  titleBlock: {
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxl,
+      gap: spacing.lg,
+    },
+    titleBlock: {
+      gap: spacing.sm,
+    },
+  }),
+);

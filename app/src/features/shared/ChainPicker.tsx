@@ -4,7 +4,7 @@ import { OptionRow } from '@/components/ui';
 import { CHAINS } from '@/data/catalog';
 import type { ChainCode } from '@/data/types';
 import { strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 /** Friendly price level instead of a raw multiplier. */
 export function priceLevelLabel(multiplier: number): string {
@@ -37,8 +37,10 @@ export function ChainPicker({ value, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  list: {
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    list: {
+      gap: spacing.sm,
+    },
+  }),
+);

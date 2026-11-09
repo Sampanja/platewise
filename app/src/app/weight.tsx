@@ -21,7 +21,7 @@ import { WeightChart } from '@/features/weight/WeightChart';
 import { format, strings } from '@/i18n';
 import { diaryDayLabel, today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.weight;
 const decimal = new Intl.NumberFormat('fi-FI', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -189,67 +189,69 @@ export default function WeightScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  gap: {
-    gap: spacing.md,
-  },
-  gapSm: {
-    gap: spacing.sm,
-  },
-  suggest: {
-    borderColor: colors.accent,
-  },
-  logRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.lg,
-  },
-  valueBox: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: spacing.xs,
-    minWidth: 130,
-    justifyContent: 'center',
-  },
-  quick: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  spread: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-  entry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingLeft: spacing.lg,
-    paddingRight: spacing.sm,
-    minHeight: 52,
-  },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  note: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.lg,
+    },
+    gap: {
+      gap: spacing.md,
+    },
+    gapSm: {
+      gap: spacing.sm,
+    },
+    suggest: {
+      borderColor: colors.accent,
+    },
+    logRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.lg,
+    },
+    valueBox: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: spacing.xs,
+      minWidth: 130,
+      justifyContent: 'center',
+    },
+    quick: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    spread: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    entry: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingLeft: spacing.lg,
+      paddingRight: spacing.sm,
+      minHeight: 52,
+    },
+    divider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    note: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+  }),
+);

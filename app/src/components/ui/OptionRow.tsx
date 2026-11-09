@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
@@ -70,58 +70,60 @@ export function OptionRow({
 
 const MARK = 26;
 
-const styles = StyleSheet.create({
-  row: {
-    minHeight: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  selected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentSoft,
-  },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.accentSoft,
-  },
-  iconWrapSelected: {
-    backgroundColor: colors.accent,
-  },
-  texts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  radio: {
-    width: MARK,
-    height: MARK,
-    borderRadius: MARK / 2,
-    borderWidth: 2,
-    borderColor: colors.textSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkbox: {
-    width: MARK,
-    height: MARK,
-    borderRadius: radii.sm - 2,
-    borderWidth: 2,
-    borderColor: colors.textSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    row: {
+      minHeight: 64,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: radii.lg,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    selected: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentSoft,
+    },
+    iconWrap: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.accentSoft,
+    },
+    iconWrapSelected: {
+      backgroundColor: colors.accent,
+    },
+    texts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    radio: {
+      width: MARK,
+      height: MARK,
+      borderRadius: MARK / 2,
+      borderWidth: 2,
+      borderColor: colors.textSubtle,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkbox: {
+      width: MARK,
+      height: MARK,
+      borderRadius: radii.sm - 2,
+      borderWidth: 2,
+      borderColor: colors.textSubtle,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    markSelected: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+  }),
+);

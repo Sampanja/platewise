@@ -3,7 +3,7 @@ import { Animated, PanResponder, StyleSheet, View } from 'react-native';
 
 import { haptics, Icon, Text } from '@/components/ui';
 import { strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
   onDelete: () => void;
@@ -76,24 +76,26 @@ export function SwipeToDelete({ onDelete, children }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    borderRadius: radii.md,
-    overflow: 'hidden',
-  },
-  behind: {
-    ...StyleSheet.absoluteFill,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacing.xs,
-    paddingRight: spacing.lg,
-    backgroundColor: colors.dangerSoft,
-  },
-  behindArmed: {
-    backgroundColor: colors.danger,
-  },
-  front: {
-    backgroundColor: colors.surface,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      borderRadius: radii.md,
+      overflow: 'hidden',
+    },
+    behind: {
+      ...StyleSheet.absoluteFill,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: spacing.xs,
+      paddingRight: spacing.lg,
+      backgroundColor: colors.dangerSoft,
+    },
+    behindArmed: {
+      backgroundColor: colors.danger,
+    },
+    front: {
+      backgroundColor: colors.surface,
+    },
+  }),
+);

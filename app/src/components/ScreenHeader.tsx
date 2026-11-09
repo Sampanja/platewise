@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { IconButton, Text } from '@/components/ui';
 import { strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 export type ScreenHeaderProps = {
   title?: string;
@@ -33,20 +33,22 @@ export function ScreenHeader({ title, onBack, variant = 'back', trailing }: Scre
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  trailing: {
-    minWidth: 48,
-    alignItems: 'flex-end',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    title: {
+      flex: 1,
+      textAlign: 'center',
+    },
+    trailing: {
+      minWidth: 48,
+      alignItems: 'flex-end',
+    },
+  }),
+);

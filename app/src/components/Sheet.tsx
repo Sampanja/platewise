@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton, Text, useReducedMotion } from '@/components/ui';
 import { strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 export type SheetProps = {
   visible: boolean;
@@ -71,44 +71,46 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  anchor: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    maxHeight: '85%',
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radii.card,
-    borderTopRightRadius: radii.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-    paddingTop: spacing.sm,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    marginBottom: spacing.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.md,
-  },
-  title: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: colors.backdrop,
+    },
+    anchor: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      maxHeight: '85%',
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radii.card,
+      borderTopRightRadius: radii.card,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+      paddingTop: spacing.sm,
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.border,
+      marginBottom: spacing.sm,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.md,
+    },
+    title: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      gap: spacing.sm,
+    },
+  }),
+);

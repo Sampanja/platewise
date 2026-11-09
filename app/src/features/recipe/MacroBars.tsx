@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ProgressMeter, Text } from '@/components/ui';
 import type { Macros } from '@/data/types';
 import { format, formatInteger, strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
   macros: Macros;
@@ -67,31 +67,33 @@ export function MacroBars({ macros }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: spacing.lg,
-  },
-  energy: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.surfaceRaised,
-    alignSelf: 'flex-start',
-  },
-  rows: {
-    gap: spacing.md,
-  },
-  row: {
-    gap: spacing.xs,
-  },
-  labels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      gap: spacing.lg,
+    },
+    energy: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surfaceRaised,
+      alignSelf: 'flex-start',
+    },
+    rows: {
+      gap: spacing.md,
+    },
+    row: {
+      gap: spacing.xs,
+    },
+    labels: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+  }),
+);

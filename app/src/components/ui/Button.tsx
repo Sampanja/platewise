@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { buttonHeight, colors, radii, shadows, spacing, touchTarget } from '@/theme';
+import { buttonHeight, colors, radii, shadows, spacing, themedStyles, touchTarget } from '@/theme';
 
 import { PressableScale, type PressableScaleProps } from './PressableScale';
 import { Text } from './Text';
@@ -57,37 +57,41 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    minHeight: buttonHeight,
-    paddingHorizontal: spacing.xl,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  compact: {
-    minHeight: touchTarget,
-    paddingHorizontal: spacing.lg,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    base: {
+      minHeight: buttonHeight,
+      paddingHorizontal: spacing.xl,
+      borderRadius: radii.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    compact: {
+      minHeight: touchTarget,
+      paddingHorizontal: spacing.lg,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+  }),
+);
 
-const variantStyles = StyleSheet.create({
-  primary: {
-    backgroundColor: colors.accent,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  secondary: {
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-});
+const variantStyles = themedStyles(() =>
+  StyleSheet.create({
+    primary: {
+      backgroundColor: colors.accent,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.25)',
+    },
+    secondary: {
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
+  }),
+);

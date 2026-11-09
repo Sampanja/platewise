@@ -4,7 +4,7 @@ import { RecipeCard } from '@/components/RecipeCard';
 import { Skeleton, Text } from '@/components/ui';
 import type { Recipe } from '@/data/types';
 import { strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 export type RecipeRowItem = { key: string; recipe: Recipe; overline?: string };
 
@@ -63,28 +63,30 @@ export function RecipeRow({ title, hint, items, loading = false }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: spacing.md,
-  },
-  heading: {
-    paddingHorizontal: spacing.lg + spacing.xs,
-    gap: spacing.xxs,
-  },
-  strip: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  card: {
-    width: CARD_WIDTH,
-  },
-  skeletons: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  skeletonCard: {
-    width: CARD_WIDTH,
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    section: {
+      gap: spacing.md,
+    },
+    heading: {
+      paddingHorizontal: spacing.lg + spacing.xs,
+      gap: spacing.xxs,
+    },
+    strip: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.lg,
+      gap: spacing.md,
+    },
+    card: {
+      width: CARD_WIDTH,
+    },
+    skeletons: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    skeletonCard: {
+      width: CARD_WIDTH,
+      gap: spacing.sm,
+    },
+  }),
+);

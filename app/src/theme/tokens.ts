@@ -1,6 +1,6 @@
 import type { ViewStyle } from 'react-native';
 
-import { colors } from './colors';
+import { activeTheme, colors } from './colors';
 
 /** 4-pt spacing scale. */
 export const spacing = {
@@ -27,23 +27,30 @@ export const touchTarget = 48;
 /** Height of primary buttons, comfortably above the minimum. */
 export const buttonHeight = 56;
 
+/** Shadows follow the active theme (read them inside themedStyles or at render time). */
 export const shadows = {
-  card: {
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.45,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
+  get card(): ViewStyle {
+    const dark = activeTheme() === 'dark';
+    return {
+      shadowColor: colors.shadow,
+      shadowOpacity: dark ? 0.45 : 0.12,
+      shadowRadius: dark ? 24 : 18,
+      shadowOffset: { width: 0, height: dark ? 12 : 6 },
+      elevation: dark ? 10 : 4,
+    };
   },
   /** Warm glow under the primary call to action. */
-  glow: {
-    shadowColor: colors.accent,
-    shadowOpacity: 0.5,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+  get glow(): ViewStyle {
+    const dark = activeTheme() === 'dark';
+    return {
+      shadowColor: colors.accent,
+      shadowOpacity: dark ? 0.5 : 0.3,
+      shadowRadius: 18,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: dark ? 8 : 5,
+    };
   },
-} as const satisfies Record<string, ViewStyle>;
+};
 
 /** Motion: short, springy and never blocking. */
 export const motion = {

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 import { IconButton } from './IconButton';
 import { Text } from './Text';
@@ -101,19 +101,21 @@ export function Stepper({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  value: {
-    // Fixed width keeps the buttons of stacked steppers aligned.
-    minWidth: 76,
-    textAlign: 'center',
-    fontVariant: ['tabular-nums'],
-  },
-  valueLarge: {
-    minWidth: 120,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    value: {
+      // Fixed width keeps the buttons of stacked steppers aligned.
+      minWidth: 76,
+      textAlign: 'center',
+      fontVariant: ['tabular-nums'],
+    },
+    valueLarge: {
+      minWidth: 120,
+    },
+  }),
+);

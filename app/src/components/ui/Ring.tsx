@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { colors, motion } from '@/theme';
+import { colors, motion, themedStyles } from '@/theme';
 
 import { useReducedMotion } from './useReducedMotion';
 
@@ -90,14 +90,16 @@ export function Ring({
   );
 }
 
-const styles = StyleSheet.create({
-  rotated: {
-    // Start the arc at 12 o'clock.
-    transform: [{ rotate: '-90deg' }],
-  },
-  center: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    rotated: {
+      // Start the arc at 12 o'clock.
+      transform: [{ rotate: '-90deg' }],
+    },
+    center: {
+      ...StyleSheet.absoluteFill,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  }),
+);

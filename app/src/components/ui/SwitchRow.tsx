@@ -1,6 +1,6 @@
 import { StyleSheet, Switch, View } from 'react-native';
 
-import { colors, spacing, touchTarget } from '@/theme';
+import { colors, spacing, themedStyles, touchTarget } from '@/theme';
 
 import { haptics } from './haptics';
 import { Text } from './Text';
@@ -47,15 +47,17 @@ export function SwitchRow({ label, hint, value, onValueChange }: SwitchRowProps)
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    minHeight: touchTarget + spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  texts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    row: {
+      minHeight: touchTarget + spacing.sm,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    texts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+  }),
+);

@@ -27,7 +27,7 @@ import {
 } from '@/domain/recipeFilters';
 import { checkRecipe } from '@/domain/recipes';
 import { format, strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.recipes;
 const SORTS: readonly RecipeSort[] = ['recommended', 'price', 'time', 'kcal'];
@@ -207,72 +207,74 @@ export default function RecipesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  list: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  header: {
-    gap: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    paddingHorizontal: spacing.xs,
-  },
-  bleed: {
-    marginHorizontal: -spacing.lg,
-  },
-  chips: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
-  },
-  sortRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.xs,
-  },
-  sortOption: {
-    minHeight: 36,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.pill,
-  },
-  sortSelected: {
-    backgroundColor: colors.accentSoft,
-  },
-  hidden: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-  },
-  flex: {
-    flex: 1,
-  },
-  column: {
-    gap: spacing.md,
-  },
-  skeletonGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  skeletonCard: {
-    width: '47%',
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    list: {
+      paddingHorizontal: spacing.lg,
+      gap: spacing.md,
+    },
+    header: {
+      gap: spacing.md,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      paddingHorizontal: spacing.xs,
+    },
+    bleed: {
+      marginHorizontal: -spacing.lg,
+    },
+    chips: {
+      paddingHorizontal: spacing.lg,
+      gap: spacing.sm,
+    },
+    sortRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.xs,
+    },
+    sortOption: {
+      minHeight: 36,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.md,
+      borderRadius: radii.pill,
+    },
+    sortSelected: {
+      backgroundColor: colors.accentSoft,
+    },
+    hidden: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 44,
+      paddingHorizontal: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surface,
+    },
+    flex: {
+      flex: 1,
+    },
+    column: {
+      gap: spacing.md,
+    },
+    skeletonGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    skeletonCard: {
+      width: '47%',
+      gap: spacing.sm,
+    },
+  }),
+);

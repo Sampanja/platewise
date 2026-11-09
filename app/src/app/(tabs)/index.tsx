@@ -31,7 +31,7 @@ import { SavingsCard } from '@/features/home/SavingsCard';
 import { TodayMealCard } from '@/features/home/TodayMealCard';
 import { format, strings } from '@/i18n';
 import { addDays, greeting, longDate, relativeDayLabel, today } from '@/lib/dates';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.home;
 /** Delay between sections as they fade in, top to bottom. */
@@ -188,20 +188,22 @@ function PlanSection({ plan, shoppingDone, shoppingTotal, delay, onCreate }: Pla
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  content: {
-    paddingTop: spacing.sm,
-    gap: spacing.xl,
-  },
-  padded: {
-    paddingHorizontal: spacing.lg,
-  },
-  header: {
-    gap: spacing.xs,
-    paddingHorizontal: spacing.lg + spacing.xs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    content: {
+      paddingTop: spacing.sm,
+      gap: spacing.xl,
+    },
+    padded: {
+      paddingHorizontal: spacing.lg,
+    },
+    header: {
+      gap: spacing.xs,
+      paddingHorizontal: spacing.lg + spacing.xs,
+    },
+  }),
+);

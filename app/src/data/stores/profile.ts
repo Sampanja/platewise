@@ -5,6 +5,7 @@ import { DEFAULT_GOALS, MIN_KCAL_GOAL, normalizeChainCode } from '../catalog/ref
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import type { ActivityLevel, GoalType, PregnancyStatus, Sex } from '@/domain/energy';
+import type { ThemePreference } from '@/theme/colors';
 
 import type { AllergenCode, ChainCode, DietCode, NutritionGoals } from '../types';
 
@@ -72,6 +73,8 @@ export type Profile = {
   /** "Piilota kalorit": the diary shows meals without numbers. */
   hideCalories: boolean;
   hapticsEnabled: boolean;
+  /** Light, dark or follow the phone. */
+  themePreference: ThemePreference;
   onboardingCompleted: boolean;
 };
 
@@ -89,6 +92,7 @@ export const DEFAULT_PROFILE: Profile = {
   weightGoal: { ...DEFAULT_WEIGHT_GOAL },
   hideCalories: false,
   hapticsEnabled: true,
+  themePreference: 'system',
   onboardingCompleted: false,
 };
 

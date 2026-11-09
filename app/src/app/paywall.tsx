@@ -8,7 +8,7 @@ import { Button, Chip, Icon, OptionRow, Text } from '@/components/ui';
 import { RECIPES_BY_ID } from '@/data/catalog';
 import { strings } from '@/i18n';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.paywall;
 const HERO = RECIPES_BY_ID['salmon-zucchini'];
@@ -71,46 +71,48 @@ export default function PaywallScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.xl,
-  },
-  hero: {
-    aspectRatio: 16 / 9,
-    borderRadius: radii.card,
-  },
-  titleBlock: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  features: {
-    gap: spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  feature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  plans: {
-    gap: spacing.sm,
-  },
-  center: {
-    textAlign: 'center',
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    gap: spacing.xs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xl,
+      gap: spacing.xl,
+    },
+    hero: {
+      aspectRatio: 16 / 9,
+      borderRadius: radii.card,
+    },
+    titleBlock: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    features: {
+      gap: spacing.md,
+      paddingHorizontal: spacing.xs,
+    },
+    feature: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    plans: {
+      gap: spacing.sm,
+    },
+    center: {
+      textAlign: 'center',
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      gap: spacing.xs,
+    },
+  }),
+);

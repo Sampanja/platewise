@@ -1,78 +1,194 @@
+import { Appearance } from 'react-native';
+
 /**
- * "Iltapöytä" palette: a dark, warm base that lets food photography glow.
- * Contrast ratios are against `bg` / `surface` and meet WCAG AA (4.5:1) for
- * body text unless noted.
+ * "Paprika" palette for the Iltapöytä design system: warm paprika and
+ * apricot accents with herb green, in a fresh light theme and a deep warm
+ * dark theme. Every text token meets WCAG AA (4.5:1) against `bg`, `surface`
+ * and `surfaceRaised` in both themes; `theme/contrast.test.ts` enforces it.
+ *
+ * `colors` always resolves to the active theme, so components read it at
+ * render time. Styles are created per theme with `themedStyles`.
  */
-const palette = {
-  olive950: '#161814',
-  olive900: '#1C1F1A',
-  olive850: '#22251F',
-  olive800: '#2B2F28',
-  olive700: '#3A3F36',
-  olive500: '#6E7466',
 
-  cream50: '#F3EDE2',
-  cream200: '#D9D1C3',
-  cream400: '#A9A193',
-
-  apricot300: '#F7C08A',
-  apricot500: '#F2A65A',
-  apricot700: '#C77A2E',
-
-  sage400: '#9CC59A',
-  sage600: '#5E8F5C',
-
-  wine400: '#D97A86',
-  wine600: '#8E3B46',
-
-  black: '#000000',
-  white: '#FFFFFF',
-} as const;
-
-export const colors = {
+export type Palette = {
   /** App background. */
-  bg: palette.olive950,
+  bg: string;
   /** Cards, sheets. */
-  surface: palette.olive850,
+  surface: string;
   /** Raised elements on top of a surface (chips, inputs). */
-  surfaceRaised: palette.olive800,
+  surfaceRaised: string;
   /** Hairlines and dividers. */
-  border: palette.olive700,
+  border: string;
 
-  /** Primary text, 15.3:1 on bg. */
-  text: palette.cream50,
-  /** Secondary text, 11.8:1 on bg. */
-  textMuted: palette.cream200,
-  /** Tertiary text and captions, 7.0:1 on bg, 5.3:1 on surfaceRaised. */
-  textSubtle: palette.cream400,
-  /** Text on top of the accent colour, 8.8:1 on accent. */
-  textOnAccent: palette.olive950,
+  /** Primary text. */
+  text: string;
+  /** Secondary text. */
+  textMuted: string;
+  /** Tertiary text and captions. */
+  textSubtle: string;
+  /** Text and icons on top of `accent`. */
+  textOnAccent: string;
 
   /** Primary call to action. */
-  accent: palette.apricot500,
-  accentPressed: palette.apricot700,
-  accentSoft: 'rgba(242, 166, 90, 0.16)',
-  accentGlow: 'rgba(242, 166, 90, 0.45)',
-  accentText: palette.apricot300,
+  accent: string;
+  accentPressed: string;
+  accentSoft: string;
+  accentGlow: string;
+  /** Accent coloured text and icons on bg / surface. */
+  accentText: string;
+
+  /** Second brand colour (herb green): progress, water of life, positive states. */
+  herb: string;
+  herbSoft: string;
+  /** Third colour (berry): achievements, highlights. */
+  berry: string;
+  berrySoft: string;
+  /** Water tracking. */
+  water: string;
+  waterSoft: string;
+  /** Gold for badges and XP. */
+  gold: string;
+  goldSoft: string;
 
   /** Savings, completed items. */
-  success: palette.sage400,
-  successSoft: 'rgba(156, 197, 154, 0.16)',
+  success: string;
+  successSoft: string;
 
-  /** Allergy warnings and destructive actions. */
-  danger: palette.wine400,
-  dangerSoft: 'rgba(142, 59, 70, 0.28)',
+  /** Allergy warnings and destructive actions. Never used for "over the goal". */
+  danger: string;
+  dangerSoft: string;
 
-  /** Glass panel laid over food photos. */
-  glass: 'rgba(22, 24, 20, 0.55)',
-  glassBorder: 'rgba(243, 237, 226, 0.14)',
+  /** Panel laid over food photos. */
+  glass: string;
+  glassBorder: string;
+  /** Dim layer behind sheets and dialogs. */
+  backdrop: string;
 
-  shadow: palette.black,
-} as const;
+  shadow: string;
+};
 
-export type ColorToken = keyof typeof colors;
+const dark: Palette = {
+  bg: '#14110E',
+  surface: '#201B17',
+  surfaceRaised: '#2B2520',
+  border: '#3E3630',
+
+  text: '#F8F0E7',
+  textMuted: '#DED1C3',
+  textSubtle: '#AE9F90',
+  textOnAccent: '#1C0F08',
+
+  accent: '#FF8A4C',
+  accentPressed: '#E0702F',
+  accentSoft: 'rgba(255, 138, 76, 0.16)',
+  accentGlow: 'rgba(255, 138, 76, 0.45)',
+  accentText: '#FFAD80',
+
+  herb: '#7FCB8E',
+  herbSoft: 'rgba(127, 203, 142, 0.16)',
+  berry: '#F28DB2',
+  berrySoft: 'rgba(242, 141, 178, 0.16)',
+  water: '#7CC4F2',
+  waterSoft: 'rgba(124, 196, 242, 0.16)',
+  gold: '#F5C451',
+  goldSoft: 'rgba(245, 196, 81, 0.18)',
+
+  success: '#8FD49C',
+  successSoft: 'rgba(143, 212, 156, 0.16)',
+
+  danger: '#F2959B',
+  dangerSoft: 'rgba(196, 64, 76, 0.28)',
+
+  glass: 'rgba(20, 17, 14, 0.55)',
+  glassBorder: 'rgba(248, 240, 231, 0.14)',
+  backdrop: 'rgba(0, 0, 0, 0.6)',
+
+  shadow: '#000000',
+};
+
+const light: Palette = {
+  bg: '#FFF8F1',
+  surface: '#FFFFFF',
+  surfaceRaised: '#F7EDE3',
+  border: '#EADBCD',
+
+  text: '#2B1D15',
+  textMuted: '#55443A',
+  textSubtle: '#6E5D52',
+  textOnAccent: '#FFFFFF',
+
+  accent: '#C9461A',
+  accentPressed: '#A93810',
+  accentSoft: 'rgba(232, 98, 46, 0.12)',
+  accentGlow: 'rgba(232, 98, 46, 0.35)',
+  accentText: '#B23C12',
+
+  herb: '#286E40',
+  herbSoft: 'rgba(47, 125, 74, 0.12)',
+  berry: '#B0306A',
+  berrySoft: 'rgba(176, 48, 106, 0.10)',
+  water: '#1F6FA8',
+  waterSoft: 'rgba(31, 111, 168, 0.10)',
+  gold: '#8A6400',
+  goldSoft: 'rgba(230, 170, 30, 0.18)',
+
+  success: '#2E7A47',
+  successSoft: 'rgba(46, 122, 71, 0.12)',
+
+  danger: '#B3261E',
+  dangerSoft: 'rgba(179, 38, 30, 0.10)',
+
+  glass: 'rgba(255, 248, 241, 0.82)',
+  glassBorder: 'rgba(43, 29, 21, 0.10)',
+  backdrop: 'rgba(43, 29, 21, 0.45)',
+
+  shadow: '#5A3A22',
+};
+
+export const palettes = { light, dark } as const;
+export type ThemeName = keyof typeof palettes;
+export type ThemePreference = 'system' | ThemeName;
+
+let active: ThemeName = Appearance.getColorScheme() === 'light' ? 'light' : 'dark';
+
+/** The theme every `colors` read and `themedStyles` lookup resolves to. */
+export function activeTheme(): ThemeName {
+  return active;
+}
+
+/** Called by the root layout before rendering the tree with a new theme. */
+export function setActiveTheme(name: ThemeName): void {
+  active = name;
+}
+
+export function resolveTheme(preference: ThemePreference, system: string | null | undefined): ThemeName {
+  if (preference !== 'system') return preference;
+  return system === 'light' ? 'light' : 'dark';
+}
+
+/** Active theme's colours, read at access time. */
+export const colors: Readonly<Palette> = new Proxy({} as Palette, {
+  get: (_target, key: string) => palettes[active][key as keyof Palette],
+  has: (_target, key) => key in palettes[active],
+  ownKeys: () => Reflect.ownKeys(palettes[active]),
+  getOwnPropertyDescriptor: (_target, key) => ({
+    enumerable: true,
+    configurable: true,
+    value: palettes[active][key as keyof Palette],
+  }),
+});
+
+export type ColorToken = keyof Palette;
+
+/** Scrim that keeps text legible over any food photo: fades the photo into the background. */
+function scrimFor(name: ThemeName): readonly [string, string, string] {
+  return name === 'dark'
+    ? ['rgba(20, 17, 14, 0)', 'rgba(20, 17, 14, 0.55)', 'rgba(20, 17, 14, 0.94)']
+    : ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.6)', 'rgba(255, 255, 255, 0.96)'];
+}
 
 export const gradients = {
-  /** Scrim that keeps text legible over any food photo. */
-  scrim: ['rgba(22, 24, 20, 0)', 'rgba(22, 24, 20, 0.55)', 'rgba(22, 24, 20, 0.92)'],
-} as const;
+  get scrim() {
+    return scrimFor(active);
+  },
+};

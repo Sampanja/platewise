@@ -5,7 +5,7 @@ import { Button, Card, Icon, ProgressMeter, Text } from '@/components/ui';
 import type { MealPlan } from '@/data/types';
 import { budgetHeadroomCents } from '@/domain/plan';
 import { format, formatCents, strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 type Props = {
   plan: MealPlan;
@@ -58,20 +58,22 @@ export function BudgetCard({ plan, shoppingDone, shoppingTotal }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  flex: {
-    flex: 1,
-  },
-  center: {
-    textAlign: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      gap: spacing.md,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    flex: {
+      flex: 1,
+    },
+    center: {
+      textAlign: 'center',
+    },
+  }),
+);

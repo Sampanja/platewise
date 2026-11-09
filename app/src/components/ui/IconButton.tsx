@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { colors, touchTarget, type ColorToken } from '@/theme';
+import { colors, type ColorToken, themedStyles, touchTarget } from '@/theme';
 
 import { Icon, type IconName } from './Icon';
 import { PressableScale, type PressableScaleProps } from './PressableScale';
@@ -44,28 +44,32 @@ export function IconButton({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    base: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  }),
+);
 
-const variantStyles = StyleSheet.create({
-  raised: {
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-  },
-  glass: {
-    backgroundColor: colors.glass,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-  },
-  plain: {
-    backgroundColor: 'transparent',
-  },
-  accent: {
-    backgroundColor: colors.accent,
-  },
-});
+const variantStyles = themedStyles(() =>
+  StyleSheet.create({
+    raised: {
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+    },
+    glass: {
+      backgroundColor: colors.glass,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+    },
+    plain: {
+      backgroundColor: 'transparent',
+    },
+    accent: {
+      backgroundColor: colors.accent,
+    },
+  }),
+);

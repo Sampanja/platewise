@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, Icon, Text } from '@/components/ui';
 import { format, formatCents, strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
   /** Budget minus price estimate over this month's accepted plans (never negative). */
@@ -41,25 +41,27 @@ export function SavingsCard({ savingsCents }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  badge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.successSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  texts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+    },
+    badge: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.successSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    texts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+  }),
+);

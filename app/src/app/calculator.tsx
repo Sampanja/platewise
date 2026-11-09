@@ -37,7 +37,7 @@ import {
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.calculator;
 const STEPS = ['body', 'activity', 'result', 'goal', 'macros'] as const;
@@ -476,48 +476,50 @@ function NumberRow({ label, hint, children }: { label: string; hint?: string; ch
   );
 }
 
-const styles = StyleSheet.create({
-  gap: {
-    gap: spacing.lg,
-  },
-  gapSm: {
-    gap: spacing.sm,
-  },
-  flex: {
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  spread: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  numberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-  highlight: {
-    borderColor: colors.accent,
-    borderRadius: radii.card,
-  },
-  noteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    gap: {
+      gap: spacing.lg,
+    },
+    gapSm: {
+      gap: spacing.sm,
+    },
+    flex: {
+      flex: 1,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    spread: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    numberRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    highlight: {
+      borderColor: colors.accent,
+      borderRadius: radii.card,
+    },
+    noteHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+  }),
+);

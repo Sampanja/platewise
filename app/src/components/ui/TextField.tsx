@@ -1,7 +1,7 @@
 import type { ComponentRef, ReactNode, Ref } from 'react';
 import { StyleSheet, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 
-import { colors, radii, spacing, touchTarget, typography } from '@/theme';
+import { colors, radii, spacing, themedStyles, touchTarget, typography } from '@/theme';
 
 import { Icon, type IconName } from './Icon';
 
@@ -34,27 +34,29 @@ export function TextField({ icon, trailing, style, large, ref, ...rest }: TextFi
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    minHeight: touchTarget + 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  input: {
-    flex: 1,
-    ...typography.body,
-    color: colors.text,
-    paddingVertical: spacing.sm,
-  },
-  large: {
-    ...typography.display,
-    textAlign: 'center',
-    fontVariant: ['tabular-nums'],
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      minHeight: touchTarget + 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.pill,
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    input: {
+      flex: 1,
+      ...typography.body,
+      color: colors.text,
+      paddingVertical: spacing.sm,
+    },
+    large: {
+      ...typography.display,
+      textAlign: 'center',
+      fontVariant: ['tabular-nums'],
+    },
+  }),
+);

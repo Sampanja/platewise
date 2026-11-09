@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Button, Card, Text } from '@/components/ui';
 import { format, strings } from '@/i18n';
 import { shortDate, today, type LocalDate } from '@/lib/dates';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
   /** Last dinner of the current plan. */
@@ -30,12 +30,14 @@ export function NewListCard({ endDate, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: spacing.sm,
-    backgroundColor: colors.surfaceRaised,
-  },
-  button: {
-    marginTop: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      gap: spacing.sm,
+      backgroundColor: colors.surfaceRaised,
+    },
+    button: {
+      marginTop: spacing.md,
+    },
+  }),
+);

@@ -23,7 +23,7 @@ import { groupByAisle, type ShoppingItem } from '@/domain/shoppingList';
 import { format, formatCents, strings } from '@/i18n';
 import { formatAmount, formatPackage } from '@/lib/amounts';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.shopping;
 
@@ -240,54 +240,56 @@ export default function ShoppingListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  summary: {
-    gap: spacing.md,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.md,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  group: {
-    gap: spacing.sm,
-  },
-  groupCard: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.lg,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  pantry: {
-    gap: spacing.sm,
-  },
-  extraRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 52,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.xl,
+    },
+    summary: {
+      gap: spacing.md,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: spacing.md,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    group: {
+      gap: spacing.sm,
+    },
+    groupCard: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
+      borderRadius: radii.lg,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    pantry: {
+      gap: spacing.sm,
+    },
+    extraRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 52,
+    },
+  }),
+);

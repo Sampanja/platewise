@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 import { PressableScale } from './PressableScale';
 import { Text } from './Text';
@@ -46,28 +46,30 @@ export function NumberChoice({
   );
 }
 
-const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  cell: {
-    flexGrow: 1,
-    aspectRatio: 1.15,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-  },
-  number: {
-    fontVariant: ['tabular-nums'],
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+      justifyContent: 'space-between',
+    },
+    cell: {
+      flexGrow: 1,
+      aspectRatio: 1.15,
+      borderRadius: radii.lg,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    selected: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+    number: {
+      fontVariant: ['tabular-nums'],
+    },
+  }),
+);

@@ -5,7 +5,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Icon } from '@/components/ui';
 import type { Recipe } from '@/data/types';
 import { format, strings } from '@/i18n';
-import { colors, gradients } from '@/theme';
+import { colors, gradients, themedStyles } from '@/theme';
 
 type Props = {
   recipe: Pick<Recipe, 'imageUrl' | 'title'>;
@@ -40,13 +40,15 @@ export function RecipeImage({ recipe, style, scrim = false }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    overflow: 'hidden',
-  },
-  placeholderIcon: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      overflow: 'hidden',
+    },
+    placeholderIcon: {
+      ...StyleSheet.absoluteFill,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  }),
+);

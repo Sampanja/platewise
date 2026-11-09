@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
-import { colors, radii } from '@/theme';
+import { colors, radii, themedStyles } from '@/theme';
 
 import { haptics } from './haptics';
 
@@ -79,30 +79,32 @@ export function Slider({
   );
 }
 
-const styles = StyleSheet.create({
-  hit: {
-    height: 48,
-    justifyContent: 'center',
-  },
-  track: {
-    height: TRACK,
-    marginHorizontal: THUMB / 2,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surfaceRaised,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: TRACK,
-    marginLeft: -THUMB / 2,
-    backgroundColor: colors.accent,
-  },
-  thumb: {
-    position: 'absolute',
-    width: THUMB,
-    height: THUMB,
-    borderRadius: THUMB / 2,
-    backgroundColor: colors.accent,
-    borderWidth: 3,
-    borderColor: colors.text,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    hit: {
+      height: 48,
+      justifyContent: 'center',
+    },
+    track: {
+      height: TRACK,
+      marginHorizontal: THUMB / 2,
+      borderRadius: radii.pill,
+      backgroundColor: colors.surfaceRaised,
+      overflow: 'hidden',
+    },
+    fill: {
+      height: TRACK,
+      marginLeft: -THUMB / 2,
+      backgroundColor: colors.accent,
+    },
+    thumb: {
+      position: 'absolute',
+      width: THUMB,
+      height: THUMB,
+      borderRadius: THUMB / 2,
+      backgroundColor: colors.accent,
+      borderWidth: 3,
+      borderColor: colors.text,
+    },
+  }),
+);

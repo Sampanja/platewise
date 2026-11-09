@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
@@ -44,32 +44,34 @@ export function EmptyState({ icon, title, body, action, tone = 'accent' }: Empty
 
 const BADGE = 72;
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    gap: spacing.lg,
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.lg,
-  },
-  badge: {
-    width: BADGE,
-    height: BADGE,
-    borderRadius: BADGE / 2,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeDanger: {
-    backgroundColor: colors.dangerSoft,
-  },
-  texts: {
-    gap: spacing.sm,
-    maxWidth: 340,
-  },
-  centered: {
-    textAlign: 'center',
-  },
-  action: {
-    alignSelf: 'stretch',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      gap: spacing.lg,
+      paddingVertical: spacing.xxl,
+      paddingHorizontal: spacing.lg,
+    },
+    badge: {
+      width: BADGE,
+      height: BADGE,
+      borderRadius: BADGE / 2,
+      backgroundColor: colors.accentSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeDanger: {
+      backgroundColor: colors.dangerSoft,
+    },
+    texts: {
+      gap: spacing.sm,
+      maxWidth: 340,
+    },
+    centered: {
+      textAlign: 'center',
+    },
+    action: {
+      alignSelf: 'stretch',
+    },
+  }),
+);

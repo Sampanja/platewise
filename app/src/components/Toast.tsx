@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PressableScale, Text, useReducedMotion } from '@/components/ui';
 import { useToastStore } from '@/lib/toast';
-import { colors, radii, shadows, spacing, touchTarget } from '@/theme';
+import { colors, radii, shadows, spacing, themedStyles, touchTarget } from '@/theme';
 
 const VISIBLE_MS = 3200;
 const WITH_ACTION_MS = 5000;
@@ -86,34 +86,36 @@ export function ToastHost() {
   );
 }
 
-const styles = StyleSheet.create({
-  host: {
-    position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    alignItems: 'center',
-  },
-  toast: {
-    alignSelf: 'stretch',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: touchTarget + 4,
-    paddingLeft: spacing.lg,
-    paddingRight: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-    ...shadows.card,
-  },
-  message: {
-    flex: 1,
-  },
-  action: {
-    minHeight: touchTarget,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    host: {
+      position: 'absolute',
+      left: spacing.lg,
+      right: spacing.lg,
+      alignItems: 'center',
+    },
+    toast: {
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      minHeight: touchTarget + 4,
+      paddingLeft: spacing.lg,
+      paddingRight: spacing.sm,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.lg,
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+      ...shadows.card,
+    },
+    message: {
+      flex: 1,
+    },
+    action: {
+      minHeight: touchTarget,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.md,
+    },
+  }),
+);

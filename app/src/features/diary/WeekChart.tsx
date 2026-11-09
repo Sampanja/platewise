@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, PressableScale, Text } from '@/components/ui';
 import { format, formatInteger, strings } from '@/i18n';
 import { parseLocalDate, type LocalDate } from '@/lib/dates';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
   days: readonly { date: LocalDate; kcal: number }[];
@@ -60,45 +60,47 @@ export function WeekChart({ days, selected, goal, onSelect }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: spacing.md,
-  },
-  chart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.xs,
-  },
-  goalLine: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    // Offset by the weekday labels under the bars.
-    marginBottom: 26,
-    borderTopWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.textSubtle,
-  },
-  column: {
-    flex: 1,
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  barArea: {
-    height: CHART_HEIGHT,
-    justifyContent: 'flex-end',
-    width: '100%',
-    alignItems: 'center',
-  },
-  bar: {
-    width: '62%',
-    borderRadius: radii.sm,
-    backgroundColor: colors.textSubtle,
-  },
-  barEmpty: {
-    backgroundColor: colors.surfaceRaised,
-  },
-  barSelected: {
-    backgroundColor: colors.accent,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      gap: spacing.md,
+    },
+    chart: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: spacing.xs,
+    },
+    goalLine: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      // Offset by the weekday labels under the bars.
+      marginBottom: 26,
+      borderTopWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.textSubtle,
+    },
+    column: {
+      flex: 1,
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    barArea: {
+      height: CHART_HEIGHT,
+      justifyContent: 'flex-end',
+      width: '100%',
+      alignItems: 'center',
+    },
+    bar: {
+      width: '62%',
+      borderRadius: radii.sm,
+      backgroundColor: colors.textSubtle,
+    },
+    barEmpty: {
+      backgroundColor: colors.surfaceRaised,
+    },
+    barSelected: {
+      backgroundColor: colors.accent,
+    },
+  }),
+);

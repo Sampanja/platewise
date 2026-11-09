@@ -7,7 +7,7 @@ import { Icon, PressableScale, Text } from '@/components/ui';
 import { useServingPrice } from '@/data/hooks';
 import type { Recipe } from '@/data/types';
 import { format, formatCents, formatInteger, strings } from '@/i18n';
-import { colors, radii, shadows, spacing } from '@/theme';
+import { colors, radii, shadows, spacing, themedStyles } from '@/theme';
 
 type Props = {
   recipe: Recipe;
@@ -76,34 +76,36 @@ export function RecipeCard({ recipe, overline, showHeart = true, style, onPress 
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-    overflow: 'hidden',
-    ...shadows.card,
-  },
-  image: {
-    aspectRatio: 1.1,
-  },
-  body: {
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  title: {
-    minHeight: 40,
-  },
-  meta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  heart: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+      overflow: 'hidden',
+      ...shadows.card,
+    },
+    image: {
+      aspectRatio: 1.1,
+    },
+    body: {
+      padding: spacing.md,
+      gap: spacing.xs,
+    },
+    title: {
+      minHeight: 40,
+    },
+    meta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
+    },
+    heart: {
+      position: 'absolute',
+      top: spacing.sm,
+      right: spacing.sm,
+    },
+  }),
+);

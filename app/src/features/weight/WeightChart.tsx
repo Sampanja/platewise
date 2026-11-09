@@ -5,7 +5,7 @@ import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 import { Text } from '@/components/ui';
 import { movingAverage, type WeightEntry } from '@/domain/energy';
 import { format, strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
   entries: readonly WeightEntry[];
@@ -106,41 +106,43 @@ export function WeightChart({ entries, targetKg }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: spacing.sm,
-  },
-  axis: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    height: HEIGHT,
-    justifyContent: 'space-between',
-    zIndex: 1,
-  },
-  plot: {
-    height: HEIGHT,
-    marginRight: 36,
-  },
-  legend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  targetKey: {
-    backgroundColor: colors.success,
-    height: 2,
-  },
-  lineKey: {
-    width: 18,
-    height: 3,
-    borderRadius: 2,
-    marginLeft: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      gap: spacing.sm,
+    },
+    axis: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      height: HEIGHT,
+      justifyContent: 'space-between',
+      zIndex: 1,
+    },
+    plot: {
+      height: HEIGHT,
+      marginRight: 36,
+    },
+    legend: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    targetKey: {
+      backgroundColor: colors.success,
+      height: 2,
+    },
+    lineKey: {
+      width: 18,
+      height: 3,
+      borderRadius: 2,
+      marginLeft: spacing.sm,
+    },
+  }),
+);

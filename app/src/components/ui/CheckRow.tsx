@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
-import { colors, radii, spacing, touchTarget } from '@/theme';
+import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
 
 import { PressableScale } from './PressableScale';
 import { Text } from './Text';
@@ -69,35 +69,37 @@ export function CheckRow({ label, detail, checked, onToggle }: CheckRowProps) {
 
 const BOX = 28;
 
-const styles = StyleSheet.create({
-  row: {
-    minHeight: touchTarget + spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  box: {
-    width: BOX,
-    height: BOX,
-    borderRadius: radii.sm,
-    borderWidth: 2,
-    borderColor: colors.textSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  boxChecked: {
-    backgroundColor: colors.success,
-    borderColor: colors.success,
-  },
-  tick: {
-    lineHeight: BOX - 4,
-  },
-  texts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  struck: {
-    textDecorationLine: 'line-through',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    row: {
+      minHeight: touchTarget + spacing.sm,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    box: {
+      width: BOX,
+      height: BOX,
+      borderRadius: radii.sm,
+      borderWidth: 2,
+      borderColor: colors.textSubtle,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    boxChecked: {
+      backgroundColor: colors.success,
+      borderColor: colors.success,
+    },
+    tick: {
+      lineHeight: BOX - 4,
+    },
+    texts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    struck: {
+      textDecorationLine: 'line-through',
+    },
+  }),
+);

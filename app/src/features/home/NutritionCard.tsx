@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, Icon, PressableScale, ProgressMeter, Ring, Text } from '@/components/ui';
 import type { DayNutrition } from '@/data/types';
 import { format, formatInteger, strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 type Props = {
   nutrition: DayNutrition;
@@ -105,41 +105,43 @@ function MacroRow({ label, value, goal }: { label: string; value: number; goal: 
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  open: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xxs,
-  },
-  body: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xl,
-  },
-  macros: {
-    flex: 1,
-    gap: spacing.md,
-  },
-  macroRow: {
-    gap: spacing.xs,
-  },
-  macroLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      gap: spacing.lg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    open: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xxs,
+    },
+    body: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xl,
+    },
+    macros: {
+      flex: 1,
+      gap: spacing.md,
+    },
+    macroRow: {
+      gap: spacing.xs,
+    },
+    macroLabels: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+  }),
+);

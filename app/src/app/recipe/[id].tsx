@@ -27,7 +27,7 @@ import { MacroBars } from '@/features/recipe/MacroBars';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
 import { format, formatCents, formatInteger, strings } from '@/i18n';
 import { formatAmount } from '@/lib/amounts';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.recipe;
 
@@ -350,121 +350,123 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-  sheet: {
-    marginTop: -radii.card,
-    borderTopLeftRadius: radii.card,
-    borderTopRightRadius: radii.card,
-    backgroundColor: colors.bg,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    gap: spacing.xxl,
-  },
-  titleBlock: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  card: {
-    gap: spacing.lg,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.lg,
-  },
-  servings: {
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  section: {
-    gap: spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  allergen: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accentSoft,
-  },
-  allergenUser: {
-    backgroundColor: colors.dangerSoft,
-  },
-  steps: {
-    gap: spacing.lg,
-  },
-  step: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    justifyContent: 'center',
-    backgroundColor: colors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-    paddingHorizontal: 72,
-  },
-  titleBarText: {
-    textAlign: 'center',
-  },
-  topBar: {
-    position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  topBarStatic: {
-    padding: spacing.lg,
-  },
-  bottomBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    backgroundColor: colors.bg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  noPlan: {
-    gap: spacing.md,
-    paddingBottom: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    sheet: {
+      marginTop: -radii.card,
+      borderTopLeftRadius: radii.card,
+      borderTopRightRadius: radii.card,
+      backgroundColor: colors.bg,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.xl,
+      gap: spacing.xxl,
+    },
+    titleBlock: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    card: {
+      gap: spacing.lg,
+    },
+    priceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.lg,
+    },
+    servings: {
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    section: {
+      gap: spacing.md,
+      paddingHorizontal: spacing.xs,
+    },
+    allergen: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: radii.pill,
+      backgroundColor: colors.accentSoft,
+    },
+    allergenUser: {
+      backgroundColor: colors.dangerSoft,
+    },
+    steps: {
+      gap: spacing.lg,
+    },
+    step: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    stepNumber: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    titleBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      justifyContent: 'center',
+      backgroundColor: colors.bg,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+      paddingHorizontal: 72,
+    },
+    titleBarText: {
+      textAlign: 'center',
+    },
+    topBar: {
+      position: 'absolute',
+      left: spacing.lg,
+      right: spacing.lg,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    topBarStatic: {
+      padding: spacing.lg,
+    },
+    bottomBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.md,
+      backgroundColor: colors.bg,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    noPlan: {
+      gap: spacing.md,
+      paddingBottom: spacing.sm,
+    },
+  }),
+);

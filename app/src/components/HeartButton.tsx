@@ -4,7 +4,7 @@ import { Animated, StyleSheet } from 'react-native';
 import { haptics, Icon, PressableScale, useReducedMotion } from '@/components/ui';
 import { useFavoritesStore, useIsFavorite } from '@/data/stores/favorites';
 import { strings } from '@/i18n';
-import { colors, touchTarget } from '@/theme';
+import { colors, themedStyles, touchTarget } from '@/theme';
 
 type Props = {
   recipeId: string;
@@ -60,19 +60,21 @@ export function HeartButton({ recipeId, size = 40, variant = 'glass' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glass: {
-    backgroundColor: colors.glass,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-  },
-  raised: {
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    button: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    glass: {
+      backgroundColor: colors.glass,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+    },
+    raised: {
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+    },
+  }),
+);

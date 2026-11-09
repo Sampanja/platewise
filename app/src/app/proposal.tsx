@@ -36,7 +36,7 @@ import { recipeCostCents } from '@/domain/recipes';
 import { format, formatCents, formatInteger, formatWholeEuros, strings } from '@/i18n';
 import { addDays, relativeDayLabel } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan.proposal;
 
@@ -451,107 +451,109 @@ function MealCard({
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  summary: {
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  totalRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.border,
-    marginVertical: spacing.sm,
-  },
-  macros: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  macro: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  issue: {
-    gap: spacing.sm,
-    borderColor: colors.accent,
-    borderWidth: 1,
-  },
-  issueHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  fixes: {
-    gap: spacing.sm,
-    alignItems: 'flex-start',
-  },
-  compare: {
-    gap: spacing.xs,
-  },
-  compareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 48,
-    paddingVertical: spacing.xs,
-  },
-  compareDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  lockedCard: {
-    borderColor: colors.accent,
-    borderWidth: 1,
-  },
-  mealTop: {
-    padding: spacing.md,
-  },
-  mealTopInner: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  thumb: {
-    width: 96,
-    height: 96,
-    borderRadius: radii.md,
-  },
-  mealTexts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    marginTop: spacing.xxs,
-  },
-  mealActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xl,
+      gap: spacing.md,
+    },
+    summary: {
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    totalRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.border,
+      marginVertical: spacing.sm,
+    },
+    macros: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
+    macro: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    issue: {
+      gap: spacing.sm,
+      borderColor: colors.accent,
+      borderWidth: 1,
+    },
+    issueHead: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.sm,
+    },
+    fixes: {
+      gap: spacing.sm,
+      alignItems: 'flex-start',
+    },
+    compare: {
+      gap: spacing.xs,
+    },
+    compareRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 48,
+      paddingVertical: spacing.xs,
+    },
+    compareDivider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    lockedCard: {
+      borderColor: colors.accent,
+      borderWidth: 1,
+    },
+    mealTop: {
+      padding: spacing.md,
+    },
+    mealTopInner: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    thumb: {
+      width: 96,
+      height: 96,
+      borderRadius: radii.md,
+    },
+    mealTexts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      marginTop: spacing.xxs,
+    },
+    mealActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      paddingBottom: spacing.md,
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+  }),
+);

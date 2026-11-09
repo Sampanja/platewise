@@ -4,7 +4,7 @@ import { SelectChip, Text } from '@/components/ui';
 import { ALLERGENS, DIETS } from '@/data/catalog';
 import type { AllergenCode, DietCode } from '@/data/types';
 import { strings } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 type Props = {
   allergens: readonly AllergenCode[];
@@ -78,16 +78,18 @@ export function DietPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  sections: {
-    gap: spacing.xl,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    sections: {
+      gap: spacing.xl,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+  }),
+);

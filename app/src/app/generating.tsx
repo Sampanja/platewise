@@ -11,7 +11,7 @@ import { generateMeals, NoRecipesError } from '@/domain/generate';
 import { strings } from '@/i18n';
 import { newId } from '@/lib/id';
 import { today } from '@/lib/dates';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan.generating;
 const STEP_TEXTS = [t.step1, t.step2, t.step3, t.step4];
@@ -159,71 +159,73 @@ export default function GeneratingScreen() {
 
 const STAGE = 200;
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    padding: spacing.xl,
-  },
-  center: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.lg,
-  },
-  stage: {
-    width: STAGE,
-    height: STAGE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  glow: {
-    position: 'absolute',
-    width: STAGE,
-    height: STAGE,
-    borderRadius: STAGE / 2,
-    backgroundColor: colors.accentGlow,
-  },
-  orbit: {
-    position: 'absolute',
-    width: STAGE - 24,
-    height: STAGE - 24,
-    borderRadius: (STAGE - 24) / 2,
-    borderWidth: 2,
-    borderColor: colors.accentSoft,
-  },
-  dot: {
-    position: 'absolute',
-    top: -7,
-    left: (STAGE - 24) / 2 - 6,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: colors.accentText,
-  },
-  plate: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    textAlign: 'center',
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  stepDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.surfaceRaised,
-  },
-  stepDotActive: {
-    backgroundColor: colors.accent,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+      padding: spacing.xl,
+    },
+    center: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.lg,
+    },
+    stage: {
+      width: STAGE,
+      height: STAGE,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.lg,
+    },
+    glow: {
+      position: 'absolute',
+      width: STAGE,
+      height: STAGE,
+      borderRadius: STAGE / 2,
+      backgroundColor: colors.accentGlow,
+    },
+    orbit: {
+      position: 'absolute',
+      width: STAGE - 24,
+      height: STAGE - 24,
+      borderRadius: (STAGE - 24) / 2,
+      borderWidth: 2,
+      borderColor: colors.accentSoft,
+    },
+    dot: {
+      position: 'absolute',
+      top: -7,
+      left: (STAGE - 24) / 2 - 6,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: colors.accentText,
+    },
+    plate: {
+      width: 112,
+      height: 112,
+      borderRadius: 56,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      textAlign: 'center',
+    },
+    dots: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    stepDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.surfaceRaised,
+    },
+    stepDotActive: {
+      backgroundColor: colors.accent,
+    },
+  }),
+);

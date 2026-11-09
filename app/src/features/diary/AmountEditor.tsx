@@ -6,7 +6,7 @@ import type { DiaryMeal, FoodPortion, Macros } from '@/data/types';
 import { DIARY_MEALS } from '@/domain/diary';
 import { format, formatInteger, strings } from '@/i18n';
 import { formatCount } from '@/lib/amounts';
-import { spacing } from '@/theme';
+import { spacing, themedStyles } from '@/theme';
 
 type FoodProps = {
   kind: 'food';
@@ -233,41 +233,43 @@ function MacroCell({ value, unit, label }: { value: number; unit: string; label:
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: spacing.xl,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  gramsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  flex: {
-    flex: 1,
-  },
-  countRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  preview: {
-    gap: spacing.md,
-  },
-  macros: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  cell: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    wrap: {
+      gap: spacing.xl,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    gramsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    flex: {
+      flex: 1,
+    },
+    countRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    preview: {
+      gap: spacing.md,
+    },
+    macros: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    cell: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+  }),
+);

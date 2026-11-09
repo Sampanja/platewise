@@ -7,7 +7,7 @@ import type { Recipe } from '@/data/types';
 import type { DatedMeal } from '@/domain/plan';
 import { format, formatCents, formatInteger, strings } from '@/i18n';
 import { relativeDayLabel, today } from '@/lib/dates';
-import { radii, spacing } from '@/theme';
+import { radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
   meal: DatedMeal;
@@ -78,45 +78,47 @@ export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    aspectRatio: 4 / 3,
-    justifyContent: 'space-between',
-    borderTopLeftRadius: radii.card,
-    borderTopRightRadius: radii.card,
-    overflow: 'hidden',
-  },
-  heroTop: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  heroBottom: {
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
-    gap: spacing.xs,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-  },
-  price: {
-    gap: spacing.xxs,
-    flex: 1,
-  },
-  lunch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  flex: {
-    flex: 1,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    hero: {
+      aspectRatio: 4 / 3,
+      justifyContent: 'space-between',
+      borderTopLeftRadius: radii.card,
+      borderTopRightRadius: radii.card,
+      overflow: 'hidden',
+    },
+    heroTop: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      padding: spacing.lg,
+    },
+    heroBottom: {
+      padding: spacing.xl,
+      paddingBottom: spacing.lg,
+      gap: spacing.xs,
+    },
+    footer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.lg,
+    },
+    price: {
+      gap: spacing.xxs,
+      flex: 1,
+    },
+    lunch: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.lg,
+    },
+    flex: {
+      flex: 1,
+    },
+  }),
+);

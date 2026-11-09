@@ -25,7 +25,7 @@ import { minimumBudgetCents } from '@/domain/generate';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatCents, formatWholeEuros, strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan;
 const STEPS = ['budget', 'eaters', 'meals', 'double', 'diet', 'cravings', 'store', 'summary'] as const;
@@ -412,46 +412,48 @@ function SummaryRow({
   );
 }
 
-const styles = StyleSheet.create({
-  gap: {
-    gap: spacing.lg,
-  },
-  flex: {
-    flex: 1,
-  },
-  center: {
-    textAlign: 'center',
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  note: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-  },
-  warning: {
-    gap: spacing.sm,
-    borderColor: colors.accent,
-  },
-  fixes: {
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingLeft: spacing.xl,
-    paddingRight: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  summaryDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    gap: {
+      gap: spacing.lg,
+    },
+    flex: {
+      flex: 1,
+    },
+    center: {
+      textAlign: 'center',
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    note: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surface,
+    },
+    warning: {
+      gap: spacing.sm,
+      borderColor: colors.accent,
+    },
+    fixes: {
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingLeft: spacing.xl,
+      paddingRight: spacing.md,
+      paddingVertical: spacing.md,
+    },
+    summaryDivider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+  }),
+);

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, PressableScale, Text, useReducedMotion, type IconName } from '@/components/ui';
 import { format, strings } from '@/i18n';
-import { colors, motion, radii, shadows, spacing } from '@/theme';
+import { colors, motion, radii, shadows, spacing, themedStyles } from '@/theme';
 
 /** Route name → icon. Route order and titles come from the tabs layout. */
 const ICONS: Record<string, IconName> = {
@@ -256,72 +256,74 @@ function PrimaryTab({ label, focused, compact, ...pressable }: TabProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    left: SIDE_MARGIN,
-    right: SIDE_MARGIN,
-    // The container includes the space above the bar where the centre button
-    // rises: Android ignores touches outside a parent's bounds.
-    height: BAR_HEIGHT + RISE,
-    justifyContent: 'flex-end',
-  },
-  bar: {
-    height: BAR_HEIGHT,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.glassBorder,
-    justifyContent: 'center',
-    ...shadows.card,
-  },
-  pill: {
-    position: 'absolute',
-    left: PILL_INSET,
-    top: PILL_INSET,
-    bottom: PILL_INSET,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accentSoft,
-  },
-  tabs: {
-    ...StyleSheet.absoluteFill,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  tab: {
-    flex: 1,
-    height: BAR_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: LABEL_BOTTOM,
-    gap: 4,
-  },
-  primaryTab: {
-    flex: 1,
-    height: BAR_HEIGHT + RISE,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: LABEL_BOTTOM,
-    gap: 4,
-  },
-  label: {
-    alignSelf: 'stretch',
-    textAlign: 'center',
-    paddingHorizontal: 1,
-  },
-  labelCompact: {
-    fontSize: 11,
-    letterSpacing: -0.1,
-  },
-  primaryButton: {
-    width: PRIMARY_SIZE,
-    height: PRIMARY_SIZE,
-    borderRadius: PRIMARY_SIZE / 2,
-    backgroundColor: colors.accent,
-    borderWidth: 4,
-    borderColor: colors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.glow,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    container: {
+      position: 'absolute',
+      left: SIDE_MARGIN,
+      right: SIDE_MARGIN,
+      // The container includes the space above the bar where the centre button
+      // rises: Android ignores touches outside a parent's bounds.
+      height: BAR_HEIGHT + RISE,
+      justifyContent: 'flex-end',
+    },
+    bar: {
+      height: BAR_HEIGHT,
+      borderRadius: radii.pill,
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.glassBorder,
+      justifyContent: 'center',
+      ...shadows.card,
+    },
+    pill: {
+      position: 'absolute',
+      left: PILL_INSET,
+      top: PILL_INSET,
+      bottom: PILL_INSET,
+      borderRadius: radii.pill,
+      backgroundColor: colors.accentSoft,
+    },
+    tabs: {
+      ...StyleSheet.absoluteFill,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+    },
+    tab: {
+      flex: 1,
+      height: BAR_HEIGHT,
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      paddingBottom: LABEL_BOTTOM,
+      gap: 4,
+    },
+    primaryTab: {
+      flex: 1,
+      height: BAR_HEIGHT + RISE,
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      paddingBottom: LABEL_BOTTOM,
+      gap: 4,
+    },
+    label: {
+      alignSelf: 'stretch',
+      textAlign: 'center',
+      paddingHorizontal: 1,
+    },
+    labelCompact: {
+      fontSize: 11,
+      letterSpacing: -0.1,
+    },
+    primaryButton: {
+      width: PRIMARY_SIZE,
+      height: PRIMARY_SIZE,
+      borderRadius: PRIMARY_SIZE / 2,
+      backgroundColor: colors.accent,
+      borderWidth: 4,
+      borderColor: colors.bg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...shadows.glow,
+    },
+  }),
+);

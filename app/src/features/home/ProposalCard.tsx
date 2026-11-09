@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, Icon, PressableScale, Text } from '@/components/ui';
 import { strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 /** A generated proposal is waiting for approval. */
 export function ProposalCard() {
@@ -30,23 +30,25 @@ export function ProposalCard() {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    borderColor: colors.accent,
-  },
-  badge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  texts: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+      borderColor: colors.accent,
+    },
+    badge: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    texts: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+  }),
+);

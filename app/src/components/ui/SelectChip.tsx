@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radii, spacing, touchTarget } from '@/theme';
+import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
 
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
@@ -52,23 +52,25 @@ export function SelectChip({
   );
 }
 
-const styles = StyleSheet.create({
-  chip: {
-    minHeight: touchTarget - 4,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceRaised,
-  },
-  selected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    chip: {
+      minHeight: touchTarget - 4,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
+    },
+    selected: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+  }),
+);

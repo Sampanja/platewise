@@ -21,7 +21,7 @@ import type { AllergenCode, DietCode } from '@/data/types';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatInteger, strings } from '@/i18n';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.onboarding;
 const STEPS = ['welcome', 'household', 'diet', 'store', 'goal'] as const;
@@ -218,38 +218,40 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  gap: {
-    gap: spacing.lg,
-  },
-  flex: {
-    flex: 1,
-  },
-  center: {
-    textAlign: 'center',
-  },
-  hero: {
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-  },
-  heroBadge: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  note: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-  },
-  goal: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingTop: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    gap: {
+      gap: spacing.lg,
+    },
+    flex: {
+      flex: 1,
+    },
+    center: {
+      textAlign: 'center',
+    },
+    hero: {
+      alignItems: 'center',
+      paddingVertical: spacing.lg,
+    },
+    heroBadge: {
+      width: 104,
+      height: 104,
+      borderRadius: 52,
+      backgroundColor: colors.accentSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    note: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surface,
+    },
+    goal: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingTop: spacing.sm,
+    },
+  }),
+);

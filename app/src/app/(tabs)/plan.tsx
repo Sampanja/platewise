@@ -13,7 +13,7 @@ import { lastDinnerDate, mealDate } from '@/domain/plan';
 import { ProposalCard } from '@/features/home/ProposalCard';
 import { format, formatCents, strings } from '@/i18n';
 import { relativeDayLabel, shortDate, today } from '@/lib/dates';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan;
 
@@ -150,62 +150,64 @@ export default function PlanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    gap: spacing.xl,
-  },
-  header: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  pinned: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  current: {
-    gap: spacing.lg,
-  },
-  currentHeader: {
-    flexDirection: 'row',
-  },
-  mealRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  past: {
-    opacity: 0.5,
-  },
-  thumb: {
-    width: 52,
-    height: 52,
-    borderRadius: radii.sm,
-  },
-  how: {
-    gap: spacing.lg,
-  },
-  howRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  howNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      gap: spacing.xl,
+    },
+    header: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    pinned: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    current: {
+      gap: spacing.lg,
+    },
+    currentHeader: {
+      flexDirection: 'row',
+    },
+    mealRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    past: {
+      opacity: 0.5,
+    },
+    thumb: {
+      width: 52,
+      height: 52,
+      borderRadius: radii.sm,
+    },
+    how: {
+      gap: spacing.lg,
+    },
+    howRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    howNumber: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  }),
+);

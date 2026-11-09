@@ -12,7 +12,7 @@ import { entryMacros } from '@/domain/diary';
 import { AmountEditor } from '@/features/diary/AmountEditor';
 import { strings } from '@/i18n';
 import { showToast } from '@/lib/toast';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 /** Edits or deletes a diary entry (amount and meal). */
 export default function EntryScreen() {
@@ -110,31 +110,33 @@ export default function EntryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  titleBlock: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  estimate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.xl,
+    },
+    titleBlock: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    estimate: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+  }),
+);
