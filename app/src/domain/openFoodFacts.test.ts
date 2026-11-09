@@ -26,7 +26,7 @@ const response = {
 
 describe('parseOffProduct', () => {
   it('turns a complete product into a barcode food with per-100 g values', () => {
-    const result = parseOffProduct(response, '6408641000148');
+    const result = parseOffProduct(response, '6408641000148', { serving: '1 annos', package: '1 pakkaus' });
     expect(result.status).toBe('found');
     if (result.status !== 'found') return;
     expect(result.food).toMatchObject({

@@ -530,3 +530,90 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 
 - Ehdokaslistan koko ja sisältö kuvantunnistukseen (600–900 riviä) valitaan Fineli-tuonnin yhteydessä.
 - Riittääkö Haikun tarkkuus (kohta 11.5), vai tarvitaanko Sonnet pienemmällä rajalla.
+
+## 17. Avustajachat "Kysy Nupulta"
+
+Chat, jossa hahmo Nuppu (docs/MASCOT.md) vastaa ruokaan, resepteihin ja kirjauksiin liittyviin kysymyksiin. Käyttöliittymä on valmis testivastauksilla (`services/assistant.ts`, `domain/assistantRules.ts`). Oikea toteutus vaihtaa vain palvelun toteutuksen, joten näkymät eivät muutu.
+
+### 17.1 Kulku
+
+```
+Sovellus ──► Edge Function `assistant-chat`
+               1. Auth + tilaus + päiväraja (app_config.max_chat_messages_per_day)
+               2. Turvaluokitus ENNEN mallia (sama sääntöjoukko kuin domain/assistantRules.ts)
+                  └─ osuma → valmis turvavastaus, mallia ei kutsuta
+               3. Konteksti: vain jos käyttäjä on sallinut (chat_share_consent)
+               4. Claude (system prompt + keskustelu, enintään 12 viimeisintä viestiä)
+               5. Turvatarkistus JÄLKEEN: vastauksessa ei lukuja alle kalorilattian,
+                  ei diagnooseja, ei lääkeohjeita → muuten korvataan turvavastauksella
+               6. Kustannus generation_runs-tauluun (kind = 'chat'), ei viestien sisältöä
+```
+
+### 17.2 Malli
+
+| Asetus | Arvo | Perustelu |
+|---|---|---|
+| Malli | `app_config.chat_model`, oletus `claude-haiku-5-5` | Lyhyet, keskustelevat vastaukset; halpa ja nopea. Sonnet 5.5 vertailukohtana testiaineistolla. |
+| Thinking | pois / effort `low` | Vastaukset ovat lyhyitä; viive pidetään alle 3 sekunnin. |
+| `max_tokens` | 600 | Noin 150–250 sanaa riittää. Pitkät vastaukset ovat mobiilissa raskaita. |
+| Streaming | kyllä | Teksti alkaa näkyä heti, "Nuppu miettii…" korvautuu sujuvasti. |
+| Prompt caching | system prompt | Sama kaikille käyttäjille. |
+
+### 17.3 System prompt (luonnos)
+
+```
+Olet Nuppu, Platewise-sovelluksen ystävällinen nauris-hahmo. Puhut suomea,
+sinuttelet, olet lämmin, lyhytsanainen ja vähän hassu. Autat arjen ruoassa:
+reseptivinkit, kasvikset, ylijäämät, ostoslista, kirjaaminen ja juominen.
+
+Rajat (ehdottomat):
+- Et tee diagnooseja etkä anna lääke- tai hoito-ohjeita. Terveyskysymyksissä
+  ohjaat lääkärille, terveydenhoitajalle tai ravitsemusterapeutille.
+- Et koskaan ehdota alle 1 200 kcal (naiset) / 1 500 kcal (miehet) päivässä,
+  yli 25 %:n vajetta, paastoja, ateriankorvikkeita laihdutukseen tai yli
+  0,75 kg:n viikkovauhtia. Jos käyttäjä pyytää näitä, kieltäydyt ystävällisesti
+  ja tarjoat rauhallisen vaihtoehdon.
+- Syömishäiriöön viittaavissa viesteissä (oksentelu, syömättömyys,
+  kompensointi, voimakas kehoahdistus) et anna lukuja, vaan kuuntelet,
+  kannustat hakemaan apua (terveydenhoitaja, lääkäri, SYLI ry:n tukipuhelin)
+  ja kerrot, että kalorit voi piilottaa.
+- Et kommentoi kehoa tai painoa arvottavasti. Et kehu vähäistä syömistä.
+- Jos käyttäjällä on "Piilota kalorit" päällä, et mainitse kaloreita etkä
+  grammamääriä.
+- Allergioista: kehotat aina tarkistamaan pakkausmerkinnät; et vakuuta
+  minkään tuotteen olevan turvallinen allergikolle.
+- Et keksi ravintoarvoja. Jos tarvitset lukuja, käytät vain annettua kontekstia.
+- Jos et tiedä, sanot sen.
+```
+
+**Konteksti** (vain luvalla): tämän päivän syödyt ruoat nimeltä, kcal ja proteiini, päivätavoitteet, vesi, tavoitteen tyyppi ja "Piilota kalorit" -tila. Allergiat ja ruokavalio lähetetään vain sääntöinä ("älä ehdota: maito, gluteeni") eikä syinä, kuten resepteissäkin (kohta 15).
+
+### 17.4 Turvallisuus
+
+- **Kaksi kerrosta:** sääntöpohjainen luokitus ennen mallia ja jälkeen sen (`classifySafety`, yksikkötestattu). Prompti yksin ei riitä (vrt. CLAUDE.md, periaate 4).
+- **Luokat:** `eatingDisorder` → välittävä vastaus ja tukitahot, ei lukuja; `extremeDiet` → kieltäytyminen ja turvarajat; `medical` → ohjaus ammattilaiselle.
+- **Laadunvarmistus:** testiaineisto noin 150 kysymystä, joista 50 rajatapauksia (alle lattian, paastot, diagnoosit, syömishäiriön merkit). Hyväksymisraja: 100 % rajatapauksista turvallisia. Ajetaan jokaisen prompti- tai mallimuutoksen yhteydessä.
+- **Tietosuoja:** viestit ovat terveystietoa. Ne tallennetaan vain laitteelle (MVP), niitä ei lokiteta eikä lähetetä analytiikkaan, ja Anthropic on käsittelijä (DPA). Keskustelun voi tyhjentää.
+
+### 17.5 Kustannusraja
+
+| Raja | Oletus |
+|---|---|
+| `max_chat_messages_per_day` | 20 (sovelluksessa sama raja, `DAILY_MESSAGE_LIMIT`) |
+| `max_ai_cost_per_user_30_days_micro_usd` | sama yhteinen katto kuin kohdassa 11.4 |
+
+Haikulla viesti maksaa noin 0,0005–0,001 $, eli 20 viestiä päivässä on enintään noin 0,6 $ / 30 pv. Katto pysäyttää chatin ennen kuin kustannus ylittää tilausmaksun osuuden.
+
+## 18. Ravintoarvotaulukon luku
+
+Käyttäjä kuvaa pakkauksen ravintoarvotaulukon, ja palvelu lukee 100 g -sarakkeen (`services/nutritionLabel.ts`, nyt testidataa).
+
+- **Edge Function** `read-nutrition-label`: kuvamalli (`app_config.label_model`, oletus Haiku 5.5) palauttaa Zod-skeemalla validoidun JSONin: `{ kcal, protein_g, carbs_g, sugar_g, fat_g, fiber_g?, salt_g?, serving_g?, confidence }`.
+- **Tarkistus koodissa:** energian ja makrojen yhteensopivuus (`energyMismatch`, 4/4/9 + kuitu 2), järkevät rajat (0–950 kcal / 100 g). Poikkeama näytetään käyttäjälle, mutta se ei estä tallennusta.
+- **Käyttäjä tarkistaa aina luvut** ennen tallennusta. Ruoka merkitään lähteellä "Taulukosta" ja tallennetaan omiin ruokiin (`user_foods`). Periaate 2 (makrot Finelistä) ei koske näitä, ja se kerrotaan käyttöliittymässä.
+- Kuvaa ei tallenneta. Raja on sama kuin kuvantunnistuksessa (kohta 11.4).
+
+**Päätetty (2026-11-09):**
+
+13. Avustajachat Haiku 5.5:llä, kaksikerroksinen sääntöpohjainen turvallisuus, konteksti vain luvalla, 20 viestiä päivässä.
+14. Ravintoarvotaulukon luku kuvamallilla, ja käyttäjä vahvistaa luvut. Viivakoodihaku käyttää Open Food Factsia ilman tekoälyä.

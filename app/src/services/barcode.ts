@@ -1,6 +1,7 @@
 import { findCustomFood, useCustomFoodsStore } from '@/data/stores/customFoods';
 import type { Food } from '@/data/types';
 import { foodIdForBarcode, parseOffProduct, type ParsedProduct } from '@/domain/openFoodFacts';
+import { strings } from '@/i18n';
 
 /**
  * Barcode lookup from Open Food Facts (open data, ODbL). This works for real
@@ -41,7 +42,10 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeResult> {
     });
     if (response.status === 404) return { status: 'notFound' };
     if (!response.ok) return { status: 'offline' };
-    const result = parseOffProduct(await response.json(), barcode);
+    const result = parseOffProduct(await response.json(), barcode, {
+      serving: strings.product.servingLabel,
+      package: strings.product.packageLabel,
+    });
     if (result.status === 'found') useCustomFoodsStore.getState().upsert(result.food);
     return result;
   } catch {

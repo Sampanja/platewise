@@ -52,7 +52,7 @@ export function CompanionCard() {
           style={styles.stats}
         >
           <Stat icon="flame" value={format(strings.game.streakDays, { count: game.streak.current })} label={strings.game.streak} />
-          <Stat icon="star" value={String(game.level.level)} label={strings.game.level.replace(' {level}', '')} />
+          <Stat icon="star" value={String(game.level.level)} label={strings.game.levelShort} />
           <Stat icon="target" value={`${questsDone}/3`} label={strings.game.questsShort} />
           <Icon name="chevronRight" size={18} color="textSubtle" />
         </PressableScale>

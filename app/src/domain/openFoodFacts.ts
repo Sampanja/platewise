@@ -86,8 +86,11 @@ export function foodIdForBarcode(barcode: string): string {
   return `off:${barcode}`;
 }
 
-/** Validates an OFF API response and turns it into a food with per-100 g nutrients. */
-export function parseOffProduct(json: unknown, barcode: string): ParsedProduct {
+export type PortionLabels = { serving: string; package: string };
+const DEFAULT_LABELS: PortionLabels = { serving: 'serving', package: 'package' };
+
+/** Validates an OFF API response and turns it into a food with per-100 g nutrients. Portion names come from the UI strings. */
+export function parseOffProduct(json: unknown, barcode: string, labels: PortionLabels = DEFAULT_LABELS): ParsedProduct {
   const parsed = offResponseSchema.safeParse(json);
   if (!parsed.success || !parsed.data.product || Number(parsed.data.status) !== 1) return { status: 'notFound' };
   const p = parsed.data.product;
@@ -115,10 +118,10 @@ export function parseOffProduct(json: unknown, barcode: string): ParsedProduct {
 
   const portions: FoodPortion[] = [];
   if (p.serving_quantity && p.serving_quantity > 0 && p.serving_quantity <= 2000) {
-    portions.push({ label: '1 annos', grams: Math.round(p.serving_quantity) });
+    portions.push({ label: labels.serving, grams: Math.round(p.serving_quantity) });
   }
   if (p.product_quantity && p.product_quantity > 0 && p.product_quantity <= 1500 && p.product_quantity !== p.serving_quantity) {
-    portions.push({ label: '1 pakkaus', grams: Math.round(p.product_quantity) });
+    portions.push({ label: labels.package, grams: Math.round(p.product_quantity) });
   }
 
   return {

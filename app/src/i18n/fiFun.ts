@@ -23,6 +23,7 @@ export const fiFun = {
     title: 'Edistyminen',
     open: 'Avaa edistyminen',
     level: 'Taso {level}',
+    levelShort: 'Taso',
     levelTitles: [
       'Maistelija',
       'Keittiöapulainen',

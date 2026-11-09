@@ -63,7 +63,8 @@ Taulut jakautuvat viiteen ryhmään:
 2. **Käyttäjädata** (oma, osin terveystietoa): profiili, allergiat, ruokavaliot, perusvarat, ravintotavoitteet, kehon tiedot ja painotavoite, tilaus
 3. **Reseptit** (jaettu, uudelleenkäytettävä): reseptit, ainesosat, kuvat. Muodostavat myös reseptikirjaston.
 4. **Suunnitelmat ja seuranta** (oma / backend): ateriasuunnitelmat (viikko tai kauppareissu), vaihtoehdot, ostoslistat, palaute, generointiajot, asetukset
-5. **Päiväkirja ja painonseuranta** (oma, terveystietoa): päiväkirjan rivit, painokirjaukset
+5. **Päiväkirja ja painonseuranta** (oma, terveystietoa): päiväkirjan rivit, omat ruoat, omat ateriat ja reseptit, vesi, painokirjaukset
+6. **Pelillistäminen, muistutukset ja chat** (oma): nähdyt saavutukset, muistutusasetukset; chat-viestit vain laitteella
 
 ---
 
@@ -222,6 +223,9 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 | `last_eaters` | `smallint` | Edellisen kyselyn syöjien määrä. CHECK BETWEEN 1 AND 6 |
 | `last_craving_codes` | `text[]` NOT NULL DEFAULT `'{}'` | Edellisen kyselyn "mitä tekee mieli" -valinnat (ei terveystietoa) |
 | `health_data_consent_at` | `timestamptz` | GDPR art. 9 -suostumus allergia- ja ruokavaliotiedoille, ravintotavoitteille, kehon tiedoille (sukupuoli, syntymävuosi, pituus, paino, raskaus/imetys), painotavoitteelle, painokirjauksille ja päiväkirjalle. Ilman sitä näitä ei voi tallentaa. |
+| `theme_preference` | `text` NOT NULL DEFAULT `'system'` | `system`, `light`, `dark`. CHECK |
+| `gamification_enabled` | `boolean` NOT NULL DEFAULT true | XP, putket, tehtävät, saavutukset ja juhlistukset |
+| `chat_share_consent_at` | `timestamptz` | Lupa näyttää avustajalle päivän kirjaukset ja tavoitteet. NULL = ei lupaa. Peruttavissa. |
 | `hide_calories` | `boolean` NOT NULL DEFAULT false | "Piilota kalorit": päiväkirja ja Koti näyttävät ateriat ilman lukuja. Ei terveystieto, mutta ei analytiikkaan (kertoo käyttäjän suhteesta numeroihin). |
 | `onboarding_completed_at` | `timestamptz` | |
 | `locale` | `text` NOT NULL DEFAULT `'fi'` | |
@@ -274,9 +278,7 @@ Päiväkirjan päivätavoitteet. Ne tulevat kalorilaskimesta (`profile_body` + `
 
 Rivi luodaan oletusarvoilla, kun käyttäjä avaa päiväkirjan ensimmäisen kerran suostumuksen jälkeen. Laskin ehdottaa makrot tavoitteen mukaan (proteiini g/kg, rasva vähintään 25 % energiasta, hiilihydraatit loput), mutta käyttäjä voi muuttaa niitä (`manual_macros`).
 
-| Lisäkenttä | Tyyppi | Huom. |
-|---|---|---|
-| `manual_macros` | `boolean` NOT NULL DEFAULT false | Käyttäjä on säätänyt makroja käsin laskimen jälkeen; uudelleenlaskenta ei ylikirjoita niitä kysymättä |
+Tieto käsin säädöstä on `profile_weight_goals.manual_macros`: uudelleenlaskenta ei ylikirjoita käsin säädettyjä makroja kysymättä. Jaksotettu päivätavoite lasketaan näistä arvoista (proteiini pysyy, hiilihydraatit ja rasva skaalautuvat).
 
 Alaraja on sukupuolen mukaan (1 200 kcal naiset / 1 500 kcal miehet) ja se tarkistetaan Edge Functionissa; tietokannan CHECK pitää yleisen 1 200 kcal:n lattian.
 
@@ -293,22 +295,46 @@ Kalorilaskimen lähtötiedot. Kaikki kentät valinnaisia: laskin on ohitettaviss
 | `activity_level` | `smallint` | 1–5 (kertoimet 1,2 / 1,3 / 1,4 / 1,55 / 1,7) |
 | `exercise_per_week` | `smallint` NOT NULL DEFAULT 0 | Liikuntakerrat; jokainen lisää kerrointa 0,035, katto 2,0 |
 | `pregnancy` | enum `pregnancy_status` NOT NULL DEFAULT `'none'` | `none`, `pregnant`, `breastfeeding`. Kysytään vain, jos `sex = 'female'` |
+| `body_fat_pct` | `numeric(4,1)` | Valinnainen. CHECK BETWEEN 5 AND 60. Annettuna perusaineenvaihdunta lasketaan Katch–McArdle-kaavalla (370 + 21,6 × rasvaton paino). |
+| `everyday_mode` | `text` NOT NULL DEFAULT `'job'` | `job` (työn tyyppi = `activity_level`) tai `steps` |
+| `steps_per_day` | `integer` | Askelten keskiarvo, kun `everyday_mode = 'steps'`. CHECK BETWEEN 0 AND 40000 |
 | `updated_at` | `timestamptz` NOT NULL | |
+
+### `profile_workouts` *(terveystieto)*
+Treenit lajeittain. Kun rivejä on, ne korvaavat `exercise_per_week`-kertoimen.
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` FK → `profiles` ON DELETE CASCADE | PK (`user_id`, `workout_type`) |
+| `workout_type` | `text` | `walk`, `run`, `cycle`, `gym`, `swim`, `ball`, `yoga`, `other` |
+| `per_week` | `smallint` NOT NULL | CHECK BETWEEN 1 AND 14 |
+| `minutes` | `smallint` NOT NULL | CHECK BETWEEN 10 AND 240 |
+
+Kulutus = BMR × arkiaktiivisuus + Σ (MET − 1) × paino × tunnit × kerrat / 7, katto 2,5 × BMR (`domain/energy.ts`).
 
 ### `profile_weight_goals` *(terveystieto)*
 
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
 | `user_id` | `uuid` PK, FK → `profiles` ON DELETE CASCADE | |
-| `goal_type` | enum `weight_goal_type` NOT NULL | `lose`, `maintain`, `gain` |
-| `rate_kg_per_week` | `numeric(3,2)` | `0.25`, `0.50` tai `0.75`; NULL ylläpidossa |
+| `goal_type` | enum `weight_goal_type` NOT NULL | `lose`, `maintain`, `gain` (lihasmassan kasvatus), `recomp` (kehonkoostumuksen muutos) |
+| `rate_kg_per_week` | `numeric(3,2)` | Laihdutus `0.25` / `0.50` / `0.75`, kasvatus `0.10` / `0.25` / `0.40`; NULL ylläpidossa ja rekompositiossa |
+| `diet_style` | `text` NOT NULL DEFAULT `'balanced'` | `balanced`, `high_protein`, `low_carb`, `plant`; esiasettaa makrot |
+| `manual_macros` | `boolean` NOT NULL DEFAULT false | Makroja on säädetty käsin laskimen jälkeen |
+| `cycling_enabled` | `boolean` NOT NULL DEFAULT false | Kalorien jaksotus |
+| `cycling_high_days` | `smallint[]` NOT NULL DEFAULT `'{5,6}'` | 0 = ma … 6 = su |
+| `cycling_extra_kcal` | `smallint` NOT NULL DEFAULT 300 | CHECK BETWEEN 0 AND 1000; sovellus rajaa, ettei pieni päivä alita lattiaa |
+| `adaptive_tdee` | `smallint` | Viikkotarkistuksessa hyväksytty, omista luvuista laskettu kulutus. NULL = kaava |
+| `last_check_in` | `date` | Viikkotarkistuksen viimeisin päätös (päivitetty tai pidetty) |
 | `target_weight_kg` | `numeric(5,1)` | NULL ylläpidossa. Ei saa olla alle BMI 18,5:n painon (tarkistus Edge Functionissa) |
 | `start_weight_kg` | `numeric(5,1)` | Paino tavoitteen asetushetkellä, edistymisen laskentaan |
 | `set_at` | `timestamptz` NOT NULL | |
 
 **Turvasäännöt** (sama puhdas funktio sovelluksessa ja backendissä, yksikkötestattu, `domain/energy.ts`):
 
-- Kokonaiskulutus = Mifflin–St Jeor × aktiivisuuskerroin. Päivätavoite = kulutus ± vauhti × 7 700 kcal / 7.
+- Kokonaiskulutus = BMR (Mifflin–St Jeor tai Katch–McArdle) × arkiaktiivisuus + treenit, tai hyväksytty `adaptive_tdee`. Päivätavoite = kulutus ± vauhti × 7 700 kcal / 7; rekompositio = kulutus × 0,9.
+- Lihasmassan kasvatuksen ylijäämä on enintään 15 % kulutuksesta.
+- Mukautuva kulutus = kirjattujen päivien keskimääräinen energia − painotrendin kulmakerroin × 7 700. Vaatii vähintään 14 päivän välin, 4 punnitusta ja 10 kirjattua päivää 28 päivän ikkunassa; yli 35 % poikkeama kaavasta → epäluotettava, ei ehdoteta.
 - Kalorimäärä ei koskaan alita 1 200 kcal (naiset) / 1 500 kcal (miehet), eikä vaje ylitä 25 % kokonaiskulutuksesta. Jos valinta ylittäisi rajan, vauhtia hidastetaan ja UI kertoo miksi.
 - Alle 18-vuotiaille ja raskaana oleville tai imettäville ei lasketa vajetta (tavoite muuttuu ylläpidoksi ja UI ohjaa terveydenhoitajalle tai lääkärille).
 - Tavoitepaino alle BMI 18,5:n hylätään.
@@ -525,7 +551,7 @@ Jokainen tekoälyä mahdollisesti käyttävä pyyntö (suunnitelma, vaihto, rese
 | `id` | `uuid` PK | |
 | `user_id` | `uuid` FK → `profiles` ON DELETE SET NULL | Anonymisoituu tilin poistossa |
 | `meal_plan_id` | `uuid` FK → `meal_plans` ON DELETE SET NULL | |
-| `kind` | enum `generation_kind` NOT NULL | `plan`, `swap`, `image`, `food_photo`, `library_seed` |
+| `kind` | enum `generation_kind` NOT NULL | `plan`, `swap`, `image`, `food_photo`, `library_seed`, `chat`, `nutrition_label` |
 | `model` | `text` | Vastanneen mallin ID API-vastauksen `model`-kentästä (voi olla varamalli); NULL, jos tekoälyä ei kutsuttu |
 | `requested_model` | `text` | Pyydetty malli (`app_config`), jotta varamallin käyttö näkyy |
 | `prompt_version` | `text` | |
@@ -558,6 +584,9 @@ MVP:n avaimet ja oletusarvot:
 | `min_cost_per_serving_cents` | `150` | Budjetin esitarkistus |
 | `proposal_alternatives_per_meal` | `2` | Valmiit vaihtoehdot per ateria ehdotusnäkymässä |
 | `photo_model` | `"claude-haiku-5-5"` | Ruokakuvan tunnistuksen malli |
+| `label_model` | `"claude-haiku-5-5"` | Ravintoarvotaulukon lukeminen (GENERATION.md, kohta 18) |
+| `chat_model` | `"claude-haiku-5-5"` | Avustajachat (GENERATION.md, kohta 17) |
+| `max_chat_messages_per_day` | `20` | Chat-viestit käyttäjää kohden päivässä |
 | `photo_effort` | `"low"` | Tunnistuksen `output_config.effort` |
 | `max_photo_recognitions_per_day` | `10` | Kuvantunnistukset käyttäjää kohden (kalenteripäivä, Suomen aikaa) |
 | `max_photo_recognitions_per_30_days` | `150` | Kuvantunnistukset käyttäjää kohden, liukuva 30 päivää |
@@ -576,8 +605,11 @@ Yksi rivi = yksi syöty ruoka tai resepti. Rivi viittaa joko Finelin ruokaan gra
 | `user_id` | `uuid` NOT NULL FK → `profiles` ON DELETE CASCADE | |
 | `entry_date` | `date` NOT NULL | Käyttäjän paikallinen päivä |
 | `slot` | enum `diary_slot` NOT NULL | `breakfast`, `lunch`, `dinner`, `snack` |
-| `source` | enum `diary_source` NOT NULL | `food_search`, `recipe`, `photo` |
+| `source` | enum `diary_source` NOT NULL | `food_search`, `recipe`, `photo`, `barcode`, `label`, `own_food`, `own_recipe`, `saved_meal`, `quick` |
 | `fineli_id` | `integer` FK → `fineli_foods` | Ruokahaku ja kuvantunnistus |
+| `user_food_id` | `uuid` FK → `user_foods` | Viivakoodituote, taulukosta luettu tai oma ruoka |
+| `user_recipe_id` | `uuid` FK → `user_recipes` | Oma resepti annoksina |
+| `fiber_g`, `sugar_g`, `salt_g` | `numeric(6,1)` | Triggerin laskemat, NULL jos lähteessä ei ole tietoa |
 | `grams` | `numeric(8,2)` | CHECK BETWEEN 1 AND 3000 |
 | `unit_code` | `text` | Valittu annoskoko näyttöä varten (esim. `KPL_M`); grammat ratkaisevat |
 | `recipe_id` | `uuid` FK → `recipes` | Reseptin lisäys omalta listalta |
@@ -592,7 +624,54 @@ Yksi rivi = yksi syöty ruoka tai resepti. Rivi viittaa joko Finelin ruokaan gra
 - **Reseptin lisäys yhdellä napautuksella:** `recipe_id` + `servings = 1`, `slot` päätellään kellonajasta tai ateriaryhmästä, josta "Lisää" painettiin. Lounaaksi tuplatun päivällisen voi lisätä lounaaksi samalla tavalla.
 - **Viimeksi käytetyt** haetaan päiväkirjasta (`fineli_id`, uusin ensin), erillistä taulua ei tarvita.
 - **Päivän summat** lasketaan kyselyllä (`sum(kcal) … GROUP BY entry_date, slot`). Näkymää tai välitaulua ei tarvita MVP:ssä.
-- **Pikalisäys** ("300 kcal ilman ruokaa") tarvitsee oman lähteen: `source = 'quick'` ja `quick_kcal smallint` (CHECK BETWEEN 1 AND 5000). Silloin `fineli_id` ja `recipe_id` ovat NULL ja trigger kopioi `quick_kcal`:n `kcal`-kenttään (makrot 0). Ylempi CHECK laajennetaan kolmanneksi vaihtoehdoksi. Tämä on ainoa käyttäjän syöttämä energialuku, ja UI näyttää sen ilman makroja.
+- **Pikalisäys** ("300 kcal ilman ruokaa") tarvitsee oman lähteen: `source = 'quick'`, `quick_kcal smallint` (CHECK BETWEEN 1 AND 5000) ja valinnaiset `quick_protein_g`, `quick_carbs_g`, `quick_fat_g`. Silloin viitteet ovat NULL ja trigger kopioi luvut makrokenttiin. CHECK laajennetaan: täsmälleen yksi lähde (Fineli, user_food, resepti, oma resepti tai quick).
+- **Omat ruoat ja viivakoodituotteet** rikkovat tarkoituksella periaatteen "makrot Finelistä": käyttäjä tai Open Food Facts on lähde, ja UI näyttää lähteen aina ("Open Food Facts", "Oma ruoka", "Taulukosta"). Kuvantunnistus käyttää edelleen vain Fineli-listaa.
+- **Koko päivän kopiointi** ja **oma ateria** luovat tavallisia rivejä (ei viittausta kopioituun). Arvio-merkintä poistuu tallennetusta ateriasta.
+
+### `user_foods` *(terveystieto, koska kertoo syömisestä)*
+Omat ruoat, ravintoarvotaulukosta luetut ruoat ja Open Food Facts -tuotteet (välimuisti, jotta kerran skannattu tuote toimii ilman verkkoa).
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `user_id` | `uuid` NOT NULL FK → `profiles` ON DELETE CASCADE | |
+| `source` | `text` NOT NULL | `own`, `label`, `barcode` |
+| `barcode` | `text` | EAN-8 / UPC / EAN-13 / GTIN-14, tarkistusnumero validoitu. UNIQUE (`user_id`, `barcode`) |
+| `name`, `brand` | `text` | Nimi pakollinen, CHECK pituus ≤ 60 |
+| `category` | `text` NOT NULL | Ruokaryhmä (annosvertailut, kasvistehtävät) |
+| `kcal`, `protein_g`, `carbs_g`, `fat_g` | `numeric(6,1)` NOT NULL | Per 100 g. CHECK kcal BETWEEN 0 AND 950 |
+| `fiber_g`, `sugar_g`, `salt_g` | `numeric(6,1)` | Per 100 g, valinnaiset |
+| `serving_g`, `package_g` | `numeric(6,1)` | Annoskoot |
+| `image_url` | `text` | Open Food Factsin kuva (ei kopioida omaan Storageen) |
+| `fetched_at` | `timestamptz` | Viivakoodituotteen hakuaika; vanhat päivitetään taustalla |
+
+**Open Food Facts:** API-vastaus validoidaan Zod-skeemalla (`domain/openFoodFacts.ts`), kJ muunnetaan kcal:ksi, ja ilman makroja tuote on "puutteellinen" (käyttäjä täydentää). Haussa lähetetään vain viivakoodi. Pyynnöissä on oma User-Agent. Lisenssi ODbL: lähdemaininta Lähteet-sivulla ja ruoan tiedoissa.
+
+### `saved_meals` ja `saved_meal_items` *(terveystieto)*
+"Oma ateria": päiväkirjan aterian ruoat tallennettuna yhdeksi kokonaisuudeksi.
+
+| Taulu | Kentät |
+|---|---|
+| `saved_meals` | `id`, `user_id`, `name` (≤ 40), `created_at` |
+| `saved_meal_items` | `saved_meal_id` FK ON DELETE CASCADE, `position`, sama lähdeviite kuin `diary_entries` (`fineli_id` / `user_food_id` / `recipe_id` / `user_recipe_id` / quick) + `grams` tai `servings` |
+
+### `user_recipes` ja `user_recipe_ingredients` *(terveystieto)*
+
+| Taulu | Kentät |
+|---|---|
+| `user_recipes` | `id`, `user_id`, `name` (≤ 60), `servings` (1–20), `created_at`, `updated_at` |
+| `user_recipe_ingredients` | `user_recipe_id` FK ON DELETE CASCADE, `position`, `fineli_id` tai `user_food_id`, `grams` |
+
+Ravintoarvot per annos lasketaan ainesosista (summa / annokset) triggerillä tai näkymällä, ei tallenneta käsin.
+
+### `water_entries`
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` FK | PK (`user_id`, `entry_date`) |
+| `entry_date` | `date` | |
+| `ml` | `smallint` NOT NULL | CHECK BETWEEN 0 AND 8000 |
+
+Vesitavoite `profiles.water_goal_ml` (`smallint` DEFAULT 1500). Ei terveystieto sellaisenaan, mutta käsitellään samoin (ei analytiikkaan).
 
 ### `weight_entries` *(terveystieto)*
 Painonseuranta. Yksi kirjaus per päivä (uusi korvaa saman päivän edellisen).
@@ -608,6 +687,31 @@ Painonseuranta. Yksi kirjaus per päivä (uusi korvaa saman päivän edellisen).
 - Kun liukuva keskiarvo poikkeaa yli 2 kg painosta, jolla tavoite laskettiin (`profile_body.weight_kg`), sovellus ehdottaa tavoitteen päivittämistä. Ehdotusta ei tehdä automaattisesti.
 
 ---
+
+## 6. Muistutukset, pelillistäminen ja chat
+
+### `reminder_settings`
+Ateriamuistutukset. Ilmoitukset ajastetaan paikallisesti laitteella (`expo-notifications`), joten palvelin ei lähetä mitään; taulu vain synkronoi asetukset laitteiden välillä.
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` PK | |
+| `enabled` | `boolean` NOT NULL DEFAULT false | Oletuksena pois |
+| `times` | `jsonb` NOT NULL | `{ breakfast: { on, hour, minute }, … }` |
+
+### `game_progress`
+XP, tasot, putket, tehtävät, viikkohaasteet ja saavutukset **lasketaan** kirjatusta datasta (`domain/gamification.ts`), joten niitä ei tallenneta. Tallennetaan vain, mitkä on jo juhlistettu, jotta juhlistus näkyy kerran:
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` PK | |
+| `seen_achievements` | `text[]` NOT NULL DEFAULT `'{}'` | |
+| `seen_level` | `smallint` NOT NULL DEFAULT 1 | |
+
+Ensimmäisellä laskennalla olemassa oleva edistyminen merkitään nähdyksi ilman juhlistusta. Analytiikkaan voi lähettää tason ja putken pituuden (ei terveystietoa), mutta ei sitä, mistä XP kertyi.
+
+### Chat
+MVP:ssä keskustelu tallennetaan **vain laitteelle** (viimeiset 100 viestiä), koska se voi sisältää terveysaiheita. Palvelin näkee viestit vain käsittelyn ajan (`assistant-chat`, [GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)); `generation_runs`-tauluun kirjataan kustannus (`kind = 'chat'`) ilman sisältöä. Päiväraja lasketaan `generation_runs`-riveistä.
 
 ## RLS-säännöt
 
@@ -625,6 +729,8 @@ Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `aut
 | `profile_excluded_ingredients`, `profile_pantry_items` | R, I, D | `user_id = auth.uid()`. Perusvarojen muutoksen jälkeen sovellus kutsuu `recalculate-plan`-funktiota. | – |
 | `profile_nutrition_goals`, `profile_body`, `profile_weight_goals` | R, I, U | `user_id = auth.uid()`; I ja U vaativat `health_data_consent_at IS NOT NULL` | – |
 | `weight_entries` | R, I, U, D | `user_id = auth.uid()`; I ja U vaativat suostumuksen | – |
+| `profile_workouts`, `user_foods`, `saved_meals`, `saved_meal_items`, `user_recipes`, `user_recipe_ingredients` | R, I, U, D | Oma rivi (alataulut emon kautta); I ja U vaativat suostumuksen | – |
+| `water_entries`, `reminder_settings`, `game_progress` | R, I, U, D | `user_id = auth.uid()` | – |
 | `diary_entries` | R, I, U, D | `user_id = auth.uid()`; I ja U vaativat suostumuksen. `GRANT INSERT/UPDATE` vain sarakkeisiin `entry_date`, `slot`, `source`, `fineli_id`, `grams`, `unit_code`, `recipe_id`, `servings`, `is_estimate`, `photo_batch_id`. `recipe_id` sallitaan vain, jos resepti on luettavissa (oma suunnitelma). | – |
 | `subscriptions` | R | `user_id = auth.uid()` | – |
 | `revenuecat_events` | – | Vain backend | – |
@@ -641,7 +747,7 @@ Huomioita:
 
 - **`profiles.insert`** tehdään `auth.users`-triggerillä (`security definer`), ei sovelluksesta.
 - **`profiles.update`**: sovellus ei saa muuttaa `id`:tä. Toteutetaan sarakekohtaisella `GRANT UPDATE (display_name, household_size, weekly_budget_cents, chain_code, last_meal_count, last_budget_cents, last_eaters, last_craving_codes, health_data_consent_at, onboarding_completed_at, locale)`.
-- **Suostumuksen peruminen** (`health_data_consent_at` → NULL) poistaa `profile_allergens`-, `profile_diets`-, `profile_nutrition_goals`-, `profile_body`-, `profile_weight_goals`-, `weight_entries`- ja `diary_entries`-rivit triggerillä. Sovellus kertoo tämän ennen vahvistusta.
+- **Suostumuksen peruminen** (`health_data_consent_at` → NULL) poistaa `profile_allergens`-, `profile_diets`-, `profile_nutrition_goals`-, `profile_body`-, `profile_weight_goals`-, `profile_workouts`-, `weight_entries`-, `diary_entries`-, `user_foods`-, `saved_meals`- ja `user_recipes`-rivit triggerillä. Sovellus kertoo tämän ennen vahvistusta.
 - **Suunnitelman hyväksyntä ja vaihdot** tehdään Edge Functioneilla (`accept-plan`, `swap-meal`, `recalculate-plan`); sovellus ei kirjoita `meal_plans`-tauluun.
 - **Maksumuuria ei toteuteta RLS:llä.** Edge Functionit tarkistavat `subscriptions`-tilan ennen generointia. Vanhentuneen tilauksen käyttäjä näkee yhä aiemmat listansa (lukuoikeus säilyy), mutta ei saa uusia.
 - **Tilin poisto** tehdään Edge Functionilla (`auth.admin.deleteUser`), joka kaskadoi kaiken yllä kuvatun.
@@ -698,9 +804,15 @@ Huomioita:
 11. **Kauppavertailu:** sama ostoslista hinnoitellaan kaikilla aktiivisilla ketjuilla (`store_chains.price_multiplier`) ja näytetään ehdotusnäkymässä ("Sama lista muissa kaupoissa"). Vertailua ei tallenneta: se lasketaan `shopping_list_items`-riveistä pyydettäessä.
 12. **Kriteerien täyttyminen:** jos ehdotus ylittää budjetin tai toive jää täyttymättä, backend palauttaa syyn ja ratkaisuehdotukset (nosta budjettia X €, vähennä yksi ruokakerta, halvempi kauppa) samalla puhtaalla funktiolla kuin sovellus (`domain/feasibility.ts`). Allergioista ja ruokavaliosta ei jousteta koskaan.
 13. **"Piilota kalorit"** on profiilin asetus (`hide_calories`); se piilottaa luvut näkymistä, mutta tietoja kirjataan normaalisti.
+14. **Omat ruoat ja viivakoodit** (`user_foods`): Open Food Facts on ainoa ulkoinen tietolähde, joka toimii jo käyttöliittymävaiheessa. Lähde näytetään aina; kuvantunnistus pysyy suljetussa Fineli-listassa.
+15. **Kuitu, sokerit ja suola** lasketaan kuten makrot; puuttuva tieto on NULL eikä nolla, ja UI kertoo, jos osa merkinnöistä on ilman tietoa.
+16. **Edistynyt laskin:** rasvaprosentti, askeleet ja treenit (`profile_body`, `profile_workouts`), ruokavaliotyyli ja jaksotus (`profile_weight_goals`). Turvarajat ennallaan ja koodissa.
+17. **Pelillistäminen lasketaan, ei tallenneta.** Ainoastaan juhlistetut tallennetaan (`game_progress`). Vähemmästä syömisestä ei koskaan palkita.
+18. **Chat-viestit vain laitteelle** MVP:ssä; lupa päivän tietojen jakamiseen `chat_share_consent_at`.
+19. **Teema** (`theme_preference`) ja **muistutukset** (`reminder_settings`) ovat käyttäjäasetuksia, eivät terveystietoa.
 
 ## Avoimet kysymykset
 
 1. **Kotitalouden jakaminen** (vaihe 3) vaatii myöhemmin `households`-taulun ja `meal_plans.user_id` → `household_id`. Malli on tehty niin, että muutos on yksi migraatio.
 2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
-3. **Omat ruoat ja viivakoodit päiväkirjaan** (vaihe 3): uusi taulu `user_foods` (nimi, makrot per 100 g) tai avoimen viivakooditietokannan linkitys. Omat ruoat rikkoisivat periaatteen "makrot Finelistä", joten ne merkitään UI:ssa käyttäjän syöttämiksi.
+3. **Viivakoodituotteiden jakaminen käyttäjien kesken:** nyt jokaisella on oma välimuistinsa (`user_foods`). Yhteinen, tarkistettu tuotetaulu vähentäisi hakuja ja virheitä, mutta vaatii moderoinnin.

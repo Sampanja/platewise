@@ -72,6 +72,8 @@ export const fiDiary = {
     offlineBody: 'Tuotetta ei saatu haettua. Tarkista verkkoyhteys ja yritä uudelleen.',
     addOwn: 'Lisää tuote itse',
     scanAgain: 'Skannaa uudelleen',
+    servingLabel: '1 annos',
+    packageLabel: '1 pakkaus',
   },
   source: {
     fineli: 'Fineli',

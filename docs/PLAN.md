@@ -27,6 +27,8 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän kaikkia ruo
 | Tekoäly, ruokakuvan tunnistus | **Claude API** kuvasyötteellä, oletuksena Haiku 5.5 (vaihdettavissa asetuksesta, Sonnet 5.5 vertailukohtana) | Halpa ja nopea. Malli valitsee ruoat suljetusta Fineli-listasta ja arvioi grammat; makrot lasketaan Finelistä. Kustannusraja: [GENERATION.md, kohta 11](GENERATION.md#11-ruokakuvan-tunnistus-päiväkirja). |
 | Tekoäly, kuvat | Erillinen kuvageneraatiomalli (esim. Flux palvelun fal.ai tai Replicate kautta, tai OpenAI:n kuvamalli) | Claude ei tuota kuvia. Kuvat tallennetaan välimuistiin ja niitä käytetään uudelleen samankaltaisille annoksille. |
 | Ravintoarvot | Fineli-data tuotuna omaan Postgres-tauluun | Ilmainen ja luotettava. Päiväkirjan ruokahaku käyttää samaa taulua. Lähde mainitaan sovelluksessa (CC BY 4.0). |
+| Viivakoodit | **Open Food Facts** (avoin API, ODbL) ja `expo-camera` | Ainoa toiminto, joka toimii oikeasti jo käyttöliittymävaiheessa. Tuotteet välimuistiin laitteelle; lähdemaininta Lähteet-sivulla. |
+| Paikallisilmoitukset | `expo-notifications` | Ateriamuistutukset ilman palvelinta tai push-tokenia. |
 | Maksut | **RevenueCat** sekä App Storen ja Google Playn sovelluksen sisäiset ostot | Kaupat vaativat sisäiset ostot digitaalisiin tilauksiin. |
 | Taustatyöt | Supabase Edge Functions ja jono (pg-boss tai Supabasen Queues) | Kuvien generointi asynkronisesti. |
 | Analytiikka ja virheet | PostHog (EU) ja Sentry | Käyttöpolkujen mittaus ja kaatumisraportit. Ei terveystietoja. |
@@ -100,6 +102,7 @@ Alapalkissa viisi välilehteä:
 - **Säästöt:** budjetin ja hinta-arvion erotus kuluvalta kuukaudelta hyväksytyistä suunnitelmista, esim. "Hinta-arvio alitti budjettisi 18 € tässä kuussa". Lasketaan vain silloin, kun hinta-arvio jää budjetin alle; ylitystä ei näytetä "negatiivisena säästönä".
 - **Päivän yhteenveto:** kalorit ja makrot (proteiini, hiilihydraatit, rasva) suhteessa päivätavoitteeseen, napautus avaa Päiväkirjan.
 - **Pääkehotus:** "Tee uusi lista" → Suunnittele. Tyhjä tila (ei suunnitelmaa): esittely ja sama kehotus.
+- **Nupun tervehdys** (kohta 4.9) tilanteen mukaan, putki, taso ja päivän tehtävät yhdellä rivillä (napautus avaa Edistymisen) sekä "Kysy Nupulta".
 
 ### 4.3 Suunnittele (kysely)
 
@@ -141,6 +144,32 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 - **Piilota kalorit:** profiilin asetus, jolla päiväkirja ja Koti näyttävät ateriat ilman lukuja.
 - Sävy on neutraali: tavoitteen ylitystä ei näytetä punaisella varoituksena, vaan pelkkänä lukuna. Kaloritavoitteella on alaraja (kohta 4.7).
 
+**Kilpailijatason lisäykset (marraskuu 2026):**
+
+- **Oma kameranäkymä** kolmella tilalla: annos (lautasopas ja vinkki "kuvaa ylhäältä, koko lautanen näkyvissä"), viivakoodi (skannausviiva, käsin syöttö tarkistusnumerolla) ja ravintoarvotaulukko. Salama, galleria ja lupatilat.
+- **Kuvantunnistuksen tulos:** jokainen ruoka erikseen: grammat, kcal, makrot ja varmuustaso (Varma / Melko varma / Epävarma – tarkista). Muokkaus liukusäätimellä ja käsivertailuilla ("kämmenen kokoinen", "nyrkin kokoinen"), ruoan vaihto, poisto ja puuttuvan lisäys. Merkintä "arvio" näkyy aina.
+- **Viivakoodi** (toimii oikeasti): Open Food Facts, nimi, merkki, kuva, ravintoarvot / 100 g ja annoskoko. Ei löydy / puutteellinen / ei yhteyttä → "Lisää tuote itse".
+- **Ravintoarvotaulukon luku** (`services/nutritionLabel.ts`, testidata): luvut esitäytetään, käyttäjä tarkistaa, energian ja makrojen ristiriidasta kerrotaan.
+- **Omat ruoat, omat ateriat** (päiväkirjan ateria tallennetaan yhdellä napautuksella) **ja omat reseptit** (ainesosat ja annosmäärä, lisätään annos kerrallaan). Lisäysnäkymässä välilehdet Haku / Omat / Reseptit ja pikapainikkeet Kuva, Viivakoodi, Taulukko, Pikalisäys.
+- **Pikalisäys** kaloreilla ja valinnaisilla makroilla; **koko päivän kopiointi**.
+- **Vesi** lasillisina (2,5 dl), tavoite 1,5 l. **Kuitu, sokerit ja suola** päivän näkymässä viitearvoineen (kuitu 25–35 g, suola enintään 5 g).
+- **Raportit:** päivä (energia aterioittain, energian jakauma, kuitu/sokeri/suola, vesi) ja viikko (kcal- ja proteiinipylväät, kirjatut päivät, proteiinitavoitepäivät, vesi). Keskiarvot vain kirjatuista päivistä. Raportti kuvaa, ei arvostele.
+- **Ateriamuistutukset** paikallisilmoituksina, oletuksena pois päältä. Käyttäjä valitsee ateriat ja kellonajat. Teksti ei koskaan mainitse kaloreita tai painoa.
+
+### 4.6 Profiili
+
+- Profiilin tiedot (nimi, talouden koko eli oletussyöjät, viikkobudjetti)
+- Allergiat ja ruokavalio (terveystietosuostumus)
+- Perusvarat
+- Oletuskauppa
+- Kalorilaskin ja painotavoite (kohta 4.7), painonseuranta
+- Kaloritavoitteet (kcal, proteiini, hiilihydraatit, rasva) ja "Piilota kalorit"
+- Edistyminen, Kysy Nupulta ja pelillistämisen kytkin
+- Ateriamuistutukset, ulkoasu (puhelimen asetus / vaalea / tumma) ja haptiikka
+- Tilaus (MVP:n käyttöliittymävaiheessa paikkamerkki)
+- Tietosuoja, käyttöehdot, Fineli- ja Open Food Facts -lähdemaininnat
+- Tilin poisto (vahvistusdialogi, App Storen vaatimus)
+
 ### 4.7 Kalorilaskin, painotavoite ja painonseuranta
 
 Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin on osa ensikäynnistystä (ohitettavissa) ja löytyy Profiilista.
@@ -153,17 +182,31 @@ Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin 
 - **Painonseuranta:** painon kirjaus, kaavio 7 päivän liukuvalla keskiarvolla ja edistyminen kohti tavoitetta. Kun keskiarvo muuttuu yli 2 kg, sovellus ehdottaa tavoitteen päivittämistä.
 - **Terveystieto:** pituus, ikä, paino, raskaus/imetys, tavoite ja painokirjaukset kuuluvat samaan terveystietosuostumukseen kuin allergiat. Ei lokeihin eikä analytiikkaan.
 
-### 4.6 Profiili
+**Edistynyt versio (marraskuu 2026)**, turvarajat ennallaan:
 
-- Profiilin tiedot (nimi, talouden koko eli oletussyöjät, viikkobudjetti)
-- Allergiat ja ruokavalio (terveystietosuostumus)
-- Perusvarat
-- Oletuskauppa
-- Kalorilaskin ja painotavoite (kohta 4.7), painonseuranta
-- Kaloritavoitteet (kcal, proteiini, hiilihydraatit, rasva) ja "Piilota kalorit"
-- Tilaus (MVP:n käyttöliittymävaiheessa paikkamerkki)
-- Tietosuoja, käyttöehdot, Fineli-lähdemaininta
-- Tilin poisto (vahvistusdialogi, App Storen vaatimus)
+- **Tavoitetyypit:** laihdutus, ylläpito, lihasmassan kasvatus (maltillinen ylijäämä, 0,1–0,4 kg/vko, enintään 15 % kulutuksesta) ja kehonkoostumuksen muutos (10 % vaje, paljon proteiinia, ei tavoitepainoa). Rekompositiokaan ei tee vajetta alle 18-vuotiaille, raskaana oleville tai imettäville.
+- **Tarkempi kulutus:** valinnainen rasvaprosentti → Katch–McArdle. Arkiaktiivisuus työn tyypistä tai askelista, treenit lajeittain (kerrat ja kesto, MET-arvot).
+- **Ruokavaliotyylit:** tasapainoinen, korkea proteiini, vähähiilihydraattinen (25 % energiasta, vähintään 100 g, ei ketogeeninen) sekä kasvis/vegaani (+10 % proteiinia). Rasva vähintään 25 % kaikissa. Käsin säädettävissä.
+- **Kalorien jaksotus:** sama viikkokokonaisuus, valittuina päivinä enemmän. Pienet päivät eivät koskaan alita kalorilattiaa. Koti ja Päiväkirja näyttävät päivän tavoitteen.
+- **Mukautuva kulutusarvio ja viikkotarkistus:** 2–4 viikon punnituksista ja kirjauksista lasketaan todellinen kulutus (syöty energia − painotrendi × 7 700). Tarkistus selittää laskennan selkokielellä ja ehdottaa tavoitteen päivitystä. Mitään ei muuteta automaattisesti. Jos arvio poikkeaa kaavasta yli 35 %, se merkitään epäluotettavaksi (todennäköisesti kirjaamatta jääneitä aterioita).
+- **Välitavoitteet ja ennuste:** 25 / 50 / 75 / 100 % -merkit, ennuste nykyisellä tahdilla ja suunnitelman mukainen päivä.
+- Jokainen valinta kertoo, mitä se tarkoittaa ja kenelle se sopii.
+
+### 4.8 Pelillistäminen
+
+- **XP ja tasot** (10 tasonimeä), **putki** jäädytyksillä (yksi jäädytys jokaisesta 7 päivän putkesta, enintään 2, ja yksi väliin jäänyt päivä silloitetaan automaattisesti), **3 päivittäistä tehtävää**, **viikkohaaste** ja **39 saavutusta** mitaleina (pronssi, hopea, kulta).
+- **Juhlistus:** konfetti, juhliva Nuppu ja haptiikka, kerran jokaisesta uudesta saavutuksesta tai tasosta.
+- **Pakolliset säännöt:** palkitaan vain säännöllisyydestä ja hyvistä tavoista (kirjaaminen, kokkaaminen, vesi, budjetissa pysyminen, uudet reseptit, proteiinitavoite). Vähemmästä syömisestä, isommasta vajeesta tai nopeasta laihtumisesta ei koskaan palkita. Ei rangaistuksia, ja XP ei koskaan laske. Testi varmistaa, että samat tavat antavat saman XP:n millä tahansa kalorimäärällä.
+- Kaikki johdetaan kirjatusta datasta (`domain/gamification.ts`), joten mitään ei lasketa kahteen kertaan. Pelillistämisen voi kytkeä pois Profiilista.
+
+### 4.9 Hahmo Nuppu ja chat
+
+- **Nuppu** (docs/MASCOT.md): tilat perus, iloinen, miettivä, juhliva, kokkaava, uninen ja kannustava. Näkyy onboardingissa, tyhjissä tiloissa, juhlistuksissa, Kodin tervehdyksessä ja chatissa. Lopullinen hahmo vaihdetaan kansioon `assets/mascot`.
+- **Kysy Nupulta:** valmiit kysymysehdotukset. Nuppu näkee päivän kirjaukset ja tavoitteet vain luvalla, jonka voi perua. Päiväraja 20 viestiä. Turvallisuus: ei diagnooseja, ohjaus ammattilaiselle, syömishäiriöherkkyys, ei äärimmäisiä dieettejä eikä neuvoja alle turvarajojen ([GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)).
+
+### 4.10 Väriteema
+
+Paprika-paletti vaaleana ja tummana. Käyttäjä voi valita "Puhelimen asetus" (oletus), "Vaalea" tai "Tumma". Kaikki tekstitokenit täyttävät WCAG AA:n kaikilla taustoilla molemmissa teemoissa (`theme/contrast.test.ts`). Värit luetaan aina aktiivisesta teemasta (`colors`, `themedStyles`), ja teeman vaihto säilyttää navigointitilan. Kamera- ja hahmografiikka käyttävät kiinteitä värejä.
 
 ## 5. Vaiheittainen toteutussuunnitelma
 
@@ -188,7 +231,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 10. Tietosuojaseloste, käyttöehdot, allergiavastuuvapaus ja tilin poisto (App Store vaatii).
 11. Suljettu beta TestFlightissa ja Google Playn sisäisessä testauksessa 20–50 käyttäjällä.
 
-**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, viivakoodinlukija, käyttäjän omat ruoat ja reseptit, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
+**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
 
 ### Vaihe 2: Julkaisu ja oppiminen (4–6 viikkoa)
 - Julkaisu kauppoihin ja kauppasivujen optimointi (ASO).
@@ -199,7 +242,6 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 ### Vaihe 3: Laajennukset
 - Ruokahävikin minimointi: "mitä jääkaapissa on" -syöte.
 - Tarkemmat hinnat: kuittiskannaus (OCR) tai kumppanuudet kauppaketjujen kanssa.
-- Viivakoodinlukija ja omat ruoat päiväkirjaan.
 - Kotitalouden jakaminen kahden käyttäjän kesken.
 - Ruotsin ja englannin kieli, myöhemmin muut Pohjoismaat.
 - Ilmoitukset ("huomenna on kanapastaa, ota kana sulamaan").
@@ -213,4 +255,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 | Allergiavirhe | Sääntöpohjainen tarkistus jokaiselle reseptille (myös kirjastossa), vastuuvapaus, allergeenien korostus reseptinäkymässä |
 | Kuvantunnistus arvioi määrät väärin | Merkintä "arvio", käyttäjä vahvistaa ja korjaa ennen tallennusta, makrot aina Finelistä |
 | Kalorilaskuri voi olla haitallinen syömishäiriöistä kärsiville | Neutraali sävy, ei varoitusvärejä ylityksestä, kaloritavoitteen alaraja 1 200 / 1 500 kcal, vaje enintään 25 %, ei laihdutustavoitetta alle 18-vuotiaille, raskaana oleville tai imettäville eikä alipainon puolelle, "Piilota kalorit" -asetus |
+| Pelillistäminen ohjaa syömään vähemmän | Palkitaan vain tavoista; vähemmästä syömisestä ei koskaan palkita (testattu), ei rangaistuksia, kytkettävissä pois |
+| Chat antaa vaarallisen neuvon | Kaksikerroksinen sääntöpohjainen turvaluokitus ennen ja jälkeen mallin, testiaineisto rajatapauksista, ohjaus ammattilaiselle |
+| Open Food Factsin tiedot ovat puutteellisia tai virheellisiä | Zod-validointi, järkevyysrajat, lähdemerkintä "Open Food Facts", käyttäjä voi korjata ja täydentää |
 | Kaupan tarkastus hylkää sovelluksen | Sisäiset ostot oikein, tilin poisto mahdollinen, tietosuojaseloste kunnossa |

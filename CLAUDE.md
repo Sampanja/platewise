@@ -9,7 +9,7 @@ Alapalkissa on viisi välilehteä: Koti, Reseptit, Suunnittele (keskellä, koros
 
 Budjetti kattaa vain sovelluksen ehdottamat ateriat. MVP:ssä generoidaan vain päivällisiä; lounas syntyy tuplaamalla päivällinen. Generointimalli ja rajat ovat ylläpidon asetuksia (`app_config`), eivät käyttäjän valintoja. Tarkemmin: [docs/GENERATION.md](docs/GENERATION.md) ja [docs/DATA_MODEL.md](docs/DATA_MODEL.md).
 
-Koko suunnitelma, vaiheet ja riskit: [docs/PLAN.md](docs/PLAN.md). Nykyinen vaihe: **MVP (vaihe 1), käyttöliittymä testidatalla** (ei vielä Supabasea eikä tekoälyä). Kaikki näkymät käyttävät Iltapöytä-design-järjestelmää.
+Koko suunnitelma, vaiheet ja riskit: [docs/PLAN.md](docs/PLAN.md). Nykyinen vaihe: **MVP (vaihe 1), käyttöliittymä testidatalla** (ei vielä Supabasea eikä tekoälyä). Poikkeus: viivakoodihaku toimii oikeasti Open Food Factsin kautta. Tekoälyä vaativat toiminnot (kuvantunnistus, ravintoarvotaulukko, chat) ovat palvelukerroksen takana (`src/services/*`), jotta oikean toteutuksen voi kytkeä muuttamatta näkymiä. Kaikki näkymät käyttävät Iltapöytä-design-järjestelmää (Paprika-paletti, vaalea ja tumma teema). Hahmo Nuppu ja sen tiedostot: [docs/MASCOT.md](docs/MASCOT.md).
 
 ## Teknologiat
 
@@ -38,6 +38,10 @@ Näistä ei poiketa ilman erillistä päätöstä:
 - Tietokantamuutokset tehdään vain Supabase-migraatioina. RLS on päällä jokaisessa käyttäjädataa sisältävässä taulussa.
 - Koodi, tunnisteet ja commit-viestit englanniksi. Käyttäjälle näkyvät tekstit suomeksi lokalisointitiedostoissa, ei kovakoodattuina.
 - UI: pieni määrä uudelleenkäytettäviä komponentteja, yksi pääkehotus per näkymä, dynaaminen tekstikoko ja riittävät kontrastit.
+- Värit vain teematokeneista (`colors`, ei kovakoodattuja hex-arvoja näkymissä) ja tyylit `themedStyles(() => StyleSheet.create(…))` -muodossa, jotta vaalea ja tumma teema toimivat. Uusien tekstitokenien on läpäistävä `theme/contrast.test.ts` (WCAG AA).
+- Zustand-valitsin ei saa palauttaa uutta taulukkoa tai oliota (`s.entries.filter(…)`), koska se aiheuttaa ikuisen päivityssilmukan. Valitse vakaa arvo ja johda `useMemo`lla.
 - Liiketoimintalogiikalle (allergiatarkistus, makro- ja hintalaskenta, budjetti) yksikkötestit ennen kuin ominaisuus on valmis.
-- Allergia- ja ruokavaliotiedot, kaloritavoitteet, kehon tiedot (pituus, ikä, paino, raskaus/imetys), painotavoite ja painokirjaukset sekä päiväkirja käsitellään terveystietoina: ei lokeihin eikä analytiikkaan.
-- Kalorilaskimen turvarajat (1 200 / 1 500 kcal, vaje ≤ 25 %, ei vajetta alle 18-vuotiaille, raskaana oleville tai imettäville, ei alipainotavoitetta) ovat koodissa (`domain/energy.ts`) ja yksikkötestattuja; niitä ei poisteta eikä siirretä pelkkään käyttöliittymään.
+- Allergia- ja ruokavaliotiedot, kaloritavoitteet, kehon tiedot (pituus, ikä, paino, raskaus/imetys), painotavoite ja painokirjaukset, päiväkirja, omat ruoat, ateriat ja reseptit sekä chat-viestit käsitellään terveystietoina: ei lokeihin eikä analytiikkaan.
+- Kalorilaskimen turvarajat (1 200 / 1 500 kcal, vaje ≤ 25 %, ei vajetta alle 18-vuotiaille, raskaana oleville tai imettäville, ei alipainotavoitetta) ovat koodissa (`domain/energy.ts`) ja yksikkötestattuja; niitä ei poisteta eikä siirretä pelkkään käyttöliittymään. Ne koskevat myös rekompositiota, kalorien jaksotusta ja mukautuvaa kulutusarviota.
+- Pelillistäminen palkitsee vain tavoista (kirjaaminen, kokkaaminen, vesi, budjetti, uudet reseptit, proteiinitavoite), ei koskaan vähemmästä syömisestä, vajeesta tai laihtumisesta, eikä siinä ole rangaistuksia (`domain/gamification.ts`, testattu).
+- Chatin turvallisuus on sääntöpohjainen ennen ja jälkeen mallin (`domain/assistantRules.ts`): ei diagnooseja, ohjaus ammattilaiselle, syömishäiriöherkkyys, ei neuvoja alle turvarajojen. Päivän tiedot välitetään vain käyttäjän luvalla.
