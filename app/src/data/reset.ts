@@ -2,7 +2,9 @@ import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore } from './stores/plans';
 import { useProfileStore } from './stores/profile';
+import { useChatStore } from './stores/chat';
 import { useCustomFoodsStore } from './stores/customFoods';
+import { useGameStore } from './stores/game';
 import { useMyMealsStore } from './stores/myMeals';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
@@ -20,5 +22,7 @@ export async function resetAppData(): Promise<void> {
   useMyMealsStore.getState().reset();
   useWaterStore.getState().reset();
   useRemindersStore.getState().reset();
+  useGameStore.getState().reset();
+  useChatStore.getState().reset();
   await clearDeviceStorage();
 }

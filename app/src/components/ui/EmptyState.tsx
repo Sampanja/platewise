@@ -1,5 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
+import { Mascot } from '@/features/mascot/Mascot';
+import type { MascotState } from '@/features/mascot/types';
 import { colors, spacing, themedStyles } from '@/theme';
 
 import { Button } from './Button';
@@ -13,15 +15,21 @@ export type EmptyStateProps = {
   /** The single call to action of the empty view. */
   action?: { label: string; onPress: () => void; variant?: 'primary' | 'secondary' };
   tone?: 'accent' | 'danger';
+  /** Show the mascot in this state instead of the icon (friendly empty views). */
+  mascot?: MascotState;
 };
 
 /** Explains why a view is empty (or failed) and offers one clear next step. */
-export function EmptyState({ icon, title, body, action, tone = 'accent' }: EmptyStateProps) {
+export function EmptyState({ icon, title, body, action, tone = 'accent', mascot }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <View style={[styles.badge, tone === 'danger' && styles.badgeDanger]}>
-        <Icon name={icon} size={32} color={tone === 'danger' ? 'danger' : 'accentText'} />
-      </View>
+      {mascot ? (
+        <Mascot state={mascot} size={112} />
+      ) : (
+        <View style={[styles.badge, tone === 'danger' && styles.badgeDanger]}>
+          <Icon name={icon} size={32} color={tone === 'danger' ? 'danger' : 'accentText'} />
+        </View>
+      )}
       <View style={styles.texts}>
         <Text variant="title" style={styles.centered} accessibilityRole="header">
           {title}

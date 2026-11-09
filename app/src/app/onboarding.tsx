@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { WizardFrame } from '@/components/WizardFrame';
 import {
   Button,
@@ -80,11 +81,7 @@ export default function OnboardingScreen() {
       body: t.welcomeBody,
       node: (
         <View style={styles.gap}>
-          <View style={styles.hero} accessible={false}>
-            <View style={styles.heroBadge}>
-              <Icon name="pot" size={44} color="accentText" />
-            </View>
-          </View>
+          <MascotSays state="happy" message={strings.mascot.hello} size={96} />
           <Text variant="label" color="textMuted">
             {t.nameLabel}
           </Text>
@@ -228,18 +225,6 @@ const styles = themedStyles(() =>
     },
     center: {
       textAlign: 'center',
-    },
-    hero: {
-      alignItems: 'center',
-      paddingVertical: spacing.lg,
-    },
-    heroBadge: {
-      width: 104,
-      height: 104,
-      borderRadius: 52,
-      backgroundColor: colors.accentSoft,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     note: {
       flexDirection: 'row',

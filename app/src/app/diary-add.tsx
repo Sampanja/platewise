@@ -391,12 +391,12 @@ export default function DiaryAddScreen() {
           }}
           ListFooterComponent={
             tab === 'mine' && savedMeals.length === 0 && ownRecipes.length === 0 ? (
-              <EmptyState icon="layers" title={strings.mine.emptyTitle} body={strings.mine.emptyBody} />
+              <EmptyState icon="layers" mascot="cooking" title={strings.mine.emptyTitle} body={strings.mine.emptyBody} />
             ) : undefined
           }
           ListEmptyComponent={
             tab === 'search' ? (
-              <EmptyState icon="search" title={t.noResultsTitle} body={t.noResultsBody} />
+              <EmptyState icon="search" mascot="thinking" title={t.noResultsTitle} body={t.noResultsBody} />
             ) : tab === 'recipes' ? (
               <EmptyState icon="recipes" title={t.noRecipesTitle} body={t.noRecipesBody} />
             ) : undefined

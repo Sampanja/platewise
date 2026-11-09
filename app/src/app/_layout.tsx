@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useColorScheme, View } from 'react-native';
 
 import { ToastHost } from '@/components/Toast';
+import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
@@ -86,6 +87,7 @@ export default function RootLayout() {
         <View style={{ flex: 1, backgroundColor: colors.bg }} />
       )}
       <ToastHost key={theme} />
+      {mountedTheme === theme ? <CelebrationHost /> : null}
       <StatusBar style={barStyle} />
       {/*
         Android: hide the system navigation bar immersively. It reappears briefly

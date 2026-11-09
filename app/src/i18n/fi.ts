@@ -1,10 +1,12 @@
 /** Finnish UI strings. Placeholders use `{name}` and are filled with `format`. */
 import { fiDiary } from './fiDiary';
+import { fiFun } from './fiFun';
 import { fiGoals } from './fiGoals';
 
 export const fi = {
   ...fiDiary,
   ...fiGoals,
+  ...fiFun,
   common: {
     priceEstimate: 'hinta-arvio',
     priceEstimateTitle: 'Hinta-arvio',

@@ -105,6 +105,10 @@ export type Profile = {
   hapticsEnabled: boolean;
   /** Light, dark or follow the phone. */
   themePreference: ThemePreference;
+  /** XP, streaks, quests, achievements and celebrations. Can be turned off. */
+  gamificationEnabled: boolean;
+  /** The assistant may read today's diary and goals (asked in the chat, revocable). */
+  chatShareConsent: boolean;
   onboardingCompleted: boolean;
 };
 
@@ -123,6 +127,8 @@ export const DEFAULT_PROFILE: Profile = {
   hideCalories: false,
   hapticsEnabled: true,
   themePreference: 'system',
+  gamificationEnabled: true,
+  chatShareConsent: false,
   onboardingCompleted: false,
 };
 

@@ -154,6 +154,16 @@ export default function ProfileScreen() {
               onValueChange={(hapticsEnabled) => profile.update({ hapticsEnabled })}
             />
           </View>
+          <Row icon="trophy" label={strings.game.title} value={strings.game.settingHint} href="/progress" />
+          <Row icon="chat" label={strings.chat.title} href="/chat" />
+          <View style={styles.switchRow}>
+            <SwitchRow
+              label={strings.game.setting}
+              hint={strings.game.settingHint}
+              value={profile.gamificationEnabled}
+              onValueChange={(gamificationEnabled) => profile.update({ gamificationEnabled })}
+            />
+          </View>
           <Row
             icon="bell"
             label={strings.reminders.row}

@@ -111,7 +111,7 @@ export default function WeightScreen() {
         </Card>
 
         {entries.length === 0 ? (
-          <EmptyState icon="chart" title={t.emptyTitle} body={t.emptyBody} />
+          <EmptyState icon="chart" mascot="idle" title={t.emptyTitle} body={t.emptyBody} />
         ) : (
           <>
             <Card style={styles.gap}>

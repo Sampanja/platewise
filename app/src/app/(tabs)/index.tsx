@@ -22,6 +22,7 @@ import type { MealPlan } from '@/data/types';
 import { lastDinnerDate, mealDate, upcomingDinners } from '@/domain/plan';
 import { daySeed, recommendRecipes } from '@/domain/recommend';
 import { BudgetCard } from '@/features/home/BudgetCard';
+import { CompanionCard } from '@/features/home/CompanionCard';
 import { EmptyPlanCard } from '@/features/home/EmptyPlanCard';
 import { NewListCard } from '@/features/home/NewListCard';
 import { NutritionCard } from '@/features/home/NutritionCard';
@@ -77,6 +78,10 @@ export default function HomeScreen() {
             {name.trim() ? format(strings.greetings.withName, { greeting: hello, name: name.trim() }) : hello}
           </Text>
         </View>
+
+        <FadeInView delay={delay()} style={styles.padded}>
+          <CompanionCard />
+        </FadeInView>
 
         {proposal ? (
           <FadeInView delay={delay()} style={styles.padded}>

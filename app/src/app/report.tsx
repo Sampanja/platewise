@@ -64,7 +64,7 @@ export default function ReportScreen() {
               {diaryDayLabel(date)}
             </Text>
             {day.entryCount === 0 ? (
-              <EmptyState icon="chart" title={t.emptyDayTitle} body={t.emptyDayBody} />
+              <EmptyState icon="chart" mascot="encouraging" title={t.emptyDayTitle} body={t.emptyDayBody} />
             ) : (
               <>
                 {hideCalories ? null : (
@@ -142,7 +142,7 @@ export default function ReportScreen() {
         ) : (
           <FadeInView key="week" style={styles.gap}>
             {week.loggedDays === 0 ? (
-              <EmptyState icon="chart" title={t.emptyWeekTitle} body={t.emptyWeekBody} />
+              <EmptyState icon="chart" mascot="encouraging" title={t.emptyWeekTitle} body={t.emptyWeekBody} />
             ) : (
               <>
                 <View style={styles.tiles}>

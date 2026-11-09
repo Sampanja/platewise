@@ -13,7 +13,9 @@ import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
 import { useProfileStore } from './stores/profile';
+import { useChatStore } from './stores/chat';
 import { useCustomFoodsStore } from './stores/customFoods';
+import { useGameStore } from './stores/game';
 import { useMyMealsStore } from './stores/myMeals';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
@@ -36,6 +38,8 @@ export const PERSISTED = [
   useMyMealsStore,
   useWaterStore,
   useRemindersStore,
+  useGameStore,
+  useChatStore,
 ] as const;
 
 /** True once every persisted store has been read from device storage. */
