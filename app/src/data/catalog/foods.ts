@@ -1,5 +1,7 @@
 import type { Food, FoodCategory } from '../types';
 
+import { FOOD_MICROS } from './foodMicros';
+
 /**
  * Diary search list for the UI phase: a stand-in for the Fineli foods and
  * their portion sizes (`fineli_food_units`). Values per 100 g are rounded
@@ -19,9 +21,17 @@ function f(
     id,
     name,
     category,
-    per100g: { kcal, proteinG, carbsG, fatG },
+    per100g: { kcal, proteinG, carbsG, fatG, ...micros(id) },
     portions: portions.map(([label, grams]) => ({ label, grams })),
   };
+}
+
+/** Fibre, sugars and salt from the micronutrient table (all foods have them; a test checks). */
+function micros(id: string) {
+  const values = FOOD_MICROS[id];
+  if (!values) return {};
+  const [fiberG, sugarG, saltG] = values;
+  return { fiberG, sugarG, saltG };
 }
 
 const SLICE: Portion = ['1 viipale', 30];

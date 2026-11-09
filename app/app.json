@@ -4,9 +4,9 @@
     "slug": "platewise",
     "version": "1.0.0",
     "orientation": "portrait",
-    "backgroundColor": "#161814",
+    "backgroundColor": "#14110E",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
@@ -40,6 +40,21 @@
           "photosPermission": "Platewise käyttää valitsemaasi kuvaa ruoan tunnistamiseen päiväkirjaan. Kuvaa ei tallenneta.",
           "cameraPermission": "Platewise käyttää kameraa ruoka-annoksen kuvaamiseen päiväkirjaa varten. Kuvaa ei tallenneta.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Platewise käyttää kameraa ruoka-annoksen, viivakoodin ja ravintoarvotaulukon kuvaamiseen päiväkirjaa varten. Kuvia ei tallenneta.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#C9461A"
         }
       ]
     ],

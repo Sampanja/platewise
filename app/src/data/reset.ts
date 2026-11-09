@@ -2,6 +2,10 @@ import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore } from './stores/plans';
 import { useProfileStore } from './stores/profile';
+import { useCustomFoodsStore } from './stores/customFoods';
+import { useMyMealsStore } from './stores/myMeals';
+import { useRemindersStore } from './stores/reminders';
+import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
 import { clearDeviceStorage } from './storage';
 
@@ -12,5 +16,9 @@ export async function resetAppData(): Promise<void> {
   usePlansStore.getState().reset();
   useProfileStore.getState().reset();
   useWeightStore.getState().reset();
+  useCustomFoodsStore.getState().reset();
+  useMyMealsStore.getState().reset();
+  useWaterStore.getState().reset();
+  useRemindersStore.getState().reset();
   await clearDeviceStorage();
 }

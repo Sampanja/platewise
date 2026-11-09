@@ -8,36 +8,58 @@ import type {
   Recipe,
   RecipeSource,
 } from '@/data/types';
+import { MICRO_KEYS } from '@/data/types';
 
 export type IngredientIndex = Readonly<Record<string, Ingredient>>;
 
 export const ZERO_MACROS: Macros = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
 
+/** Applies fn to the optional micronutrients present in either input. */
+function withMicros(result: Macros, inputs: readonly Macros[], fn: (values: (number | undefined)[]) => number): Macros {
+  for (const key of MICRO_KEYS) {
+    const values = inputs.map((m) => m[key]);
+    if (values.some((v) => v !== undefined)) result[key] = fn(values);
+  }
+  return result;
+}
+
 export function addMacros(a: Macros, b: Macros): Macros {
-  return {
-    kcal: a.kcal + b.kcal,
-    proteinG: a.proteinG + b.proteinG,
-    carbsG: a.carbsG + b.carbsG,
-    fatG: a.fatG + b.fatG,
-  };
+  return withMicros(
+    {
+      kcal: a.kcal + b.kcal,
+      proteinG: a.proteinG + b.proteinG,
+      carbsG: a.carbsG + b.carbsG,
+      fatG: a.fatG + b.fatG,
+    },
+    [a, b],
+    (values) => values.reduce<number>((sum, v) => sum + (v ?? 0), 0),
+  );
 }
 
 export function scaleMacros(m: Macros, factor: number): Macros {
-  return {
-    kcal: m.kcal * factor,
-    proteinG: m.proteinG * factor,
-    carbsG: m.carbsG * factor,
-    fatG: m.fatG * factor,
-  };
+  return withMicros(
+    {
+      kcal: m.kcal * factor,
+      proteinG: m.proteinG * factor,
+      carbsG: m.carbsG * factor,
+      fatG: m.fatG * factor,
+    },
+    [m],
+    ([v]) => (v ?? 0) * factor,
+  );
 }
 
 export function roundMacros(m: Macros): Macros {
-  return {
-    kcal: Math.round(m.kcal),
-    proteinG: Math.round(m.proteinG),
-    carbsG: Math.round(m.carbsG),
-    fatG: Math.round(m.fatG),
-  };
+  return withMicros(
+    {
+      kcal: Math.round(m.kcal),
+      proteinG: Math.round(m.proteinG),
+      carbsG: Math.round(m.carbsG),
+      fatG: Math.round(m.fatG),
+    },
+    [m],
+    ([v]) => Math.round((v ?? 0) * 10) / 10,
+  );
 }
 
 function ingredientOf(index: IngredientIndex, id: string, recipeId: string): Ingredient {

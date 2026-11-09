@@ -10,12 +10,13 @@ import { CHAINS_BY_CODE } from '@/data/catalog';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
+import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
 import { format, formatCents, formatDecimal, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing, touchTarget } from '@/theme';
+import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
 
 const t = strings.profile;
 
@@ -30,6 +31,8 @@ export default function ProfileScreen() {
   const latestWeight = useWeightStore((s) => s.entries.at(-1)?.kg);
   const logWeight = useWeightStore((s) => s.log);
   const version = Constants.expoConfig?.version ?? '1.0.0';
+  const reminders = useRemindersStore();
+  const reminderCount = Object.values(reminders.times).filter((r) => r.on).length;
 
   const listOr = (items: string[]) => (items.length > 0 ? items.join(', ') : t.noneSelected);
 
@@ -151,6 +154,13 @@ export default function ProfileScreen() {
               onValueChange={(hapticsEnabled) => profile.update({ hapticsEnabled })}
             />
           </View>
+          <Row
+            icon="bell"
+            label={strings.reminders.row}
+            value={reminders.enabled ? format(strings.reminders.onCount, { count: reminderCount }) : strings.reminders.off}
+            href={edit('reminders')}
+          />
+          <Row icon="sun" label={t.theme} value={strings.themes[profile.themePreference]} href={edit('theme')} />
           <Row icon="crown" label={t.subscription} value={t.subscriptionValue} href="/paywall" />
           <Row icon="shield" label={t.privacy} href={{ pathname: '/legal/[doc]', params: { doc: 'privacy' } }} />
           <Row icon="file" label={t.terms} href={{ pathname: '/legal/[doc]', params: { doc: 'terms' } }} />
@@ -227,82 +237,84 @@ function Row({
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    gap: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    paddingHorizontal: spacing.xs,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  sectionTitle: {
-    paddingHorizontal: spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: touchTarget + spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  rowIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  switchRow: {
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  lastSwitch: {
-    borderBottomWidth: 0,
-  },
-  note: {
-    marginTop: -spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  reset: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    minHeight: touchTarget + spacing.sm,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.dangerSoft,
-  },
-  version: {
-    textAlign: 'center',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      gap: spacing.xl,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+      paddingHorizontal: spacing.xs,
+    },
+    avatar: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    section: {
+      gap: spacing.sm,
+    },
+    sectionTitle: {
+      paddingHorizontal: spacing.xs,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      minHeight: touchTarget + spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    divider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    rowIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.accentSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    switchRow: {
+      paddingHorizontal: spacing.lg,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    lastSwitch: {
+      borderBottomWidth: 0,
+    },
+    note: {
+      marginTop: -spacing.md,
+      paddingHorizontal: spacing.xs,
+    },
+    reset: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      minHeight: touchTarget + spacing.sm,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      borderColor: colors.dangerSoft,
+    },
+    version: {
+      textAlign: 'center',
+    },
+  }),
+);

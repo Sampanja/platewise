@@ -7,27 +7,42 @@ import { Sheet } from '@/components/Sheet';
 import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { useTabBarSpace } from '@/components/TabBar';
 import {
+  Button,
   Card,
   Chip,
   FadeInView,
   haptics,
+  Icon,
   IconButton,
   OptionRow,
   PressableScale,
   ProgressMeter,
   Ring,
   Text,
+  TextField,
 } from '@/components/ui';
+import { useMyMealsStore } from '@/data/stores/myMeals';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
 import type { DiaryEntry, DiaryMeal } from '@/data/types';
-import { copyMealEntries, DIARY_MEALS, entriesOn, entryMacros, sumEntries, weekKcal } from '@/domain/diary';
+import {
+  copyDayEntries,
+  copyMealEntries,
+  DIARY_MEALS,
+  entriesOn,
+  entryMacros,
+  savedMealItems,
+  sumEntries,
+  weekKcal,
+} from '@/domain/diary';
+import { REFERENCE } from '@/domain/report';
 import { entryAmount } from '@/features/diary/entryAmount';
+import { WaterCard } from '@/features/diary/WaterCard';
 import { WeekChart } from '@/features/diary/WeekChart';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, formatDecimal, formatInteger, strings } from '@/i18n';
 import { addDays, diaryDayLabel, today, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.diary;
 /** Days a meal can be copied to, relative to the shown day. */
@@ -36,8 +51,12 @@ const COPY_OFFSETS = [-1, 1, 2, 3, 4, 5, 6, 7];
 export default function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
-  const [addFor, setAddFor] = useState<DiaryMeal | null>(null);
+  const [menuFor, setMenuFor] = useState<DiaryMeal | null>(null);
   const [copyFor, setCopyFor] = useState<DiaryMeal | null>(null);
+  const [copyDay, setCopyDay] = useState(false);
+  const [saveFor, setSaveFor] = useState<DiaryMeal | null>(null);
+  const [mealName, setMealName] = useState('');
+  const saveMeal = useMyMealsStore((s) => s.saveMeal);
   const addMany = useDiaryStore((s) => s.addMany);
   const entries = useDiaryStore((s) => s.entries);
   const removeEntry = useDiaryStore((s) => s.remove);
@@ -87,10 +106,28 @@ export default function DiaryScreen() {
     }
   };
 
-  const openAdd = (meal: DiaryMeal, method: 'photo' | 'search' | 'recipes') => {
-    setAddFor(null);
-    if (method === 'photo') router.push({ pathname: '/photo', params: { meal, date } });
-    else router.push({ pathname: '/diary-add', params: { meal, date, tab: method } });
+  const openAdd = (meal: DiaryMeal) => router.push({ pathname: '/diary-add', params: { meal, date } });
+
+  const copyWholeDay = (target: LocalDate) => {
+    const copies = copyDayEntries(entries, date, target);
+    setCopyDay(false);
+    if (copies.length === 0) {
+      showToast(strings.copyDay.empty);
+      return;
+    }
+    addMany(copies);
+    haptics.success();
+    showToast(format(strings.copyDay.done, { count: copies.length, day: diaryDayLabel(target) }));
+  };
+
+  const confirmSaveMeal = () => {
+    if (!saveFor || !mealName.trim()) return;
+    const items = savedMealItems(entries, date, saveFor);
+    const saved = saveMeal({ name: mealName.trim(), items });
+    haptics.success();
+    showToast(format(strings.saveMeal.saved, { name: saved.name }));
+    setSaveFor(null);
+    setMealName('');
   };
 
   const kcalA11y = hasGoal
@@ -148,8 +185,33 @@ export default function DiaryScreen() {
                 <MacroBar label={strings.macros.fat} value={totals.fatG} goal={hasGoal ? goals.fatG : null} />
               </View>
             </Card>
+            <View style={styles.micros}>
+              <Micro label={strings.micros.fiber} value={totals.fiberG} hint={strings.micros.fiberRef} />
+              <Micro label={strings.micros.sugar} value={totals.sugarG} />
+              <Micro label={strings.micros.salt} value={totals.saltG} hint={strings.micros.saltRef} max={REFERENCE.saltMaxG} />
+            </View>
           </FadeInView>
           )}
+
+          <View style={styles.tools}>
+            <Button
+              label={strings.report.title}
+              variant="secondary"
+              size="compact"
+              icon={<Icon name="chart" size={18} />}
+              accessibilityLabel={strings.report.open}
+              onPress={() => router.push({ pathname: '/report', params: { date } })}
+            />
+            <Button
+              label={strings.copyDay.action}
+              variant="secondary"
+              size="compact"
+              icon={<Icon name="copy" size={18} />}
+              accessibilityLabel={strings.copyDay.a11y}
+              disabled={dayEntries.length === 0}
+              onPress={() => setCopyDay(true)}
+            />
+          </View>
 
           {DIARY_MEALS.map((meal) => {
             const mealEntries = dayEntries.filter((entry) => entry.meal === meal);
@@ -171,19 +233,17 @@ export default function DiaryScreen() {
                   </View>
                   {mealEntries.length > 0 ? (
                     <IconButton
-                      icon="copy"
+                      icon="more"
                       variant="plain"
-                      accessibilityLabel={format(strings.copyMeal.actionA11y, {
-                        meal: strings.diaryMeals[meal].toLowerCase(),
-                      })}
-                      onPress={() => setCopyFor(meal)}
+                      accessibilityLabel={format(strings.mealMenu.moreA11y, { meal: strings.diaryMeals[meal].toLowerCase() })}
+                      onPress={() => setMenuFor(meal)}
                     />
                   ) : null}
                   <IconButton
                     icon="plus"
                     variant="accent"
                     accessibilityLabel={format(t.addTo, { meal: strings.diaryMeals[meal] })}
-                    onPress={() => setAddFor(meal)}
+                    onPress={() => openAdd(meal)}
                   />
                 </View>
                 {mealEntries.length > 0 ? (
@@ -230,6 +290,8 @@ export default function DiaryScreen() {
             );
           })}
 
+          <WaterCard date={date} />
+
           {hideCalories ? null : (
             <WeekChart days={week} selected={date} goal={hasGoal ? goals.kcal : null} onSelect={setDate} />
           )}
@@ -237,17 +299,68 @@ export default function DiaryScreen() {
       </ScrollView>
 
       <Sheet
-        visible={addFor !== null}
-        onClose={() => setAddFor(null)}
-        title={addFor ? format(t.addTo, { meal: strings.diaryMeals[addFor] }) : t.addMethodsTitle}
+        visible={menuFor !== null}
+        onClose={() => setMenuFor(null)}
+        title={menuFor ? strings.diaryMeals[menuFor] : ''}
       >
-        {addFor ? (
-          <>
-            <OptionRow icon="camera" title={t.methodPhoto} hint={t.methodPhotoHint} selected={false} action onPress={() => openAdd(addFor, 'photo')} />
-            <OptionRow icon="search" title={t.methodSearch} hint={t.methodSearchHint} selected={false} action onPress={() => openAdd(addFor, 'search')} />
-            <OptionRow icon="recipes" title={t.methodRecipe} hint={t.methodRecipeHint} selected={false} action onPress={() => openAdd(addFor, 'recipes')} />
-          </>
-        ) : null}
+        <OptionRow
+          icon="copy"
+          title={strings.mealMenu.copy}
+          selected={false}
+          action
+          onPress={() => {
+            setCopyFor(menuFor);
+            setMenuFor(null);
+          }}
+        />
+        <OptionRow
+          icon="bookmark"
+          title={strings.mealMenu.saveMeal}
+          hint={strings.saveMeal.body}
+          selected={false}
+          action
+          onPress={() => {
+            setSaveFor(menuFor);
+            setMealName(menuFor ? strings.diaryMeals[menuFor] : '');
+            setMenuFor(null);
+          }}
+        />
+      </Sheet>
+
+      <Sheet visible={saveFor !== null} onClose={() => setSaveFor(null)} title={strings.saveMeal.title}>
+        <Text variant="body" color="textMuted">
+          {strings.saveMeal.body}
+        </Text>
+        <TextField
+          value={mealName}
+          onChangeText={setMealName}
+          placeholder={strings.saveMeal.placeholder}
+          accessibilityLabel={strings.saveMeal.name}
+          maxLength={40}
+          autoFocus
+          returnKeyType="done"
+          onSubmitEditing={confirmSaveMeal}
+        />
+        <Button label={strings.saveMeal.save} onPress={confirmSaveMeal} disabled={!mealName.trim()} />
+      </Sheet>
+
+      <Sheet visible={copyDay} onClose={() => setCopyDay(false)} title={strings.copyDay.title}>
+        <Text variant="body" color="textMuted">
+          {strings.copyDay.body}
+        </Text>
+        {COPY_OFFSETS.map((offset) => {
+          const target = addDays(date, offset);
+          return (
+            <OptionRow
+              key={offset}
+              icon="calendar"
+              title={diaryDayLabel(target)}
+              selected={false}
+              action
+              onPress={() => copyWholeDay(target)}
+            />
+          );
+        })}
       </Sheet>
 
       <Sheet
@@ -276,6 +389,27 @@ export default function DiaryScreen() {
   );
 }
 
+/** Fibre, sugars or salt for the day: a plain number with the reference, never a warning colour. */
+function Micro({ label, value, hint, max }: { label: string; value: number | undefined; hint?: string; max?: number }) {
+  const text = value === undefined ? strings.nutrients.unknown : `${formatDecimal(value)} g`;
+  return (
+    <View style={styles.micro} accessible accessibilityLabel={`${label} ${text}${hint ? `, ${hint}` : ''}`}>
+      <Text variant="caption" color="textSubtle">
+        {label}
+      </Text>
+      <Text variant="number">{text}</Text>
+      {hint ? (
+        <Text variant="caption" color="textSubtle" numberOfLines={1}>
+          {hint}
+        </Text>
+      ) : null}
+      {max !== undefined && value !== undefined ? (
+        <ProgressMeter value={value / max} size="thin" accessibilityLabel={`${label} ${text}`} />
+      ) : null}
+    </View>
+  );
+}
+
 function MacroBar({ label, value, goal }: { label: string; value: number; goal: number | null }) {
   const text =
     goal === null
@@ -296,92 +430,110 @@ function MacroBar({ label, value, goal }: { label: string; value: number; goal: 
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  tabular: {
-    fontVariant: ['tabular-nums'],
-  },
-  dayBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    gap: spacing.sm,
-  },
-  dayTitle: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  todayRow: {
-    alignItems: 'center',
-  },
-  todayButton: {
-    minHeight: 36,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accentSoft,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  swipeArea: {
-    gap: spacing.lg,
-  },
-  hiddenNote: {
-    padding: spacing.lg,
-  },
-  summary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xl,
-  },
-  macros: {
-    flex: 1,
-    gap: spacing.md,
-  },
-  macroRow: {
-    gap: spacing.xs,
-  },
-  macroLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  meal: {
-    paddingVertical: spacing.sm,
-  },
-  mealHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  entries: {
-    paddingHorizontal: spacing.sm,
-    paddingBottom: spacing.xs,
-    gap: spacing.xxs,
-  },
-  entry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 56,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  entryMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    dayBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      gap: spacing.sm,
+    },
+    dayTitle: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    todayRow: {
+      alignItems: 'center',
+    },
+    todayButton: {
+      minHeight: 36,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.pill,
+      backgroundColor: colors.accentSoft,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.md,
+    },
+    swipeArea: {
+      gap: spacing.lg,
+    },
+    hiddenNote: {
+      padding: spacing.lg,
+    },
+    summary: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xl,
+    },
+    macros: {
+      flex: 1,
+      gap: spacing.md,
+    },
+    macroRow: {
+      gap: spacing.xs,
+    },
+    macroLabels: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
+    },
+    meal: {
+      paddingVertical: spacing.sm,
+    },
+    mealHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    entries: {
+      paddingHorizontal: spacing.sm,
+      paddingBottom: spacing.xs,
+      gap: spacing.xxs,
+    },
+    entry: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      minHeight: 56,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    micros: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    micro: {
+      flex: 1,
+      gap: spacing.xxs,
+      padding: spacing.md,
+      borderRadius: radii.lg,
+      backgroundColor: colors.surface,
+    },
+    tools: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    entryMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+  }),
+);

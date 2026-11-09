@@ -1,30 +1,39 @@
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Button, EmptyState, haptics, IconButton, Text } from '@/components/ui';
-import { FOODS_BY_ID } from '@/data/catalog';
+import { Button, Chip, EmptyState, haptics, Icon, IconButton, Text } from '@/components/ui';
+import { useFood } from '@/data/foods';
+import { useCustomFoodsStore } from '@/data/stores/customFoods';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
 import { entryMacros } from '@/domain/diary';
 import { AmountEditor } from '@/features/diary/AmountEditor';
+import { NutrientTable } from '@/features/diary/NutrientTable';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, spacing } from '@/theme';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
-/** Adds a food from the search list: portion or grams, meal, macro preview. */
+/**
+ * Adds a food to the diary: portion or grams, meal, macro preview and the
+ * full nutrient table. Works for Fineli foods, own foods and barcode products
+ * (their source is always shown).
+ */
 export default function FoodScreen() {
-  const params = useLocalSearchParams<{ id: string; meal?: DiaryMeal; date?: string }>();
-  const food = FOODS_BY_ID[params.id];
+  const params = useLocalSearchParams<{ id: string; meal?: DiaryMeal | ''; date?: string }>();
+  const food = useFood(params.id);
   const addEntry = useDiaryStore((s) => s.add);
   const removeEntry = useDiaryStore((s) => s.remove);
   const toggleFavorite = useDiaryStore((s) => s.toggleFavoriteFood);
   const isFavorite = useDiaryStore((s) => s.favoriteFoodIds.includes(params.id));
+  const removeCustom = useCustomFoodsStore((s) => s.remove);
   const [grams, setGrams] = useState(food?.portions[0]?.grams ?? 100);
-  const [meal, setMeal] = useState<DiaryMeal>(params.meal ?? 'snack');
+  const [meal, setMeal] = useState<DiaryMeal>(params.meal || 'snack');
+  const [imageFailed, setImageFailed] = useState(false);
 
   if (!food) {
     return (
@@ -35,12 +44,14 @@ export default function FoodScreen() {
     );
   }
 
+  const source = food.source ?? 'fineli';
+  const custom = source !== 'fineli';
   const basis = { kind: 'food' as const, foodId: food.id, per100g: food.per100g };
   const add = () => {
     const entry = addEntry({
-      date: params.date ?? today(),
+      date: params.date || today(),
       meal,
-      name: food.name,
+      name: food.brand ? `${food.name} (${food.brand})` : food.name,
       basis,
       quantity: grams,
       estimate: false,
@@ -53,31 +64,72 @@ export default function FoodScreen() {
     router.dismissTo('/diary');
   };
 
+  const confirmDelete = () =>
+    Alert.alert(strings.customFood.delete, food.name, [
+      { text: strings.common.cancel, style: 'cancel' },
+      {
+        text: strings.common.delete,
+        style: 'destructive',
+        onPress: () => {
+          removeCustom(food.id);
+          showToast(format(strings.customFood.deleted, { name: food.name }));
+          router.back();
+        },
+      },
+    ]);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader
         title={food.name}
         trailing={
-          <IconButton
-            icon="heart"
-            variant="plain"
-            iconColor={isFavorite ? 'danger' : 'textMuted'}
-            fill={isFavorite ? 'danger' : undefined}
-            accessibilityLabel={isFavorite ? strings.foodFavorites.remove : strings.foodFavorites.add}
-            accessibilityState={{ selected: isFavorite }}
-            haptic="select"
-            onPress={() => toggleFavorite(food.id)}
-          />
+          <View style={styles.headerActions}>
+            {custom ? (
+              <IconButton
+                icon="pencil"
+                variant="plain"
+                accessibilityLabel={strings.common.edit}
+                onPress={() => router.push({ pathname: '/custom-food', params: { id: food.id } })}
+              />
+            ) : null}
+            <IconButton
+              icon="heart"
+              variant="plain"
+              iconColor={isFavorite ? 'danger' : 'textMuted'}
+              fill={isFavorite ? 'danger' : undefined}
+              accessibilityLabel={isFavorite ? strings.foodFavorites.remove : strings.foodFavorites.add}
+              accessibilityState={{ selected: isFavorite }}
+              haptic="select"
+              onPress={() => toggleFavorite(food.id)}
+            />
+          </View>
         }
       />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.titleBlock}>
+          {food.imageUrl && !imageFailed ? (
+            <Image
+              source={food.imageUrl}
+              style={styles.image}
+              contentFit="contain"
+              onError={() => setImageFailed(true)}
+              accessibilityIgnoresInvertColors
+            />
+          ) : null}
           <Text variant="display" accessibilityRole="header">
             {food.name}
           </Text>
-          <Text variant="caption" color="textSubtle">
-            {format(strings.diaryAdd.per100, { kcal: formatInteger(food.per100g.kcal) })}
-          </Text>
+          {food.brand ? (
+            <Text variant="body" color="textMuted">
+              {food.brand}
+            </Text>
+          ) : null}
+          <View style={styles.chips}>
+            <Chip tone={custom ? 'accent' : 'neutral'} label={strings.source[source]} />
+            <Text variant="caption" color="textSubtle">
+              {format(strings.diaryAdd.per100, { kcal: formatInteger(food.per100g.kcal) })}
+            </Text>
+          </View>
         </View>
         <AmountEditor
           kind="food"
@@ -88,6 +140,16 @@ export default function FoodScreen() {
           onMealChange={setMeal}
           preview={entryMacros({ basis, quantity: grams })}
         />
+        <NutrientTable values={food.per100g} />
+        {custom ? (
+          <View style={styles.sourceNote}>
+            <Icon name="info" size={16} color="textSubtle" />
+            <Text variant="caption" color="textSubtle" style={styles.flex}>
+              {strings.sourceNote[source as 'barcode' | 'own' | 'label']}
+            </Text>
+          </View>
+        ) : null}
+        {custom ? <Button label={strings.customFood.delete} variant="ghost" size="compact" onPress={confirmDelete} /> : null}
       </ScrollView>
       <View style={styles.footer}>
         <Button label={strings.food.add} onPress={add} disabled={grams <= 0} haptic="none" />
@@ -96,23 +158,48 @@ export default function FoodScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  titleBlock: {
-    gap: spacing.xs,
-    paddingHorizontal: spacing.xs,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.xl,
+    },
+    headerActions: {
+      flexDirection: 'row',
+    },
+    titleBlock: {
+      gap: spacing.xs,
+      paddingHorizontal: spacing.xs,
+    },
+    image: {
+      height: 160,
+      borderRadius: radii.card,
+      backgroundColor: '#FFFFFF',
+      marginBottom: spacing.sm,
+    },
+    chips: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    sourceNote: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      alignItems: 'flex-start',
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+  }),
+);

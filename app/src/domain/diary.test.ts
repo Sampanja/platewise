@@ -2,7 +2,18 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { DiaryEntry } from '@/data/types';
 
-import { copyMealEntries, entryMacros, mealForHour, sumEntries, weekKcal } from './diary';
+import {
+  copyDayEntries,
+  copyMealEntries,
+  entryMacros,
+  mealForHour,
+  ownRecipeId,
+  ownRecipePerServing,
+  savedMealEntries,
+  savedMealItems,
+  sumEntries,
+  weekKcal,
+} from './diary';
 
 const per100g = { kcal: 200, proteinG: 10, carbsG: 20, fatG: 5 };
 
@@ -71,5 +82,45 @@ describe('quick entries and copying', () => {
     expect(copies).toEqual([
       { name: 'x', basis: lunch.basis, quantity: 150, estimate: false, date: '2026-11-09', meal: 'lunch' },
     ]);
+  });
+});
+
+describe('own meals, recipes and day copies', () => {
+  it('adds the typed macros of a quick entry', () => {
+    expect(
+      entryMacros({ basis: { kind: 'quick', macros: { proteinG: 20, carbsG: 30, fatG: 10 } }, quantity: 300 }),
+    ).toEqual({ kcal: 300, proteinG: 20, carbsG: 30, fatG: 10 });
+  });
+
+  it('copies a whole day keeping every meal', () => {
+    const lunch = { ...entry('2026-11-08', 150), meal: 'lunch' as const };
+    const dinner = { ...entry('2026-11-08', 200), meal: 'dinner' as const };
+    const other = entry('2026-11-07', 99);
+    const copies = copyDayEntries([lunch, dinner, other], '2026-11-08', '2026-11-10');
+    expect(copies.map((c) => [c.date, c.meal, c.quantity])).toEqual([
+      ['2026-11-10', 'lunch', 150],
+      ['2026-11-10', 'dinner', 200],
+    ]);
+  });
+
+  it('turns a saved meal back into entries without the estimate mark', () => {
+    const items = savedMealItems([{ ...entry('2026-11-08', 150), estimate: true }], '2026-11-08', 'lunch');
+    const saved = { id: 's', name: 'Aamupala', items, createdAt: '' };
+    const entries = savedMealEntries(saved, '2026-11-09', 'breakfast');
+    expect(entries).toEqual([
+      { name: 'x', basis: items[0].basis, quantity: 150, date: '2026-11-09', meal: 'breakfast', estimate: false },
+    ]);
+  });
+
+  it('divides an own recipe into servings', () => {
+    const perServing = ownRecipePerServing({
+      servings: 4,
+      ingredients: [
+        { foodId: 'a', name: 'a', grams: 400, per100g: { kcal: 100, proteinG: 10, carbsG: 0, fatG: 5 } },
+        { foodId: 'b', name: 'b', grams: 200, per100g: { kcal: 200, proteinG: 0, carbsG: 40, fatG: 0, fiberG: 4 } },
+      ],
+    });
+    expect(perServing).toEqual({ kcal: 200, proteinG: 10, carbsG: 20, fatG: 5, fiberG: 2 });
+    expect(ownRecipeId('abc')).toBe('own:abc');
   });
 });

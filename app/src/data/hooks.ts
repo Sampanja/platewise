@@ -12,6 +12,10 @@ import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
 import { useProfileStore } from './stores/profile';
+import { useCustomFoodsStore } from './stores/customFoods';
+import { useMyMealsStore } from './stores/myMeals';
+import { useRemindersStore } from './stores/reminders';
+import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
 import type { DayNutrition, MealPlan, Recipe, StoreChain } from './types';
 
@@ -21,7 +25,17 @@ import type { DayNutrition, MealPlan, Recipe, StoreChain } from './types';
  * this layer, not the screens.
  */
 
-const PERSISTED = [useProfileStore, useFavoritesStore, usePlansStore, useDiaryStore, useWeightStore] as const;
+export const PERSISTED = [
+  useProfileStore,
+  useFavoritesStore,
+  usePlansStore,
+  useDiaryStore,
+  useWeightStore,
+  useCustomFoodsStore,
+  useMyMealsStore,
+  useWaterStore,
+  useRemindersStore,
+] as const;
 
 /** True once every persisted store has been read from device storage. */
 export function useHydrated(): boolean {

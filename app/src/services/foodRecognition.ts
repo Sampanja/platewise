@@ -1,7 +1,12 @@
 import { testDataPlate } from './foodRecognitionTestData';
 
 /** One recognised food: an id from the closed food list and estimated grams. */
-export type RecognizedFood = { foodId: string; grams: number };
+export type RecognizedFood = {
+  foodId: string;
+  grams: number;
+  /** 0–1. Shown as a plain level; low values ask the user to check the item. */
+  confidence: number;
+};
 
 /**
  * Food photo recognition. Screens depend only on this interface. The real

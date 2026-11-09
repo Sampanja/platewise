@@ -2,52 +2,62 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Easing, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { Sheet } from '@/components/Sheet';
 import {
   Button,
   Card,
   Chip,
   EmptyState,
+  FadeInView,
   haptics,
   Icon,
-  IconButton,
   PressableScale,
-  Skeleton,
+  SelectChip,
+  Slider,
   Text,
-  TextField,
+  useReducedMotion,
 } from '@/components/ui';
-import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
-import type { DiaryMeal } from '@/data/types';
+import type { DiaryMeal, Food } from '@/data/types';
 import { entryMacros, sumEntries } from '@/domain/diary';
-import { foodRecognition, type RecognizedFood } from '@/services/foodRecognition';
+import { closestGuide, confidenceLevel, portionGuides } from '@/domain/portionGuides';
+import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing } from '@/theme';
+import { foodRecognition, type RecognizedFood } from '@/services/foodRecognition';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.photo;
+const r = strings.photoResult;
 
-type Phase = 'pick' | 'analyzing' | 'result' | 'denied' | 'error';
+type Phase = 'pick' | 'analyzing' | 'result' | 'error';
+const MAX_GRAMS = 800;
+
+function basisOf(food: Food) {
+  return { kind: 'food' as const, foodId: food.id, per100g: food.per100g };
+}
 
 /**
- * Food from a photo. The real camera or gallery is used; recognition is test
- * data (stand-in for `recognize-food-photo`). The photo is not stored. The
- * result is always marked "arvio" and can be corrected before saving.
+ * Food from a photo. The photo comes from the app's camera (or the gallery)
+ * and goes only to the recognition service; it is not stored. Every
+ * recognised food shows grams, energy, macros and how sure the estimate is,
+ * and can be changed, resized or removed before saving. Always "arvio".
  */
 export default function PhotoScreen() {
-  const params = useLocalSearchParams<{ meal?: DiaryMeal; date?: string }>();
+  const params = useLocalSearchParams<{ meal?: DiaryMeal; date?: string; uri?: string }>();
   const meal: DiaryMeal = params.meal ?? 'snack';
   const addMany = useDiaryStore((s) => s.addMany);
-  const [phase, setPhase] = useState<Phase>('pick');
-  const [uri, setUri] = useState<string | null>(null);
+  const [uri, setUri] = useState<string | null>(params.uri ?? null);
+  const [phase, setPhase] = useState<Phase>(params.uri ? 'analyzing' : 'pick');
   const [items, setItems] = useState<RecognizedFood[]>([]);
-
-  const [replacing, setReplacing] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [picker, setPicker] = useState<{ mode: 'replace'; index: number } | { mode: 'add' } | null>(null);
 
   useEffect(() => {
     if (phase !== 'analyzing' || !uri) return;
@@ -56,7 +66,7 @@ export default function PhotoScreen() {
       .recognize(uri)
       .then((result) => {
         if (cancelled) return;
-        // Only foods from the closed list are accepted.
+        // Only foods from the closed list are accepted (CLAUDE.md, principle 2).
         setItems(result.filter((item) => FOODS_BY_ID[item.foodId]));
         haptics.success();
         setPhase('result');
@@ -69,76 +79,80 @@ export default function PhotoScreen() {
     };
   }, [phase, uri]);
 
-  const pick = async (source: 'camera' | 'gallery') => {
-    const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.6 };
-    if (source === 'camera') {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        setPhase('denied');
-        return;
-      }
-    }
-    const result =
-      source === 'camera'
-        ? await ImagePicker.launchCameraAsync(options)
-        : await ImagePicker.launchImageLibraryAsync(options);
+  const pickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6 });
     if (result.canceled || !result.assets[0]) return;
     setUri(result.assets[0].uri);
     setPhase('analyzing');
   };
 
-  const setGrams = (index: number, grams: number) =>
-    setItems((current) => current.map((item, i) => (i === index ? { ...item, grams: Math.max(0, grams) } : item)));
-  const removeItem = (index: number) => {
+  const update = (index: number, patch: Partial<RecognizedFood>) =>
+    setItems((current) => current.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  const remove = (index: number) => {
     haptics.tap();
+    setEditing(null);
     setItems((current) => current.filter((_, i) => i !== index));
   };
 
-  const asEntries = items
+  const entries = items
     .filter((item) => item.grams > 0)
     .map((item) => {
       const food = FOODS_BY_ID[item.foodId];
       return {
-        date: params.date ?? today(),
+        date: params.date || today(),
         meal,
         name: food.name,
-        basis: { kind: 'food' as const, foodId: food.id, per100g: food.per100g },
+        basis: basisOf(food),
         quantity: item.grams,
         estimate: true,
       };
     });
+  const total = sumEntries(entries);
 
   const save = () => {
-    addMany(asEntries);
+    addMany(entries);
     haptics.success();
-    showToast(format(t.saved, { count: asEntries.length }));
+    showToast(format(t.saved, { count: entries.length }));
     router.dismissTo('/diary');
   };
 
-  const total = sumEntries(asEntries);
+  const editingItem = editing !== null ? items[editing] : undefined;
+  const editingFood = editingItem ? FOODS_BY_ID[editingItem.foodId] : undefined;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader variant="close" title={t.title} />
       <ScrollView contentContainerStyle={styles.content}>
         {uri ? (
-          <Image source={uri} style={styles.photo} contentFit="cover" accessibilityLabel={t.title} />
-        ) : (
-          <View style={styles.placeholder}>
-            <Icon name="camera" size={48} color="accentText" />
+          <View style={styles.photoWrap}>
+            <Image source={uri} style={styles.photo} contentFit="cover" accessibilityLabel={t.title} />
+            {phase === 'analyzing' ? <ScanOverlay /> : null}
           </View>
-        )}
+        ) : null}
 
         {phase === 'pick' ? (
           <View style={styles.gap}>
+            <View style={styles.placeholder}>
+              <Icon name="camera" size={48} color="accentText" />
+            </View>
             <Text variant="body" color="textMuted">
               {t.intro}
             </Text>
+            <Button
+              label={r.openCamera}
+              icon={<Icon name="camera" size={20} color="textOnAccent" />}
+              onPress={() =>
+                router.replace({ pathname: '/camera', params: { mode: 'photo', meal, date: params.date ?? '' } })
+              }
+            />
+            <Button label={r.fromGallery} variant="secondary" onPress={() => void pickFromGallery()} />
             <Text variant="caption" color="textSubtle">
               {t.testDataNote}
             </Text>
           </View>
         ) : null}
+
+        {phase === 'analyzing' ? <AnalyzingSteps /> : null}
 
         {phase === 'error' ? (
           <EmptyState
@@ -150,30 +164,24 @@ export default function PhotoScreen() {
           />
         ) : null}
 
-        {phase === 'denied' ? (
-          <EmptyState icon="camera" tone="danger" title={t.permissionTitle} body={t.permissionBody} />
-        ) : null}
-
-        {phase === 'analyzing' ? (
-          <View style={styles.gap} accessible accessibilityLabel={t.analyzing} accessibilityLiveRegion="polite">
-            <Text variant="heading">{t.analyzing}</Text>
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} height={64} radius={radii.md} />
-            ))}
-          </View>
-        ) : null}
-
         {phase === 'result' ? (
-          <View style={styles.gap}>
-            <View style={styles.resultHeader}>
-              <Text variant="title" accessibilityRole="header" style={styles.flex}>
-                {t.resultTitle}
+          <FadeInView style={styles.gap}>
+            <Card style={styles.summary}>
+              <View style={styles.row}>
+                <Text variant="overline" color="textSubtle" style={styles.flex}>
+                  {r.total}
+                </Text>
+                <Chip tone="accent" label={strings.common.estimate} />
+              </View>
+              <Text variant="displayLarge" color="accentText" style={styles.tabular}>
+                {format(strings.common.kcal, { value: formatInteger(total.kcal) })}
               </Text>
-              <Chip tone="accent" label={strings.common.estimate} />
-            </View>
-            <Text variant="caption" color="textSubtle">
-              {t.resultNote}
-            </Text>
+              <MacroLine proteinG={total.proteinG} carbsG={total.carbsG} fatG={total.fatG} />
+              <Text variant="caption" color="textSubtle">
+                {t.resultNote}
+              </Text>
+            </Card>
+
             {items.length === 0 ? (
               <Text variant="body" color="textMuted">
                 {t.emptyResult}
@@ -181,181 +189,301 @@ export default function PhotoScreen() {
             ) : (
               items.map((item, index) => {
                 const food = FOODS_BY_ID[item.foodId];
-                const kcal = entryMacros({
-                  basis: { kind: 'food', foodId: food.id, per100g: food.per100g },
-                  quantity: item.grams,
-                }).kcal;
+                const macros = entryMacros({ basis: basisOf(food), quantity: item.grams });
+                const level = confidenceLevel(item.confidence);
+                const guide = closestGuide(food.category, item.grams);
                 return (
-                  <Card key={`${item.foodId}-${index}`} style={styles.item}>
-                    <PressableScale
-                      onPress={() => setReplacing(index)}
-                      accessibilityRole="button"
-                      accessibilityLabel={format(t.changeFood, { name: food.name })}
-                      style={styles.flex}
-                    >
-                      <View style={styles.nameRow}>
-                        <Text variant="bodyStrong" style={styles.shrink}>
-                          {food.name}
-                        </Text>
-                        <Icon name="pencil" size={14} color="accentText" />
-                      </View>
-                      <Text variant="caption" color="textSubtle">
-                        {format(strings.common.kcal, { value: formatInteger(kcal) })}
-                      </Text>
-                    </PressableScale>
-                    <IconButton
-                      icon="minus"
-                      size={40}
-                      haptic="select"
-                      accessibilityLabel={`${strings.food.minus10}: ${food.name}`}
-                      onPress={() => setGrams(index, item.grams - 10)}
-                    />
-                    <TextField
-                      value={item.grams > 0 ? String(item.grams) : ''}
-                      onChangeText={(text) => setGrams(index, Math.min(2000, Number(text.replace(/\D/g, ''))))}
-                      keyboardType="number-pad"
-                      maxLength={4}
-                      accessibilityLabel={format(t.gramsFor, { name: food.name })}
-                      style={styles.gramsField}
-                      trailing={
-                        <Text variant="caption" color="textSubtle">
-                          {strings.common.gUnit}
-                        </Text>
-                      }
-                    />
-                    <IconButton
-                      icon="plus"
-                      size={40}
-                      haptic="select"
-                      accessibilityLabel={`${strings.food.plus10}: ${food.name}`}
-                      onPress={() => setGrams(index, item.grams + 10)}
-                    />
-                    <IconButton
-                      icon="close"
-                      variant="plain"
-                      size={40}
-                      haptic="none"
-                      accessibilityLabel={format(t.removeFood, { name: food.name })}
-                      onPress={() => removeItem(index)}
-                    />
-                  </Card>
+                  <FadeInView key={`${item.foodId}-${index}`} delay={index * 60}>
+                    <Card style={styles.item}>
+                      <PressableScale
+                        onPress={() => setEditing(index)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${food.name}, ${item.grams} g, ${format(strings.common.kcal, {
+                          value: formatInteger(macros.kcal),
+                        })}. ${format(r.confidenceA11y, { level: r.confidence[level] })}. ${r.edit}`}
+                        style={styles.itemBody}
+                      >
+                        <View style={styles.row}>
+                          <Text variant="bodyStrong" style={styles.flex} numberOfLines={2}>
+                            {food.name}
+                          </Text>
+                          <Text variant="number">{format(strings.common.kcal, { value: formatInteger(macros.kcal) })}</Text>
+                        </View>
+                        <View style={styles.row}>
+                          <Text variant="label" color="textMuted" style={styles.flex}>
+                            {`${item.grams} g${guide ? ` · ${format(r.about, { guide: strings.guides[guide.key].toLowerCase() })}` : ''}`}
+                          </Text>
+                          <ConfidenceChip level={level} />
+                        </View>
+                        <MacroLine proteinG={macros.proteinG} carbsG={macros.carbsG} fatG={macros.fatG} />
+                      </PressableScale>
+                    </Card>
+                  </FadeInView>
                 );
               })
             )}
-            {asEntries.length > 0 ? (
-              <Text variant="bodyStrong" style={styles.total}>
-                {format(strings.common.kcal, { value: formatInteger(total.kcal) })}
-              </Text>
-            ) : null}
+
             <Button
-              label={t.addFood}
+              label={r.addMissing}
               variant="ghost"
               size="compact"
-              icon={<Icon name="search" size={18} color="accentText" />}
-              onPress={() =>
-                router.push({ pathname: '/diary-add', params: { meal, date: params.date ?? today(), tab: 'search' } })
-              }
+              icon={<Icon name="plus" size={18} color="accentText" />}
+              onPress={() => setPicker({ mode: 'add' })}
             />
-          </View>
+          </FadeInView>
         ) : null}
       </ScrollView>
 
-      <View style={styles.footer}>
-        {phase === 'result' ? (
-          <>
-            <Button label={t.save} onPress={save} disabled={asEntries.length === 0} haptic="none" />
-            <Button label={t.retake} variant="ghost" size="compact" onPress={() => pick('camera')} />
-          </>
-        ) : phase === 'analyzing' ? null : (
-          <>
-            <Button label={t.camera} icon={<Icon name="camera" size={20} color="textOnAccent" />} onPress={() => pick('camera')} />
-            <Button
-              label={t.gallery}
-              variant="secondary"
-              icon={<Icon name="gallery" size={20} />}
-              onPress={() => pick('gallery')}
+      {phase === 'result' ? (
+        <View style={styles.footer}>
+          <Button label={t.save} onPress={save} disabled={entries.length === 0} haptic="none" />
+        </View>
+      ) : null}
+
+      <Sheet
+        visible={editingFood !== undefined}
+        onClose={() => setEditing(null)}
+        title={editingFood ? format(r.editTitle, { name: editingFood.name }) : ''}
+      >
+        {editingItem && editingFood && editing !== null ? (
+          <View style={styles.gap}>
+            <View style={styles.row}>
+              <Text variant="displayLarge" style={[styles.flex, styles.tabular]}>
+                {`${editingItem.grams} g`}
+              </Text>
+              <Text variant="number" color="accentText">
+                {format(strings.common.kcal, {
+                  value: formatInteger(entryMacros({ basis: basisOf(editingFood), quantity: editingItem.grams }).kcal),
+                })}
+              </Text>
+            </View>
+            <Slider
+              value={editingItem.grams}
+              min={0}
+              max={MAX_GRAMS}
+              step={5}
+              onChange={(grams) => update(editing, { grams })}
+              accessibilityLabel={r.amountSlider}
+              accessibilityValueText={`${editingItem.grams} g`}
             />
-          </>
-        )}
-      </View>
+            <Text variant="overline" color="textSubtle">
+              {r.guidesTitle}
+            </Text>
+            <View style={styles.guides}>
+              {portionGuides(editingFood.category).map((guide) => (
+                <SelectChip
+                  key={guide.key}
+                  icon="hand"
+                  label={`${strings.guides[guide.key]} · ${guide.grams} g`}
+                  selected={editingItem.grams === guide.grams}
+                  role="radio"
+                  onPress={() => update(editing, { grams: guide.grams })}
+                />
+              ))}
+            </View>
+            <View style={styles.sheetActions}>
+              <Button
+                label={r.replace}
+                variant="secondary"
+                size="compact"
+                icon={<Icon name="swap" size={18} />}
+                onPress={() => {
+                  setPicker({ mode: 'replace', index: editing });
+                  setEditing(null);
+                }}
+              />
+              <Button
+                label={r.remove}
+                variant="secondary"
+                size="compact"
+                icon={<Icon name="trash" size={18} color="danger" />}
+                onPress={() => remove(editing)}
+              />
+            </View>
+            <Button label={r.done} onPress={() => setEditing(null)} />
+          </View>
+        ) : null}
+      </Sheet>
+
       <FoodPickerSheet
-        visible={replacing !== null}
-        onClose={() => setReplacing(null)}
-        title={t.changeTitle}
+        visible={picker !== null}
+        title={picker?.mode === 'add' ? r.addMissingTitle : t.changeTitle}
+        onClose={() => setPicker(null)}
         onPick={(foodId) => {
-          if (replacing === null) return;
-          const portion = FOODS_BY_ID[foodId]?.portions[0]?.grams ?? 100;
-          setItems((current) => current.map((item, i) => (i === replacing ? { foodId, grams: portion } : item)));
-          setReplacing(null);
+          const food = FOODS_BY_ID[foodId];
+          if (picker?.mode === 'replace') {
+            // A corrected food is the user's choice: full confidence.
+            update(picker.index, { foodId, confidence: 1 });
+          } else if (food) {
+            setItems((current) => [
+              ...current,
+              { foodId, grams: portionGuides(food.category)[0]?.grams ?? 100, confidence: 1 },
+            ]);
+          }
+          haptics.select();
+          setPicker(null);
         }}
       />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  photo: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: radii.lg,
-  },
-  placeholder: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.border,
-  },
-  gap: {
-    gap: spacing.md,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    padding: spacing.md,
-  },
-  gramsField: {
-    width: 92,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  shrink: {
-    flexShrink: 1,
-  },
-  total: {
-    textAlign: 'right',
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    gap: spacing.sm,
-  },
-});
+function MacroLine({ proteinG, carbsG, fatG }: { proteinG: number; carbsG: number; fatG: number }) {
+  return (
+    <Text variant="caption" color="textSubtle">
+      {`${strings.macros.protein} ${formatInteger(proteinG)} g · ${strings.macros.carbs} ${formatInteger(
+        carbsG,
+      )} g · ${strings.macros.fat} ${formatInteger(fatG)} g`}
+    </Text>
+  );
+}
+
+function ConfidenceChip({ level }: { level: 'high' | 'medium' | 'low' }) {
+  return <Chip tone={level === 'high' ? 'success' : level === 'medium' ? 'neutral' : 'accent'} label={r.confidence[level]} />;
+}
+
+/** Sweeping line and soft pulse over the photo while recognising. */
+function ScanOverlay() {
+  const reducedMotion = useReducedMotion();
+  const [sweep] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (reducedMotion) return;
+    const loop = Animated.loop(
+      Animated.timing(sweep, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.cubic), useNativeDriver: true }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [sweep, reducedMotion]);
+  return (
+    <View style={[StyleSheet.absoluteFill, styles.scanWrap]} pointerEvents="none">
+      <View style={styles.scanTint} />
+      <Animated.View
+        style={[
+          styles.scanLine,
+          { transform: [{ translateY: sweep.interpolate({ inputRange: [0, 1], outputRange: [0, PHOTO_HEIGHT - 4] }) }] },
+        ]}
+      />
+    </View>
+  );
+}
+
+/** Changing status lines while the recognition service works. */
+function AnalyzingSteps() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep((s) => Math.min(s + 1, r.analyzingSteps.length - 1)), 550);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <View style={styles.analyzing} accessible accessibilityLabel={t.analyzing} accessibilityLiveRegion="polite">
+      {r.analyzingSteps.map((text, i) => (
+        <View key={text} style={styles.stepRow}>
+          <Icon name={i < step ? 'checkCircle' : 'sparkles'} size={20} color={i <= step ? 'accentText' : 'textSubtle'} />
+          <Text variant={i === step ? 'bodyStrong' : 'body'} color={i <= step ? 'text' : 'textSubtle'}>
+            {text}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const PHOTO_HEIGHT = 240;
+
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xl,
+      gap: spacing.lg,
+    },
+    gap: {
+      gap: spacing.md,
+    },
+    flex: {
+      flex: 1,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    tabular: {
+      fontVariant: ['tabular-nums'],
+    },
+    photoWrap: {
+      height: PHOTO_HEIGHT,
+      borderRadius: radii.card,
+      overflow: 'hidden',
+      backgroundColor: colors.surfaceRaised,
+    },
+    photo: {
+      width: '100%',
+      height: '100%',
+    },
+    placeholder: {
+      height: 180,
+      borderRadius: radii.card,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scanWrap: {
+      overflow: 'hidden',
+    },
+    scanTint: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    },
+    scanLine: {
+      height: 4,
+      backgroundColor: colors.accent,
+      shadowColor: colors.accent,
+      shadowOpacity: 0.9,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    analyzing: {
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radii.card,
+      backgroundColor: colors.surface,
+    },
+    stepRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    summary: {
+      gap: spacing.xs,
+    },
+    item: {
+      padding: 0,
+    },
+    itemBody: {
+      padding: spacing.lg,
+      gap: spacing.xs,
+    },
+    guides: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    sheetActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+  }),
+);

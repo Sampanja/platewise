@@ -1,4 +1,4 @@
-import type { DiaryEntry, DiaryMeal, Macros } from '@/data/types';
+import type { DiaryEntry, DiaryMeal, Macros, OwnRecipe, SavedMeal, SavedMealItem } from '@/data/types';
 import { addDays, type LocalDate } from '@/lib/dates';
 
 import { addMacros, scaleMacros, ZERO_MACROS } from './recipes';
@@ -13,7 +13,7 @@ export function entryMacros(entry: Pick<DiaryEntry, 'basis' | 'quantity'>): Macr
     case 'recipe':
       return scaleMacros(entry.basis.perServing, entry.quantity);
     case 'quick':
-      return { kcal: entry.quantity, proteinG: 0, carbsG: 0, fatG: 0 };
+      return { kcal: entry.quantity, proteinG: 0, carbsG: 0, fatG: 0, ...entry.basis.macros };
   }
 }
 
@@ -53,4 +53,42 @@ export function mealForHour(hour: number): DiaryMeal {
   if (hour >= 10 && hour < 14) return 'lunch';
   if (hour >= 16 && hour < 21) return 'dinner';
   return 'snack';
+}
+
+export type NewEntry = Omit<DiaryEntry, 'id' | 'createdAt'>;
+
+/** Copies a whole day's entries to another day, keeping each entry's meal. */
+export function copyDayEntries(entries: readonly DiaryEntry[], from: LocalDate, to: LocalDate): NewEntry[] {
+  return entries
+    .filter((entry) => entry.date === from)
+    .map(({ name, basis, quantity, estimate, meal }) => ({ name, basis, quantity, estimate, meal, date: to }));
+}
+
+/** A meal's entries as a reusable "oma ateria". Estimates become plain amounts once saved. */
+export function savedMealItems(entries: readonly DiaryEntry[], date: LocalDate, meal: DiaryMeal): SavedMealItem[] {
+  return entries
+    .filter((entry) => entry.date === date && entry.meal === meal)
+    .map(({ name, basis, quantity }) => ({ name, basis, quantity }));
+}
+
+export function savedMealEntries(saved: SavedMeal, date: LocalDate, meal: DiaryMeal): NewEntry[] {
+  return saved.items.map(({ name, basis, quantity }) => ({ name, basis, quantity, date, meal, estimate: false }));
+}
+
+export function savedMealMacros(saved: Pick<SavedMeal, 'items'>): Macros {
+  return sumEntries(saved.items);
+}
+
+/** Own recipe nutrients per serving: the ingredients' sum divided by the servings. */
+export function ownRecipePerServing(recipe: Pick<OwnRecipe, 'ingredients' | 'servings'>): Macros {
+  const total = recipe.ingredients.reduce(
+    (sum, ingredient) => addMacros(sum, scaleMacros(ingredient.per100g, ingredient.grams / 100)),
+    ZERO_MACROS,
+  );
+  return scaleMacros(total, 1 / Math.max(1, recipe.servings));
+}
+
+/** Diary basis id for an own recipe, kept apart from library recipe ids. */
+export function ownRecipeId(id: string): string {
+  return `own:${id}`;
 }

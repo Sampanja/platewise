@@ -1,5 +1,8 @@
 /** Finnish UI strings. Placeholders use `{name}` and are filled with `format`. */
+import { fiDiary } from './fiDiary';
+
 export const fi = {
+  ...fiDiary,
   common: {
     priceEstimate: 'hinta-arvio',
     priceEstimateTitle: 'Hinta-arvio',
@@ -25,6 +28,7 @@ export const fi = {
     skip: 'Ohita',
     continue: 'Jatka',
     edit: 'Muokkaa',
+    delete: 'Poista',
     remove: 'Poista',
     undo: 'Kumoa',
     yes: 'Kyllä',
@@ -557,6 +561,7 @@ export const fi = {
     sectionApp: 'Sovellus',
     haptics: 'Haptinen palaute',
     hapticsHint: 'Kevyt värinä napautuksissa',
+    theme: 'Ulkoasu',
     subscription: 'Tilaus',
     subscriptionValue: 'Kokeilu',
     privacy: 'Tietosuoja',
@@ -579,6 +584,8 @@ export const fi = {
     dietBody: 'Valitse kaikki, jotka koskevat sinua.',
     pantryTitle: 'Perusvarat',
     pantryBody: 'Perusvarat oletetaan löytyvän kotoa: ne eivät tule ostoslistaan eivätkä hinta-arvioon.',
+    themeTitle: 'Ulkoasu',
+    themeBody: 'Vaalea teema on raikas päivällä, tumma lepää silmää illalla.',
     storeTitle: 'Oletuskauppa',
     storeBody: 'Hinta-arviot lasketaan tämän kaupan hintatason mukaan.',
     householdTitle: 'Kotitalouden koko',
@@ -618,7 +625,8 @@ export const fi = {
     termsTitle: 'Käyttöehdot',
     termsBody: 'Käyttöehdot julkaistaan ennen sovelluksen julkaisua. Hinta-arviot ja ravintoarvot ovat suuntaa antavia. Tarkista allergeenit aina tuotteiden pakkausmerkinnöistä.',
     sourcesTitle: 'Lähteet',
-    sourcesBody: 'Ravintoarvot: Fineli, THL (CC BY 4.0). Testiversiossa arvot ovat pyöristettyjä esimerkkiarvoja. Kuvat: Unsplash ja TheMealDB.',
+    sourcesBody:
+      'Ravintoarvot: Fineli, THL (CC BY 4.0). Testiversiossa arvot ovat pyöristettyjä esimerkkiarvoja.\n\nViivakoodituotteet: Open Food Facts (openfoodfacts.org), avoin tietokanta Open Database License (ODbL) -lisenssillä. Tuotetiedot ovat yhteisön keräämiä; tarkista tarvittaessa pakkauksesta.\n\nKuvat: Unsplash ja TheMealDB.',
   },
   calculator: {
     title: 'Kaloritarve',
@@ -761,6 +769,14 @@ export const fi = {
   errors: {
     genericTitle: 'Jotain meni pieleen',
     genericBody: 'Yritä hetken päästä uudelleen.',
+  },
+  themes: {
+    system: 'Puhelimen asetus',
+    systemHint: 'Vaihtuu puhelimen vaalean ja tumman tilan mukana',
+    light: 'Vaalea',
+    lightHint: 'Raikas ja kirkas, hyvä päivänvalossa',
+    dark: 'Tumma',
+    darkHint: 'Lämmin ja pehmeä, lepää silmää illalla',
   },
 } as const;
 

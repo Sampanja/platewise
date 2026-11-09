@@ -19,13 +19,20 @@ import {
 import { MIN_KCAL_GOAL, PANTRY_ELIGIBLE } from '@/data/catalog';
 import { useProfileStore } from '@/data/stores/profile';
 import { ChainPicker } from '@/features/shared/ChainPicker';
+import { RemindersEditor } from '@/features/profile/RemindersEditor';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatCents, formatInteger, strings } from '@/i18n';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.profileEdit;
 
-type Section = 'name' | 'household' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | 'goals';
+const THEME_OPTIONS = [
+  { value: 'system', hint: 'systemHint', icon: 'phone' },
+  { value: 'light', hint: 'lightHint', icon: 'sun' },
+  { value: 'dark', hint: 'darkHint', icon: 'moon' },
+] as const;
+
+type Section = 'name' | 'household' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
 
 /**
  * Edits one profile setting. Changes are saved as they are made (to the local
@@ -108,6 +115,29 @@ export default function ProfileEditScreen() {
       title: t.storeTitle,
       body: t.storeBody,
       node: <ChainPicker value={profile.chainCode} onChange={(chainCode) => profile.update({ chainCode })} />,
+    },
+    reminders: {
+      title: strings.reminders.title,
+      body: strings.reminders.body,
+      node: <RemindersEditor />,
+    },
+    theme: {
+      title: t.themeTitle,
+      body: t.themeBody,
+      node: (
+        <View style={styles.gap} accessibilityRole="radiogroup">
+          {THEME_OPTIONS.map((option) => (
+            <OptionRow
+              key={option.value}
+              icon={option.icon}
+              title={strings.themes[option.value]}
+              hint={strings.themes[option.hint]}
+              selected={profile.themePreference === option.value}
+              onPress={() => profile.update({ themePreference: option.value })}
+            />
+          ))}
+        </View>
+      ),
     },
     allergies: {
       title: t.allergiesTitle,
@@ -261,41 +291,43 @@ function GoalRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  titleBlock: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  gap: {
-    gap: spacing.lg,
-  },
-  list: {
-    gap: spacing.sm,
-  },
-  goals: {
-    gap: spacing.md,
-  },
-  goalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.xl,
+    },
+    titleBlock: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    gap: {
+      gap: spacing.lg,
+    },
+    list: {
+      gap: spacing.sm,
+    },
+    goals: {
+      gap: spacing.md,
+    },
+    goalRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+  }),
+);

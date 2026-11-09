@@ -109,7 +109,15 @@ export type Macros = {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  /** Fibre, sugars and salt (g). Optional: not every source has them (quick entries, some products). */
+  fiberG?: number;
+  sugarG?: number;
+  saltG?: number;
 };
+
+/** Optional nutrients summed only where known. */
+export const MICRO_KEYS = ['fiberG', 'sugarG', 'saltG'] as const;
+export type MicroKey = (typeof MICRO_KEYS)[number];
 
 export type StoreChain = {
   code: ChainCode;
@@ -179,12 +187,25 @@ export type Recipe = RecipeSource & {
 /** A food in the diary search list (Fineli stand-in). */
 export type FoodPortion = { label: string; grams: number };
 
+/**
+ * Where a food's nutrients come from. Fineli is the default; the others are
+ * marked in the UI because they break "macros from Fineli" on purpose:
+ * `barcode` = Open Food Facts product, `own` = typed by the user,
+ * `label` = read from a nutrition label photo and checked by the user.
+ */
+export type FoodSource = 'fineli' | 'barcode' | 'own' | 'label';
+
 export type Food = {
   id: string;
   name: string;
   category: FoodCategory;
   per100g: Macros;
   portions: readonly FoodPortion[];
+  /** Missing = Fineli. */
+  source?: FoodSource;
+  brand?: string;
+  barcode?: string;
+  imageUrl?: string;
 };
 
 export type FoodCategory =
@@ -268,7 +289,25 @@ export type DiaryBasis =
   | { kind: 'food'; foodId: string; per100g: Macros }
   | { kind: 'recipe'; recipeId: string; perServing: Macros }
   /** "Pikalisäys": calories only, no food; quantity is the kcal. */
-  | { kind: 'quick' };
+  | {
+      kind: 'quick';
+      /** Optional macros typed with the calories (grams). */
+      macros?: { proteinG: number; carbsG: number; fatG: number };
+    };
+
+/** "Oma ateria": several foods saved together and logged with one tap. */
+export type SavedMealItem = { name: string; basis: DiaryBasis; quantity: number };
+export type SavedMeal = { id: string; name: string; items: SavedMealItem[]; createdAt: string };
+
+/** "Oma resepti": ingredients for a number of servings; logged per serving. */
+export type OwnRecipeIngredient = { foodId: string; name: string; grams: number; per100g: Macros };
+export type OwnRecipe = {
+  id: string;
+  name: string;
+  servings: number;
+  ingredients: OwnRecipeIngredient[];
+  createdAt: string;
+};
 
 export type DiaryEntry = {
   id: string;

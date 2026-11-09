@@ -48,6 +48,42 @@ import {
   Vibrate,
   Wallet,
   X,
+  Sun,
+  Moon,
+  Smartphone,
+  Barcode,
+  Droplet,
+  Bell,
+  Trophy,
+  Star,
+  Zap,
+  MessageCircle,
+  Send,
+  Bookmark,
+  Dumbbell,
+  Footprints,
+  Award,
+  Flag,
+  Snowflake,
+  Medal,
+  TrendingUp,
+  TrendingDown,
+  Calculator,
+  ChefHat,
+  Layers,
+  Repeat,
+  ChartPie,
+  ScanText,
+  Sprout,
+  Salad,
+  Egg,
+  Coffee,
+  Ellipsis,
+  Package,
+  Hand,
+  Bot,
+  ChartLine,
+  CalendarCheck,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -109,6 +145,42 @@ const ICONS = {
   target: Target,
   pot: CookingPot,
   list: ListChecks,
+  sun: Sun,
+  moon: Moon,
+  phone: Smartphone,
+  barcode: Barcode,
+  water: Droplet,
+  bell: Bell,
+  trophy: Trophy,
+  star: Star,
+  zap: Zap,
+  chat: MessageCircle,
+  send: Send,
+  bookmark: Bookmark,
+  dumbbell: Dumbbell,
+  steps: Footprints,
+  award: Award,
+  flag: Flag,
+  freeze: Snowflake,
+  medal: Medal,
+  trendUp: TrendingUp,
+  trendDown: TrendingDown,
+  calculator: Calculator,
+  chef: ChefHat,
+  layers: Layers,
+  repeat: Repeat,
+  pie: ChartPie,
+  label: ScanText,
+  sprout: Sprout,
+  salad: Salad,
+  egg: Egg,
+  coffee: Coffee,
+  more: Ellipsis,
+  package: Package,
+  hand: Hand,
+  bot: Bot,
+  lineChart: ChartLine,
+  calendarCheck: CalendarCheck,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
@@ -121,14 +193,16 @@ export type IconProps = {
   strokeWidth?: number;
   /** Solid fill, e.g. a favourited heart. */
   fill?: ColorToken;
+  /** Fixed colour for surfaces that ignore the theme (camera overlay, photos). */
+  tint?: string;
 };
 
-export function Icon({ name, size = 24, color = 'text', strokeWidth = 1.9, fill }: IconProps) {
+export function Icon({ name, size = 24, color = 'text', strokeWidth = 1.9, fill, tint }: IconProps) {
   const Component = ICONS[name];
   return (
     <Component
       size={size}
-      color={colors[color]}
+      color={tint ?? colors[color]}
       strokeWidth={strokeWidth}
       fill={fill ? colors[fill] : 'none'}
       accessible={false}

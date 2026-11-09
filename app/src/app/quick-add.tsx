@@ -4,14 +4,15 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Button, Card, haptics, SelectChip, Text, TextField } from '@/components/ui';
+import { Button, Card, haptics, SelectChip, SwitchRow, Text, TextField } from '@/components/ui';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS } from '@/domain/diary';
+import { parseAmount } from '@/domain/nutrition';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.quickAdd;
 const PRESETS = [100, 200, 300, 500, 800];
@@ -25,13 +26,24 @@ export default function QuickAddScreen() {
   const [kcal, setKcal] = useState(300);
   const [name, setName] = useState('');
   const [meal, setMeal] = useState<DiaryMeal>(params.meal ?? 'snack');
+  const [withMacros, setWithMacros] = useState(false);
+  const [macros, setMacros] = useState({ proteinG: '', carbsG: '', fatG: '' });
 
   const add = () => {
     const entry = addEntry({
       date: params.date ?? today(),
       meal,
       name: name.trim() || t.title,
-      basis: { kind: 'quick' },
+      basis: withMacros
+        ? {
+            kind: 'quick',
+            macros: {
+              proteinG: parseAmount(macros.proteinG) ?? 0,
+              carbsG: parseAmount(macros.carbsG) ?? 0,
+              fatG: parseAmount(macros.fatG) ?? 0,
+            },
+          }
+        : { kind: 'quick' },
       quantity: kcal,
       estimate: false,
     });
@@ -80,6 +92,30 @@ export default function QuickAddScreen() {
               ))}
             </View>
           </Card>
+          <Card style={styles.gap}>
+            <SwitchRow label={strings.quickMacros.toggle} value={withMacros} onValueChange={setWithMacros} />
+            {withMacros
+              ? (['proteinG', 'carbsG', 'fatG'] as const).map((key) => {
+                  const label = strings.quickMacros[key === 'proteinG' ? 'protein' : key === 'carbsG' ? 'carbs' : 'fat'];
+                  return (
+                    <View key={key} style={styles.macroRow}>
+                      <Text variant="body" style={styles.flex}>
+                        {label}
+                      </Text>
+                      <TextField
+                        value={macros[key]}
+                        onChangeText={(text) => setMacros((m) => ({ ...m, [key]: text.replace(/[^d,.]/g, '') }))}
+                        keyboardType="decimal-pad"
+                        accessibilityLabel={label}
+                        placeholder="0"
+                        style={styles.macroField}
+                        maxLength={5}
+                      />
+                    </View>
+                  );
+                })
+              : null}
+          </Card>
           <View style={styles.gapSm}>
             <Text variant="overline" color="textSubtle">
               {t.nameLabel}
@@ -122,33 +158,43 @@ export default function QuickAddScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.xl,
-  },
-  gap: {
-    gap: spacing.md,
-  },
-  gapSm: {
-    gap: spacing.sm,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+      gap: spacing.xl,
+    },
+    gap: {
+      gap: spacing.md,
+    },
+    gapSm: {
+      gap: spacing.sm,
+    },
+    macroRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    macroField: {
+      width: 104,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    footer: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+  }),
+);
