@@ -39,4 +39,5 @@ Näistä ei poiketa ilman erillistä päätöstä:
 - Koodi, tunnisteet ja commit-viestit englanniksi. Käyttäjälle näkyvät tekstit suomeksi lokalisointitiedostoissa, ei kovakoodattuina.
 - UI: pieni määrä uudelleenkäytettäviä komponentteja, yksi pääkehotus per näkymä, dynaaminen tekstikoko ja riittävät kontrastit.
 - Liiketoimintalogiikalle (allergiatarkistus, makro- ja hintalaskenta, budjetti) yksikkötestit ennen kuin ominaisuus on valmis.
-- Allergia- ja ruokavaliotiedot, kaloritavoitteet ja päiväkirja käsitellään terveystietoina: ei lokeihin eikä analytiikkaan.
+- Allergia- ja ruokavaliotiedot, kaloritavoitteet, kehon tiedot (pituus, ikä, paino, raskaus/imetys), painotavoite ja painokirjaukset sekä päiväkirja käsitellään terveystietoina: ei lokeihin eikä analytiikkaan.
+- Kalorilaskimen turvarajat (1 200 / 1 500 kcal, vaje ≤ 25 %, ei vajetta alle 18-vuotiaille, raskaana oleville tai imettäville, ei alipainotavoitetta) ovat koodissa (`domain/energy.ts`) ja yksikkötestattuja; niitä ei poisteta eikä siirretä pelkkään käyttöliittymään.

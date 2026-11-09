@@ -13,7 +13,7 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän kaikkia ruo
 
 1. **Kauppojen hinnat.** K-Ruoalla, S-kaupoilla tai Lidlillä ei ole avointa hinta-APIa. Hintojen raapiminen niiden sivuilta rikkoo käyttöehtoja ja hajoaa helposti. MVP:ssä hinta lasketaan omasta hintataulukosta, jossa on noin 300–500 yleisintä ainesosaa ja jokaiselle ketjukohtainen hintataso (esim. Lidl 0,85×, Prisma 1,0×, K-Market 1,15×). Sovelluksessa luvun nimi on "hinta-arvio", ei tarkka hinta. Myöhemmin voi neuvotella kumppanuuksista tai käyttää kuittien skannausta.
 2. **Makroja ei anneta tekoälyn laskea.** Kielimallit arvioivat ravintoarvot epätarkasti. Tekoäly tuottaa ainesosat ja grammamäärät, ja backend laskee makrot **Fineli-tietokannasta** (THL:n avoin elintarvikkeiden koostumustietokanta). Sama pätee päiväkirjan kuvantunnistukseen: tekoäly tunnistaa ruoat ja arvioi grammat, makrot tulevat Finelistä.
-3. **Allergiat ovat turvallisuuskysymys.** Tekoälyn tuottama resepti tarkistetaan aina erikseen säännöillä: jokainen ainesosa verrataan allergeenilistaan ja kielletyt sanat (esim. pähkinä, maapähkinä, cashew) estetään. Jos resepti ei läpäise tarkistusta, se generoidaan uudelleen. Sovellukseen tarvitaan lisäksi selkeä vastuuvapauslauseke. GDPR:n kannalta allergia- ja ruokavaliotiedot, kaloritavoitteet ja ruokapäiväkirja voivat olla terveystietoja, joten niiden tallennus ja suostumus on suunniteltava huolella.
+3. **Allergiat ovat turvallisuuskysymys.** Tekoälyn tuottama resepti tarkistetaan aina erikseen säännöillä: jokainen ainesosa verrataan allergeenilistaan ja kielletyt sanat (esim. pähkinä, maapähkinä, cashew) estetään. Jos resepti ei läpäise tarkistusta, se generoidaan uudelleen. Sovellukseen tarvitaan lisäksi selkeä vastuuvapauslauseke. GDPR:n kannalta allergia- ja ruokavaliotiedot, kaloritavoitteet, kehon tiedot (pituus, ikä, paino), painotavoite ja -kirjaukset sekä ruokapäiväkirja voivat olla terveystietoja, joten niiden tallennus ja suostumus on suunniteltava huolella.
 
 ## 2. Teknologiat
 
@@ -110,9 +110,12 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 3. **Ruokakertojen määrä** – 2–6 tai "Koko viikko (7)". Koko viikko esitäyttää budjetiksi profiilin viikkobudjetin, jos käyttäjä ei ole muuttanut budjettia.
 4. **Allergiat ja ruokavalio** – esitäytetty profiilista, käyttäjä vahvistaa. Tässä voi **lisätä** allergioita tai ruokavalion vain tälle suunnitelmalle (esim. vieras), mutta profiilin allergioita ei voi poistaa tässä: poisto tehdään profiilissa. Näin turvallisuusasetus ei katoa vahingossa.
 5. **Mitä tekee mieli** – valintasirut, useampi sallittu, voi ohittaa: kana, kala, jauheliha, kasvis, pasta, keitto, aasialainen, meksikolainen, nopea, uunissa.
-6. **Kauppa** – ketjujen logot, oletuksena profiilin oletuskauppa.
+6. **Kauppa** – Lidl, Prisma / S-market, K-Citymarket / K-Market ja Tokmanni Ruoka hintatasoineen, oletuksena profiilin oletuskauppa. Saman ryhmän myymäläkoot ovat yksi valinta, koska hintataso on lähes sama.
 7. **Generointianimaatio** – rauhallinen, toistuva animaatio ja vaihtuvat tilaviestit ("Etsitään sopivia reseptejä…", "Lasketaan hinta-arviota…"). Virhetilassa selitys ja "Yritä uudelleen".
 8. **Ehdotukset** – ateriakortit (kuva, nimi, hinta-arvio, kcal/annos, aika). Jokaisessa kortissa "Vaihda". Yläreunassa yhteishinta suhteessa budjettiin ja keskimääräiset makrot annosta kohden; ne päivittyvät heti vaihdon jälkeen (numeroiden animoitu siirtymä). "Tee tuplana → huomisen lounas" -valinta sopiville aterioille. Pääkehotus "Hyväksy".
+   - **Kriteerit:** ehdotuksen pitää täyttää budjetti, allergiat, ruokavalio ja toiveet. Allergioista ja ruokavaliosta ei jousteta koskaan. Jos budjetti ylittyy, näkymä kertoo paljonko ja tarjoaa yhden napautuksen ratkaisut: "Nosta budjettia 6 €", "Vähennä yksi ruokakerta – 38 €" (vain jos loput mahtuvat budjettiin, lukittuja aterioita ei poisteta) ja "Vaihda kauppaan Lidl – 41 €" (jos sama lista mahtuu siellä). Täyttymätön toive selitetään: joko se ei sovi allergioihin tai ruokavalioon, tai sopivaa ruokaa ei löytynyt budjettiin. Sävy on neutraali, ei punaista.
+   - **Kauppavertailu:** "Sama lista muissa kaupoissa" näyttää saman ostoslistan hinta-arvion jokaisessa ketjussa halvimmasta kalleimpaan. Rivin napautus vaihtaa kaupan.
+   - Jo kyselyn yhteenvedossa liian pieni budjetti näyttää halvimman realistisen listan hinnan ja napit "Nosta budjetiksi X €" ja (jos riittää) "Vähennä yksi ruokakerta".
 9. **Ostoslista** – kaupan osastojen mukaan ryhmiteltynä ja rastittavana. Perusvarat eivät näy listalla. Summan alla budjetin selitys.
 
 ### 4.4 Reseptit
@@ -130,8 +133,25 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
   1. **Ota kuva:** tekoäly tunnistaa ruoat ja arvioi määrät. Tulos näytetään merkinnällä "arvio", ja käyttäjä voi korjata määriä tai poistaa ja lisätä rivejä ennen tallennusta. Tunnistamaton ruoka ohjataan nimihakuun.
   2. **Hae ruokaa nimellä:** Fineli-haku, annoskoot (esim. "1 keskikokoinen", "1 dl") ja viimeksi käytetyt ensin.
   3. **Lisää resepti omalta listalta:** nykyisen suunnitelman ateriat, yksi napautus lisää yhden annoksen oikeaan ateriaryhmään.
-- Päivätavoitteet (kcal ja makrot) asetetaan profiilissa.
-- Sävy on neutraali: tavoitteen ylitystä ei näytetä punaisella varoituksena, vaan pelkkänä lukuna. Kaloritavoitteella on alaraja (kohta 6).
+  4. **Pikalisäys:** pelkkä kalorimäärä ilman ruokaa (esim. "300 kcal").
+- Annoskoot: grammat, kappaleet, desilitrat ja annokset; suosikkiruoat ja viimeksi käytetyt ensin.
+- Merkinnän muokkaus ja poisto (poistossa "Kumoa"), aterian kopiointi toiselle päivälle.
+- Kuvantunnistus on erillinen palvelu (`services/foodRecognition.ts`), jonka testidatatoteutuksen voi vaihtaa `recognize-food-photo`-kutsuun muuttamatta näkymiä.
+- Päivätavoitteet tulevat kalorilaskimesta (kohta 4.7) tai asetetaan käsin profiilissa. Kaloritavoite näkyy Kodissa ja Päiväkirjassa.
+- **Piilota kalorit:** profiilin asetus, jolla päiväkirja ja Koti näyttävät ateriat ilman lukuja.
+- Sävy on neutraali: tavoitteen ylitystä ei näytetä punaisella varoituksena, vaan pelkkänä lukuna. Kaloritavoitteella on alaraja (kohta 4.7).
+
+### 4.7 Kalorilaskin, painotavoite ja painonseuranta
+
+Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin on osa ensikäynnistystä (ohitettavissa) ja löytyy Profiilista.
+
+- **Tiedot:** biologinen sukupuoli (vain kaavaa varten), syntymävuosi, pituus, paino, raskaus tai imetys, aktiivisuustaso viidellä arkisella kuvauksella (esim. "Istumatyö, vähän liikuntaa") ja liikuntakerrat viikossa.
+- **Laskenta:** perusaineenvaihdunta Mifflin–St Jeor -kaavalla × aktiivisuuskerroin = kokonaiskulutus. Luvut näytetään ja selitetään selkokielellä.
+- **Tavoite:** laihdutus, ylläpito tai painonnousu. Tavoitepaino liukusäätimellä ja vauhti 0,25 / 0,5 / 0,75 kg viikossa. Näytetään päivittäinen kalorimäärä ja arvioitu tavoitepäivä (1 kg ≈ 7 700 kcal).
+- **Makrot:** proteiini g/kg (laihdutus 1,8, ylläpito 1,4, nousu 1,6), rasva vähintään 25 % energiasta, hiilihydraatit loput. Käyttäjä voi säätää käsin.
+- **Turvarajat (pakolliset, koodissa ja yksikkötestattu):** vähintään 1 200 kcal (naiset) / 1 500 kcal (miehet), vaje enintään 25 % kokonaiskulutuksesta. Alle 18-vuotiaille sekä raskaana oleville ja imettäville ei lasketa vajetta, vaan ohjataan terveydenhoitajalle tai lääkärille. Alipainon puolelle (BMI < 18,5) jäävää tavoitepainoa ei hyväksytä. Jos valinta ylittäisi rajan, sovellus säätää sen turvalliseksi ja kertoo ystävällisesti miksi.
+- **Painonseuranta:** painon kirjaus, kaavio 7 päivän liukuvalla keskiarvolla ja edistyminen kohti tavoitetta. Kun keskiarvo muuttuu yli 2 kg, sovellus ehdottaa tavoitteen päivittämistä.
+- **Terveystieto:** pituus, ikä, paino, raskaus/imetys, tavoite ja painokirjaukset kuuluvat samaan terveystietosuostumukseen kuin allergiat. Ei lokeihin eikä analytiikkaan.
 
 ### 4.6 Profiili
 
@@ -139,7 +159,8 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 - Allergiat ja ruokavalio (terveystietosuostumus)
 - Perusvarat
 - Oletuskauppa
-- Kaloritavoitteet (kcal, proteiini, hiilihydraatit, rasva)
+- Kalorilaskin ja painotavoite (kohta 4.7), painonseuranta
+- Kaloritavoitteet (kcal, proteiini, hiilihydraatit, rasva) ja "Piilota kalorit"
 - Tilaus (MVP:n käyttöliittymävaiheessa paikkamerkki)
 - Tietosuoja, käyttöehdot, Fineli-lähdemaininta
 - Tilin poisto (vahvistusdialogi, App Storen vaatimus)
@@ -167,7 +188,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 10. Tietosuojaseloste, käyttöehdot, allergiavastuuvapaus ja tilin poisto (App Store vaatii).
 11. Suljettu beta TestFlightissa ja Google Playn sisäisessä testauksessa 20–50 käyttäjällä.
 
-**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, viivakoodinlukija, käyttäjän omat ruoat ja reseptit, kaloritavoitteen laskuri (paino, pituus, ikä), puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
+**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, viivakoodinlukija, käyttäjän omat ruoat ja reseptit, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
 
 ### Vaihe 2: Julkaisu ja oppiminen (4–6 viikkoa)
 - Julkaisu kauppoihin ja kauppasivujen optimointi (ASO).
@@ -191,5 +212,5 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 | Hinta-arviot ovat epätarkkoja | Rehellinen nimeäminen ("arvio"), käyttäjien korjausehdotukset, hintataulun säännöllinen päivitys |
 | Allergiavirhe | Sääntöpohjainen tarkistus jokaiselle reseptille (myös kirjastossa), vastuuvapaus, allergeenien korostus reseptinäkymässä |
 | Kuvantunnistus arvioi määrät väärin | Merkintä "arvio", käyttäjä vahvistaa ja korjaa ennen tallennusta, makrot aina Finelistä |
-| Kalorilaskuri voi olla haitallinen syömishäiriöistä kärsiville | Neutraali sävy, ei varoitusvärejä ylityksestä, kaloritavoitteen alaraja 1 200 kcal, ei painotavoitteita MVP:ssä |
+| Kalorilaskuri voi olla haitallinen syömishäiriöistä kärsiville | Neutraali sävy, ei varoitusvärejä ylityksestä, kaloritavoitteen alaraja 1 200 / 1 500 kcal, vaje enintään 25 %, ei laihdutustavoitetta alle 18-vuotiaille, raskaana oleville tai imettäville eikä alipainon puolelle, "Piilota kalorit" -asetus |
 | Kaupan tarkastus hylkää sovelluksen | Sisäiset ostot oikein, tilin poisto mahdollinen, tietosuojaseloste kunnossa |
