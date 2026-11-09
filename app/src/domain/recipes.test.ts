@@ -31,9 +31,11 @@ const NO_RULES = { allergens: [], diets: [] } as const;
 describe('deriveRecipe', () => {
   it('computes per-serving macros from grams and per-100 g values', () => {
     const derived = deriveRecipe(recipe([['chicken-breast', 200], ['rice', 100]]), index);
-    // chicken 110 kcal/100 g × 2 + rice 350 kcal/100 g × 1
-    expect(derived.perServing.kcal).toBe(570);
-    expect(derived.perServing.proteinG).toBe(53);
+    // Fineli values: 200 g chicken = 2 × per 100 g, 100 g rice = 1 × per 100 g.
+    const chicken = index['chicken-breast'].per100g;
+    const rice = index.rice.per100g;
+    expect(derived.perServing.kcal).toBe(Math.round(chicken.kcal * 2 + rice.kcal));
+    expect(derived.perServing.proteinG).toBe(Math.round(chicken.proteinG * 2 + rice.proteinG));
   });
 
   it('collects allergens and diet tags from ingredients', () => {

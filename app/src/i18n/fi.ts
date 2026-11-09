@@ -626,7 +626,7 @@ export const fi = {
     termsBody: 'Käyttöehdot julkaistaan ennen sovelluksen julkaisua. Hinta-arviot ja ravintoarvot ovat suuntaa antavia. Tarkista allergeenit aina tuotteiden pakkausmerkinnöistä.',
     sourcesTitle: 'Lähteet',
     sourcesBody:
-      'Ravintoarvot: Fineli, THL (CC BY 4.0). Testiversiossa arvot ovat pyöristettyjä esimerkkiarvoja.\n\nViivakoodituotteet: Open Food Facts (openfoodfacts.org), avoin tietokanta Open Database License (ODbL) -lisenssillä. Tuotetiedot ovat yhteisön keräämiä; tarkista tarvittaessa pakkauksesta.\n\nKuvat: Unsplash ja TheMealDB.',
+      'Ravintoarvot: Fineli – elintarvikkeiden koostumustietokanta, versio 20. © Terveyden ja hyvinvoinnin laitos (THL), fineli.fi. Käytetään Creative Commons Nimeä 4.0 (CC BY 4.0) -lisenssillä. Reseptien ainesosien energia, proteiini, hiilihydraatit, rasva, kuitu, sokerit ja suola tulevat Finelistä. Muutamalle tuotteelle, jota Finelissä ei ole (esim. lime ja maustesekoitukset), käytetään lähintä Fineli-elintarviketta. Arvot on muunnettu (kJ → kcal, natrium → suola) ja pyöristetty. THL ei vastaa tietojen tulkinnasta. Päiväkirjan ruokahaun arvot ovat testiversiossa vielä pyöristettyjä esimerkkiarvoja.\n\nViivakoodituotteet: Open Food Facts (openfoodfacts.org), avoin tietokanta Open Database License (ODbL) -lisenssillä. Tuotetiedot ovat yhteisön keräämiä; tarkista tarvittaessa pakkauksesta.\n\nKuvat: Unsplash ja TheMealDB.',
   },
   calculator: {
     title: 'Kaloritarve',

@@ -136,7 +136,9 @@ export type Ingredient = {
   id: string;
   name: string;
   aisle: AisleCode;
-  /** Stand-in for the linked Fineli food. */
+  /** The linked Fineli food (THL, CC BY 4.0). `proxy` explains a closest-match link. */
+  fineli: { id: number; name: string; diets: readonly string[]; proxy?: string };
+  /** Nutrients per 100 g, always from the linked Fineli food. */
   per100g: Macros;
   /** Base price (multiplier 1.0), cents per kg. */
   pricePerKgCents: number;
