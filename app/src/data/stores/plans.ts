@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { normalizeChainCode } from '../catalog/reference';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import type { MealPlan, PlanAnswers, Proposal, ProposalMeal } from '../types';
 
@@ -105,7 +106,28 @@ export const usePlansStore = create<PlansState>()(
       reset: () =>
         set({ plans: [], proposal: null, lastAnswers: null, pinnedRecipeIds: [], shopping: {} }),
     }),
-    { name: `${STORAGE_PREFIX}plans`, storage: deviceStorage, version: 1 },
+    {
+      name: `${STORAGE_PREFIX}plans`,
+      storage: deviceStorage,
+      version: 2,
+      // v2: chains were grouped (Prisma/S-market, K-Citymarket/K-Market).
+      migrate: (persisted) => {
+        const saved = persisted as Partial<PlansState>;
+        return {
+          ...saved,
+          plans: (saved.plans ?? []).map((plan) => ({ ...plan, chainCode: normalizeChainCode(plan.chainCode) })),
+          proposal: saved.proposal
+            ? {
+                ...saved.proposal,
+                answers: { ...saved.proposal.answers, chainCode: normalizeChainCode(saved.proposal.answers.chainCode) },
+              }
+            : null,
+          lastAnswers: saved.lastAnswers
+            ? { ...saved.lastAnswers, chainCode: normalizeChainCode(saved.lastAnswers.chainCode) }
+            : null,
+        } as PlansState;
+      },
+    },
   ),
 );
 

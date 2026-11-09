@@ -75,7 +75,8 @@ export type IngredientTag =
   | 'lactose'
   | 'honey';
 
-export type ChainCode = 'lidl' | 'prisma' | 's_market' | 'k_citymarket' | 'k_market' | 'alepa';
+/** Store chains with their own price level. S and K groups share a level across store sizes. */
+export type ChainCode = 'lidl' | 's_group' | 'k_group' | 'tokmanni';
 
 /** Store sections, in the order a typical Finnish grocery store is walked. */
 export type AisleCode =

@@ -93,7 +93,9 @@ export type Adjustment =
   | 'targetNotBelow'
   | 'targetNotAbove'
   | 'maxDeficit'
-  | 'floor';
+  | 'floor'
+  /** Expenditure is already at the calorie floor: no safe deficit is possible. */
+  | 'noRoomForDeficit';
 
 export type EnergyPlan = {
   bmr: number;
@@ -171,6 +173,12 @@ export function planEnergy(body: BodyInfo, choice: GoalChoice): EnergyPlan {
   if (target < floor) {
     adjustments.push('floor');
     target = floor;
+  }
+  if (goal === 'lose' && target >= total) {
+    // The floor leaves no deficit at all: a "loss" goal would mean gaining.
+    adjustments.push('noRoomForDeficit');
+    goal = 'maintain';
+    targetWeight = body.weightKg;
   }
 
   const targetKcal = round(target, 10);

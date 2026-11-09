@@ -70,6 +70,12 @@ describe('planEnergy', () => {
     const plan = planEnergy(tiny, { type: 'lose', rateKgPerWeek: 0.75, targetWeightKg: 50 });
     expect(plan.targetKcal).toBe(KCAL_FLOOR.female);
     expect(plan.adjustments).toContain('floor');
+    // Expenditure (~1 190 kcal) is below the floor: no deficit, so no loss goal or goal date.
+    expect(tdee(tiny)).toBeLessThan(KCAL_FLOOR.female);
+    expect(plan.goal).toBe('maintain');
+    expect(plan.adjustments).toContain('noRoomForDeficit');
+    expect(plan.weeksToGoal).toBeNull();
+    expect(plan.weeklyChangeKg).toBe(0);
 
     const smallMan: BodyInfo = { ...man, weightKg: 62, heightCm: 165, ageYears: 75, activity: 1, exercisePerWeek: 0 };
     expect(planEnergy(smallMan, { type: 'lose', rateKgPerWeek: 0.75, targetWeightKg: 56 }).targetKcal).toBe(1500);

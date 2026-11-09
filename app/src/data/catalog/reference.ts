@@ -11,12 +11,25 @@ import type {
 /** Store chains and their price level against the base price table. */
 export const CHAINS: readonly StoreChain[] = [
   { code: 'lidl', name: 'Lidl', priceMultiplier: 0.85 },
-  { code: 'prisma', name: 'Prisma', priceMultiplier: 1.0 },
-  { code: 's_market', name: 'S-market', priceMultiplier: 1.03 },
-  { code: 'k_citymarket', name: 'K-Citymarket', priceMultiplier: 1.02 },
-  { code: 'k_market', name: 'K-Market', priceMultiplier: 1.15 },
-  { code: 'alepa', name: 'Alepa', priceMultiplier: 1.12 },
+  { code: 's_group', name: 'Prisma / S-market', priceMultiplier: 1.0 },
+  { code: 'k_group', name: 'K-Citymarket / K-Market', priceMultiplier: 1.08 },
+  { code: 'tokmanni', name: 'Tokmanni Ruoka', priceMultiplier: 0.93 },
 ];
+
+/** Chain codes used before the chains were grouped; saved data is mapped on load. */
+const LEGACY_CHAINS: Readonly<Record<string, ChainCode>> = {
+  prisma: 's_group',
+  s_market: 's_group',
+  alepa: 's_group',
+  k_citymarket: 'k_group',
+  k_market: 'k_group',
+};
+
+/** A known chain code for any saved value (falls back to Prisma / S-market). */
+export function normalizeChainCode(code: string | null | undefined): ChainCode {
+  if (code && CHAINS.some((chain) => chain.code === code)) return code as ChainCode;
+  return (code && LEGACY_CHAINS[code]) || 's_group';
+}
 
 export const CHAINS_BY_CODE = Object.fromEntries(CHAINS.map((c) => [c.code, c])) as Record<
   ChainCode,

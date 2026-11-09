@@ -23,7 +23,8 @@ import {
 import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
 import { useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
-import type { Proposal, ProposalMeal } from '@/data/types';
+import type { ChainCode, PlanAnswers, Proposal, ProposalMeal } from '@/data/types';
+import { assessProposal, compareChains, dropMeal, type Assessment, type ChainTotal } from '@/domain/feasibility';
 import {
   acceptProposal,
   dinnerServings,
@@ -50,17 +51,28 @@ export default function ProposalScreen() {
     if (!proposal) return null;
     const ids = proposal.meals.map((meal) => meal.recipeId);
     const list = proposalShoppingList(ids, RECIPES_BY_ID, proposal.answers, INGREDIENTS_BY_ID, rules.pantry);
+    const chains = compareChains(ids, RECIPES_BY_ID, proposal.answers, INGREDIENTS_BY_ID, rules.pantry);
+    const assessment = assessProposal({
+      meals: proposal.meals,
+      answers: proposal.answers,
+      recipes: RECIPES,
+      recipesById: RECIPES_BY_ID,
+      index: INGREDIENTS_BY_ID,
+      user: rules,
+    });
     const recipes = ids.map((id) => RECIPES_BY_ID[id]);
     const avg = (pick: (r: (typeof recipes)[number]) => number) =>
       recipes.reduce((sum, r) => sum + pick(r), 0) / Math.max(1, recipes.length);
     return {
+      chains,
+      assessment,
       totalCents: list.totalCents,
       kcal: avg((r) => r.perServing.kcal),
       proteinG: avg((r) => r.perServing.proteinG),
       carbsG: avg((r) => r.perServing.carbsG),
       fatG: avg((r) => r.perServing.fatG),
     };
-  }, [proposal, rules.pantry]);
+  }, [proposal, rules]);
 
   if (!proposal || !totals) {
     return (
@@ -80,6 +92,28 @@ export default function ProposalScreen() {
   const headroom = answers.budgetCents - totals.totalCents;
 
   const update = (meals: ProposalMeal[]) => setProposalMeals(meals);
+  const updateAnswers = (patch: Partial<PlanAnswers>, meals = proposal.meals) => {
+    const next = { ...answers, ...patch };
+    setProposal({ ...proposal, answers: next, meals });
+    usePlansStore.getState().setLastAnswers(next);
+  };
+  const setChain = (chainCode: ChainCode) => {
+    if (chainCode === answers.chainCode) return;
+    haptics.select();
+    updateAnswers({ chainCode });
+    showToast(format(t.chainSwitched, { chain: CHAINS_BY_CODE[chainCode].name }));
+  };
+  const raiseBudget = (budgetCents: number) => {
+    haptics.tap();
+    updateAnswers({ budgetCents });
+    showToast(format(t.budgetRaised, { amount: formatCents(budgetCents) }));
+  };
+  const removeMeal = (dayOffset: number) => {
+    haptics.tap();
+    const meals = dropMeal(proposal.meals, dayOffset);
+    updateAnswers({ mealCount: meals.length }, meals);
+    showToast(t.mealDropped);
+  };
   const swap = (dayOffset: number) => {
     haptics.tap();
     update(swapMeal(proposal.meals, dayOffset));
@@ -157,11 +191,6 @@ export default function ProposalScreen() {
               ? format(t.under, { amount: formatCents(headroom) })
               : format(t.over, { amount: formatCents(-headroom) })}
           </Text>
-          {headroom < 0 ? (
-            <Text variant="caption" color="textMuted">
-              {t.overBudgetHint}
-            </Text>
-          ) : null}
           <View style={styles.divider} />
           <Text variant="overline" color="textSubtle">
             {t.avgMacros}
@@ -177,6 +206,8 @@ export default function ProposalScreen() {
           </Text>
         </Card>
 
+        <IssueCard assessment={totals.assessment} onRaise={raiseBudget} onDrop={removeMeal} onChain={setChain} />
+
         {proposal.meals.map((meal, i) => (
           <FadeInView key={meal.dayOffset} delay={i * 50}>
             <MealCard proposal={proposal} meal={meal} onSwap={swap} onToggleLock={toggleLock} />
@@ -191,11 +222,134 @@ export default function ProposalScreen() {
           onPress={reshuffle}
           disabled={unlockedCount === 0}
         />
+
+        <ChainComparison chains={totals.chains} selected={answers.chainCode} onSelect={setChain} />
       </ScrollView>
       <View style={styles.footer}>
         <Button label={t.accept} onPress={accept} haptic="none" />
       </View>
     </SafeAreaView>
+  );
+}
+
+/** Explains what the plan could not meet and offers one-tap fixes. Neutral tone, no red. */
+function IssueCard({
+  assessment,
+  onRaise,
+  onDrop,
+  onChain,
+}: {
+  assessment: Assessment;
+  onRaise: (budgetCents: number) => void;
+  onDrop: (dayOffset: number) => void;
+  onChain: (chainCode: ChainCode) => void;
+}) {
+  const { overBudgetCents, unmetWishes, fixes } = assessment;
+  if (overBudgetCents === 0 && unmetWishes.length === 0) return null;
+  const fixLabel = (fix: Assessment['fixes'][number]) => {
+    switch (fix.kind) {
+      case 'raiseBudget':
+        return format(t.fixRaise, { amount: formatCents(fix.byCents) });
+      case 'fewerMeals':
+        return format(t.fixFewer, { total: formatCents(fix.totalCents) });
+      case 'cheaperChain':
+        return format(t.fixChain, { chain: CHAINS_BY_CODE[fix.chainCode].name, total: formatCents(fix.totalCents) });
+    }
+  };
+  const apply = (fix: Assessment['fixes'][number]) => {
+    if (fix.kind === 'raiseBudget') onRaise(fix.budgetCents);
+    else if (fix.kind === 'fewerMeals') onDrop(fix.dayOffset);
+    else onChain(fix.chainCode);
+  };
+  return (
+    <FadeInView>
+      <Card style={styles.issue}>
+        {overBudgetCents > 0 ? (
+          <>
+            <View style={styles.issueHead}>
+              <Icon name="info" size={20} color="accentText" />
+              <Text variant="heading" style={styles.flex}>
+                {format(t.overTitle, { amount: formatCents(overBudgetCents) })}
+              </Text>
+            </View>
+            <Text variant="body" color="textMuted">
+              {t.overBody}
+            </Text>
+            <View style={styles.fixes}>
+              {fixes.map((fix) => (
+                <Button
+                  key={fix.kind}
+                  size="compact"
+                  variant="secondary"
+                  haptic="none"
+                  label={fixLabel(fix)}
+                  onPress={() => apply(fix)}
+                />
+              ))}
+            </View>
+            <Text variant="caption" color="textSubtle">
+              {t.fixSwapHint}
+            </Text>
+          </>
+        ) : null}
+        {unmetWishes.map((wish) => (
+          <View key={wish.craving} style={styles.issueHead}>
+            <Icon name="info" size={20} color="textSubtle" />
+            <Text variant="body" color="textMuted" style={styles.flex}>
+              {format(wish.reason === 'rules' ? t.wishRules : t.wishBudget, {
+                wish: strings.cravings[wish.craving],
+              })}
+            </Text>
+          </View>
+        ))}
+      </Card>
+    </FadeInView>
+  );
+}
+
+/** "Sama lista muissa kaupoissa": the list priced in every chain; a tap switches the store. */
+function ChainComparison({
+  chains,
+  selected,
+  onSelect,
+}: {
+  chains: readonly ChainTotal[];
+  selected: ChainCode;
+  onSelect: (chainCode: ChainCode) => void;
+}) {
+  return (
+    <Card style={styles.compare}>
+      <Text variant="overline" color="textSubtle">
+        {t.compareTitle}
+      </Text>
+      {chains.map((chain, i) => {
+        const isSelected = chain.chainCode === selected;
+        const name = CHAINS_BY_CODE[chain.chainCode].name;
+        const label = format(t.compareA11y, { chain: name, total: formatCents(chain.totalCents) });
+        return (
+          <PressableScale
+            key={chain.chainCode}
+            onPress={() => onSelect(chain.chainCode)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isSelected }}
+            accessibilityLabel={
+              isSelected ? `${label}, ${t.compareSelected}` : `${label}. ${format(t.compareSwitchA11y, { chain: name })}`
+            }
+            style={[styles.compareRow, i < chains.length - 1 && styles.compareDivider]}
+          >
+            <Icon name="store" size={18} color={isSelected ? 'accentText' : 'textSubtle'} />
+            <Text variant={isSelected ? 'bodyStrong' : 'body'} style={styles.flex} numberOfLines={2}>
+              {name}
+            </Text>
+            {isSelected ? <Chip tone="accent" label={t.compareSelected} /> : null}
+            <Text variant="number">{formatCents(chain.totalCents)}</Text>
+          </PressableScale>
+        );
+      })}
+      <Text variant="caption" color="textSubtle">
+        {t.compareHint}
+      </Text>
+    </Card>
   );
 }
 
@@ -333,6 +487,34 @@ const styles = StyleSheet.create({
   macro: {
     flex: 1,
     gap: spacing.xxs,
+  },
+  issue: {
+    gap: spacing.sm,
+    borderColor: colors.accent,
+    borderWidth: 1,
+  },
+  issueHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  fixes: {
+    gap: spacing.sm,
+    alignItems: 'flex-start',
+  },
+  compare: {
+    gap: spacing.xs,
+  },
+  compareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 48,
+    paddingVertical: spacing.xs,
+  },
+  compareDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
   lockedCard: {
     borderColor: colors.accent,

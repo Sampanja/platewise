@@ -28,7 +28,7 @@ function answers(overrides: Partial<PlanAnswers> = {}): PlanAnswers {
     extraAllergens: [],
     extraDiets: [],
     cravings: [],
-    chainCode: 'prisma',
+    chainCode: 's_group',
     ...overrides,
   };
 }

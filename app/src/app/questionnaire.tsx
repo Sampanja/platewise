@@ -20,6 +20,7 @@ import { useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
 import type { AllergenCode, CravingCode, DietCode, PlanAnswers } from '@/data/types';
+import { tightBudgetFixes } from '@/domain/feasibility';
 import { minimumBudgetCents } from '@/domain/generate';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
@@ -85,6 +86,15 @@ export default function QuestionnaireScreen() {
     [step, answers, rules],
   );
   const tooLow = step === 'summary' && answers.budgetCents < minimumCents;
+  const fixes = useMemo(
+    () =>
+      tooLow
+        ? tightBudgetFixes(answers, (mealCount) =>
+            minimumBudgetCents({ ...answers, mealCount }, RECIPES, INGREDIENTS_BY_ID, rules),
+          )
+        : null,
+    [tooLow, answers, rules],
+  );
 
   const goTo = (target: number) => {
     setDirection(target > index ? 1 : -1);
@@ -273,6 +283,24 @@ export default function QuestionnaireScreen() {
               <Text variant="body" color="textMuted">
                 {format(t.budget.tooLowBody, { amount: formatCents(minimumCents) })}
               </Text>
+              {fixes ? (
+                <View style={styles.fixes}>
+                  <Button
+                    label={format(t.budget.raiseTo, { amount: formatCents(fixes.raiseToCents) })}
+                    size="compact"
+                    variant="secondary"
+                    onPress={() => setBudgetEur(Math.round(fixes.raiseToCents / 100))}
+                  />
+                  {fixes.fewerMeals !== null ? (
+                    <Button
+                      label={format(t.budget.fewerMeals, { count: fixes.fewerMeals })}
+                      size="compact"
+                      variant="secondary"
+                      onPress={() => patch({ mealCount: fixes.fewerMeals ?? answers.mealCount })}
+                    />
+                  ) : null}
+                </View>
+              ) : null}
             </Card>
           ) : null}
           <Card padding="flush">
@@ -409,6 +437,10 @@ const styles = StyleSheet.create({
   warning: {
     gap: spacing.sm,
     borderColor: colors.accent,
+  },
+  fixes: {
+    gap: spacing.sm,
+    marginTop: spacing.xs,
   },
   summaryRow: {
     flexDirection: 'row',

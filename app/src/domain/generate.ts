@@ -147,6 +147,16 @@ export function generateMeals(input: GenerateInput): ProposalMeal[] {
   const proteinCount = (protein: string) =>
     chosen.filter((id) => id && byId[id].mainProtein === protein).length;
 
+  // Every wish gets at least one dinner when possible: place the best-ranked
+  // match for each wish that the kept meals do not already cover.
+  for (const craving of answers.cravings) {
+    if (chosen.some((id) => id && matchesCraving(byId[id], craving))) continue;
+    const day = chosen.indexOf(null);
+    if (day === -1) break;
+    const match = ranked.find((recipe) => !chosen.includes(recipe.id) && matchesCraving(recipe, craving));
+    if (match) chosen[day] = match.id;
+  }
+
   for (let day = 0; day < chosen.length; day++) {
     if (chosen[day]) continue;
     const pick =
@@ -158,8 +168,13 @@ export function generateMeals(input: GenerateInput): ProposalMeal[] {
   const ids = chosen as string[];
   const lockedDays = new Set(kept.keys());
 
-  // 2. Budget repair: swap the most expensive free meal for a cheaper one while over budget.
+  // 2. Budget repair: swap the most expensive free meal for a cheaper one while
+  //    over budget, without losing a wish that was covered.
   const total = () => proposalShoppingList(ids, byId, answers, index, user.pantry).totalCents;
+  const covered = (list: readonly string[]) =>
+    answers.cravings.filter((craving) => list.some((id) => matchesCraving(byId[id], craving)));
+  const coveredBefore = covered(ids);
+  const keepsWishes = () => covered(ids).length >= coveredBefore.length;
   for (let round = 0; round < REPAIR_ROUNDS && total() > answers.budgetCents; round++) {
     const current = total();
     const days = ids
@@ -171,10 +186,10 @@ export function generateMeals(input: GenerateInput): ProposalMeal[] {
       const cheaper = [...pool]
         .filter((recipe) => !ids.includes(recipe.id))
         .sort((a, b) => cost(a) - cost(b));
-      for (const candidate of cheaper.slice(0, 8)) {
+      for (const candidate of cheaper.slice(0, 12)) {
         const previous = ids[day];
         ids[day] = candidate.id;
-        if (total() < current) {
+        if (total() < current && keepsWishes()) {
           improved = true;
           break;
         }

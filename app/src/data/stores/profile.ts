@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { DEFAULT_GOALS, MIN_KCAL_GOAL } from '../catalog/reference';
+import { DEFAULT_GOALS, MIN_KCAL_GOAL, normalizeChainCode } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import type { ActivityLevel, GoalType, PregnancyStatus, Sex } from '@/domain/energy';
@@ -82,7 +82,7 @@ export const DEFAULT_PROFILE: Profile = {
   allergens: [],
   diets: [],
   pantry: [...DEFAULT_PANTRY],
-  chainCode: 'prisma',
+  chainCode: 's_group',
   goals: { ...DEFAULT_GOALS },
   hasCalorieGoal: false,
   body: { ...DEFAULT_BODY },
@@ -129,6 +129,9 @@ export const useProfileStore = create<ProfileState>()(
           weightGoal: { ...DEFAULT_WEIGHT_GOAL },
         }),
     }),
-    { name: `${STORAGE_PREFIX}profile`, storage: deviceStorage, version: 2, migrate: (persisted) => ({ ...DEFAULT_PROFILE, ...(persisted as Partial<Profile>) }) },
+    { name: `${STORAGE_PREFIX}profile`, storage: deviceStorage, version: 3, migrate: (persisted) => {
+        const saved = persisted as Partial<Profile>;
+        return { ...DEFAULT_PROFILE, ...saved, chainCode: normalizeChainCode(saved.chainCode) };
+      } },
   ),
 );
