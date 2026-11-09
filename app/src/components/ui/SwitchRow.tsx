@@ -1,4 +1,4 @@
-import { StyleSheet, Switch, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { colors, spacing, themedStyles, touchTarget } from '@/theme';
 
@@ -12,15 +12,16 @@ export type SwitchRowProps = {
   onValueChange: (value: boolean) => void;
 };
 
-/** Label and switch; the whole row is one accessible switch. */
+/** Label and switch; the whole row is one accessible switch and toggles on tap. */
 export function SwitchRow({ label, hint, value, onValueChange }: SwitchRowProps) {
   const change = (next: boolean) => {
     haptics.select();
     onValueChange(next);
   };
   return (
-    <View
+    <Pressable
       style={styles.row}
+      onPress={() => change(!value)}
       accessible
       accessibilityRole="switch"
       accessibilityLabel={label}
@@ -43,7 +44,7 @@ export function SwitchRow({ label, hint, value, onValueChange }: SwitchRowProps)
         thumbColor={value ? colors.accent : colors.textMuted}
         ios_backgroundColor={colors.border}
       />
-    </View>
+    </Pressable>
   );
 }
 

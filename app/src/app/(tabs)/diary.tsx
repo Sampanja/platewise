@@ -21,6 +21,7 @@ import {
   Text,
   TextField,
 } from '@/components/ui';
+import { useGoalsFor } from '@/data/hooks';
 import { useMyMealsStore } from '@/data/stores/myMeals';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
@@ -61,7 +62,7 @@ export default function DiaryScreen() {
   const entries = useDiaryStore((s) => s.entries);
   const removeEntry = useDiaryStore((s) => s.remove);
   const restoreEntry = useDiaryStore((s) => s.restore);
-  const goals = useProfileStore((s) => s.goals);
+  const goals = useGoalsFor(date);
   const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
   const hideCalories = useProfileStore((s) => s.hideCalories);
 

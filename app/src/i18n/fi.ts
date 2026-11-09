@@ -1,8 +1,10 @@
 /** Finnish UI strings. Placeholders use `{name}` and are filled with `format`. */
 import { fiDiary } from './fiDiary';
+import { fiGoals } from './fiGoals';
 
 export const fi = {
   ...fiDiary,
+  ...fiGoals,
   common: {
     priceEstimate: 'hinta-arvio',
     priceEstimateTitle: 'Hinta-arvio',
@@ -700,6 +702,7 @@ export const fi = {
       targetNotAbove: 'Tavoitepaino ei ole nykyistä suurempi, joten näytämme ylläpidon.',
       maxDeficit: 'Valitsemasi vauhti olisi vaatinut liian suuren vajeen. Rajasimme vajeen neljännekseen kulutuksestasi, jotta jaksat arjessa ja tulos kestää.',
       floor: 'Päivittäinen määrä ei laske alle {floor} kcal, jotta saat riittävästi ravintoa.',
+      maxSurplus: 'Rajasimme ylijäämän noin 15 prosenttiin kulutuksesta. Lihas kasvaa hitaasti, joten suurempi ylijäämä menisi lähinnä rasvaksi.',
       noRoomForDeficit: 'Kulutuksesi on jo lähellä turvallista vähimmäismäärää, joten kalorivajetta ei voi tehdä turvallisesti. Näytämme ylläpitoon sopivan määrän. Liikunnan lisääminen nostaa kulutusta.',
     },
   },

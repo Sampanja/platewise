@@ -31,11 +31,11 @@ const MEALS: Record<DiaryMeal, readonly (readonly [string, number])[][]> = {
   ],
 };
 
-/** Plausible entries for the seven days ending on `endDate`. */
+/** Plausible entries for the three weeks ending on `endDate` (enough for the weekly check-in). */
 export function demoDiaryEntries(endDate: LocalDate): NewDiaryEntry[] {
   const random = seededRandom(Date.parse(endDate) / 86_400_000);
   const entries: NewDiaryEntry[] = [];
-  for (let day = 6; day >= 0; day--) {
+  for (let day = 20; day >= 0; day--) {
     const date = addDays(endDate, -day);
     for (const meal of Object.keys(MEALS) as DiaryMeal[]) {
       if (meal === 'snack' && random() < 0.3) continue;

@@ -4,7 +4,16 @@ import { persist } from 'zustand/middleware';
 import { DEFAULT_GOALS, MIN_KCAL_GOAL, normalizeChainCode } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
-import type { ActivityLevel, GoalType, PregnancyStatus, Sex } from '@/domain/energy';
+import {
+  DEFAULT_CYCLING,
+  type ActivityLevel,
+  type Cycling,
+  type DietStyle,
+  type GoalType,
+  type PregnancyStatus,
+  type Sex,
+  type Workout,
+} from '@/domain/energy';
 import type { ThemePreference } from '@/theme/colors';
 
 import type { AllergenCode, ChainCode, DietCode, NutritionGoals } from '../types';
@@ -24,6 +33,13 @@ export type BodyProfile = {
   activity: ActivityLevel;
   exercisePerWeek: number;
   pregnancy: PregnancyStatus;
+  /** Optional, enables the Katch–McArdle formula. */
+  bodyFatPct: number | null;
+  /** How everyday activity is given: type of work or average steps. */
+  everydayMode: 'job' | 'steps';
+  steps: number;
+  /** Workouts by type; when empty, exercisePerWeek is used. */
+  workouts: Workout[];
 };
 
 export type WeightGoal = {
@@ -35,6 +51,12 @@ export type WeightGoal = {
   setAt: string | null;
   /** Macros were adjusted by hand after the calculator. */
   manualMacros: boolean;
+  dietStyle: DietStyle;
+  cycling: Cycling;
+  /** Expenditure measured from the user's own data (weekly check-in), or null for the formula. */
+  adaptiveTdee: number | null;
+  /** Date of the last weekly check-in decision (applied or kept). */
+  lastCheckIn: string | null;
 };
 
 export const DEFAULT_BODY: BodyProfile = {
@@ -45,6 +67,10 @@ export const DEFAULT_BODY: BodyProfile = {
   activity: 2,
   exercisePerWeek: 2,
   pregnancy: 'none',
+  bodyFatPct: null,
+  everydayMode: 'job',
+  steps: 7000,
+  workouts: [],
 };
 
 export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
@@ -54,6 +80,10 @@ export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
   startWeightKg: null,
   setAt: null,
   manualMacros: false,
+  dietStyle: 'balanced',
+  cycling: { ...DEFAULT_CYCLING },
+  adaptiveTdee: null,
+  lastCheckIn: null,
 };
 
 export type Profile = {
@@ -133,9 +163,21 @@ export const useProfileStore = create<ProfileState>()(
           weightGoal: { ...DEFAULT_WEIGHT_GOAL },
         }),
     }),
-    { name: `${STORAGE_PREFIX}profile`, storage: deviceStorage, version: 3, migrate: (persisted) => {
+    {
+      name: `${STORAGE_PREFIX}profile`,
+      storage: deviceStorage,
+      version: 4,
+      // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
+      migrate: (persisted) => {
         const saved = persisted as Partial<Profile>;
-        return { ...DEFAULT_PROFILE, ...saved, chainCode: normalizeChainCode(saved.chainCode) };
-      } },
+        return {
+          ...DEFAULT_PROFILE,
+          ...saved,
+          chainCode: normalizeChainCode(saved.chainCode),
+          body: { ...DEFAULT_BODY, ...saved.body },
+          weightGoal: { ...DEFAULT_WEIGHT_GOAL, ...saved.weightGoal },
+        };
+      },
+    },
   ),
 );

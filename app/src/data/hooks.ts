@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 
 
+import { goalsForDate } from '@/domain/dailyGoals';
 import { entriesOn, sumEntries } from '@/domain/diary';
 import { lastDinnerDate, savingsCents } from '@/domain/plan';
 import { recipeCostCents } from '@/domain/recipes';
 import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/shoppingList';
-import { today, type LocalDate } from '@/lib/dates';
+import { parseLocalDate, today, type LocalDate } from '@/lib/dates';
 
 import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES_BY_ID } from './catalog';
 import { useDiaryStore } from './stores/diary';
@@ -17,7 +18,7 @@ import { useMyMealsStore } from './stores/myMeals';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
-import type { DayNutrition, MealPlan, Recipe, StoreChain } from './types';
+import type { DayNutrition, MealPlan, NutritionGoals, Recipe, StoreChain } from './types';
 
 /**
  * Hooks that combine the local repositories with the catalog. Screens use
@@ -140,10 +141,18 @@ export function useCurrentShoppingList(): CurrentShoppingList {
 }
 
 
-/** Eaten macros for a day from the diary, against the profile's goals. */
+/** The day's goals: the profile's goals, adjusted for calorie cycling. */
+export function useGoalsFor(date: LocalDate): NutritionGoals {
+  const goals = useProfileStore((s) => s.goals);
+  const cycling = useProfileStore((s) => s.weightGoal.cycling);
+  const sex = useProfileStore((s) => s.body.sex);
+  return useMemo(() => goalsForDate(goals, cycling, sex, parseLocalDate(date)), [goals, cycling, sex, date]);
+}
+
+/** Eaten macros for a day from the diary, against the day's goals. */
 export function useDayNutrition(date: LocalDate): DayNutrition {
   const entries = useDiaryStore((s) => s.entries);
-  const goals = useProfileStore((s) => s.goals);
+  const goals = useGoalsFor(date);
   return useMemo(
     () => ({ date, eaten: sumEntries(entriesOn(entries, date)), goals }),
     [entries, date, goals],

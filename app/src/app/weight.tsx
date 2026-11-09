@@ -16,7 +16,8 @@ import {
 } from '@/components/ui';
 import { useProfileStore } from '@/data/stores/profile';
 import { useWeightStore } from '@/data/stores/weight';
-import { goalProgress, movingAverage, shouldSuggestRecalculation } from '@/domain/energy';
+import { forecastDate, goalDate, goalProgress, milestones, movingAverage, shouldSuggestRecalculation } from '@/domain/energy';
+import { CheckInCard } from '@/features/weight/CheckInCard';
 import { WeightChart } from '@/features/weight/WeightChart';
 import { format, strings } from '@/i18n';
 import { diaryDayLabel, today } from '@/lib/dates';
@@ -40,7 +41,13 @@ export default function WeightScreen() {
   const [value, setValue] = useState(todayEntry?.kg ?? entries.at(-1)?.kg ?? body.weightKg ?? 75);
 
   const trend = movingAverage(entries).at(-1)?.kg ?? null;
-  const target = goal.type !== 'maintain' ? goal.targetWeightKg : null;
+  const target = goal.type === 'lose' || goal.type === 'gain' ? goal.targetWeightKg : null;
+  const forecast = target !== null ? forecastDate(entries, target, new Date()) : null;
+  const planned =
+    target !== null && goal.setAt && goal.startWeightKg !== null && goal.rateKgPerWeek > 0
+      ? goalDate(new Date(goal.setAt), Math.ceil(Math.abs(target - goal.startWeightKg) / goal.rateKgPerWeek))
+      : null;
+  const fiDate = (date: Date) => `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
   const suggest = body.weightKg !== null && shouldSuggestRecalculation(entries, body.weightKg);
   const change = (delta: number) => setValue((v) => Math.round((v + delta) * 10) / 10);
 
@@ -67,6 +74,8 @@ export default function WeightScreen() {
             <Button label={t.suggestCta} size="compact" onPress={() => router.push('/calculator')} />
           </Card>
         ) : null}
+
+        <CheckInCard />
 
         <Card style={styles.gap}>
           <Text variant="overline" color="textSubtle">
@@ -141,6 +150,39 @@ export default function WeightScreen() {
                       value: Math.round(goalProgress(goal.startWeightKg, trend, target) * 100),
                     })}
                   </Text>
+                  <Text variant="overline" color="textSubtle">
+                    {strings.progress2.milestones}
+                  </Text>
+                  <View style={styles.milestones}>
+                    {milestones(goal.startWeightKg, trend, target).map((m) => (
+                      <View
+                        key={m.share}
+                        style={[styles.milestone, m.reached && styles.milestoneReached]}
+                        accessible
+                        accessibilityLabel={`${format(strings.progress2.milestone, {
+                          share: Math.round(m.share * 100),
+                          value: decimal.format(m.kg),
+                        })}${m.reached ? `, ${strings.progress2.reached}` : ''}`}
+                      >
+                        <Icon name={m.reached ? 'checkCircle' : 'flag'} size={18} color={m.reached ? 'success' : 'textSubtle'} />
+                        <Text variant="caption" color={m.reached ? 'success' : 'textMuted'}>
+                          {`${Math.round(m.share * 100)} %`}
+                        </Text>
+                        <Text variant="label">{decimal.format(m.kg)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <Text variant="overline" color="textSubtle">
+                    {strings.progress2.forecastTitle}
+                  </Text>
+                  <Text variant="body" color="textMuted">
+                    {forecast ? format(strings.progress2.forecast, { date: fiDate(forecast) }) : strings.progress2.noForecast}
+                  </Text>
+                  {planned ? (
+                    <Text variant="caption" color="textSubtle">
+                      {format(strings.progress2.planned, { date: fiDate(planned) })}
+                    </Text>
+                  ) : null}
                 </>
               ) : (
                 <>
@@ -197,6 +239,21 @@ const styles = themedStyles(() =>
     },
     flex: {
       flex: 1,
+    },
+    milestones: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    milestone: {
+      flex: 1,
+      alignItems: 'center',
+      gap: spacing.xxs,
+      paddingVertical: spacing.sm,
+      borderRadius: 14,
+      backgroundColor: colors.surfaceRaised,
+    },
+    milestoneReached: {
+      backgroundColor: colors.successSoft,
     },
     content: {
       paddingHorizontal: spacing.lg,
