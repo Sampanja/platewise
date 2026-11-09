@@ -64,7 +64,7 @@ export function ThemePreview({ palette }: { palette: Palette }) {
         <Icon name="home" size={16} tint={p.accentText} />
         <Icon name="recipes" size={16} tint={p.textSubtle} />
         <View style={[styles.center, { backgroundColor: p.accent }]}>
-          <Icon name="sparkles" size={14} tint={p.textOnAccent} />
+          <Icon name="plus" size={16} tint={p.textOnAccent} strokeWidth={2.6} />
         </View>
         <Icon name="diary" size={16} tint={p.textSubtle} />
         <Icon name="profile" size={16} tint={p.textSubtle} />

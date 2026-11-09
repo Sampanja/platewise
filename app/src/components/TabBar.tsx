@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { Icon, PressableScale, Text, useReducedMotion, type IconName } from '@/components/ui';
 import { format, strings } from '@/i18n';
-import { colors, motion, radii, shadows, spacing, themedStyles } from '@/theme';
+import { activeTheme, colors, fontFamilies, motion, radii, shadows, spacing, themedStyles } from '@/theme';
+
+import { BAR_HEIGHT, barPath, MAX_BAR_WIDTH, PRIMARY_SIZE, RISE } from './tabBarShape';
 
 /** Route name → icon. Route order and titles come from the tabs layout. */
 const ICONS: Record<string, IconName> = {
@@ -16,20 +19,17 @@ const ICONS: Record<string, IconName> = {
   profile: 'profile',
 };
 
-/** The centre tab is the app's main action and gets the raised button. */
+/** The centre tab is the app's main action and sits in the bar's notch. */
 const PRIMARY_ROUTE = 'plan';
 
 /** Tab labels may grow with the system text size, but only this much, so five still fit. */
 const MAX_LABEL_SCALE = 1.25;
 
-const BAR_HEIGHT = 66;
-const PRIMARY_SIZE = 60;
-/** How far the centre button rises above the bar. */
-const RISE = 25;
 /** Every label sits this far above the bar bottom, so the centre label lines up with the rest. */
-const LABEL_BOTTOM = 11;
+const LABEL_BOTTOM = 10;
 const SIDE_MARGIN = spacing.lg;
-const PILL_INSET = 6;
+const PILL_INSET = 7;
+const PILL_MAX = 64;
 /** Below this slot width (dp) labels use the compact size. */
 const COMPACT_SLOT = 72;
 
@@ -48,26 +48,29 @@ export function useTabBarSpace(): number {
 }
 
 /**
- * Floating, rounded tab bar detached from the screen edges. A soft pill slides
- * behind the active tab; the centre "Suunnittele" button rises above the bar.
- * Screens outside the tabs (recipe, questionnaire, camera) cover it, so it is
- * hidden there.
+ * Floating tab bar in the character's colours. Five evenly spaced slots; the
+ * centre "Suunnittele" button rests in a notch cut into the bar, so it reads
+ * as part of the bar rather than a separate bubble. A soft pill slides behind
+ * the active side tab. Narrow phones get compact labels; wide screens cap the
+ * bar width and centre it.
  */
 export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
-  const [slotWidth, setSlotWidth] = useState(0);
+  const [barWidth, setBarWidth] = useState(0);
   const [pillX] = useState(() => new Animated.Value(0));
   const [pillOpacity] = useState(() => new Animated.Value(1));
 
+  const slotWidth = barWidth / state.routes.length;
+  const pillWidth = Math.min(slotWidth - PILL_INSET * 2, PILL_MAX);
   // Narrow phones (about 360 dp) get a slightly smaller label so "Suunnittele" fits its slot.
   const compact = slotWidth > 0 && slotWidth < COMPACT_SLOT;
   const focusedRoute = state.routes[state.index]?.name;
   const primaryFocused = focusedRoute === PRIMARY_ROUTE;
 
   useEffect(() => {
-    if (slotWidth === 0) return;
-    const toX = state.index * slotWidth;
+    if (barWidth === 0) return;
+    const toX = state.index * slotWidth + (slotWidth - pillWidth) / 2;
     const animations = [
       reducedMotion
         ? Animated.timing(pillX, { toValue: toX, duration: 0, useNativeDriver: true })
@@ -81,74 +84,83 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
     const animation = Animated.parallel(animations);
     animation.start();
     return () => animation.stop();
-  }, [state.index, slotWidth, primaryFocused, pillX, pillOpacity, reducedMotion]);
+  }, [state.index, barWidth, slotWidth, pillWidth, primaryFocused, pillX, pillOpacity, reducedMotion]);
 
-  const onBarLayout = (event: LayoutChangeEvent) =>
-    setSlotWidth(event.nativeEvent.layout.width / state.routes.length);
+  const onBarLayout = (event: LayoutChangeEvent) => setBarWidth(event.nativeEvent.layout.width);
+  const dark = activeTheme() === 'dark';
 
   return (
-    <View
-      role="tablist"
-      pointerEvents="box-none"
-      style={[styles.container, { bottom: barBottom(insets.bottom) }]}
-    >
-      <View style={styles.bar} onLayout={onBarLayout}>
-        {slotWidth > 0 ? (
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.pill,
-              { width: slotWidth - PILL_INSET * 2, opacity: pillOpacity, transform: [{ translateX: pillX }] },
-            ]}
-          />
-        ) : null}
-      </View>
+    <View role="tablist" pointerEvents="box-none" style={[styles.container, { bottom: barBottom(insets.bottom) }]}>
+      <View style={styles.frame} pointerEvents="box-none">
+        <View style={styles.bar} onLayout={onBarLayout} pointerEvents="none">
+          {barWidth > 0 ? (
+            <>
+              {/* A soft drawn shadow: elevation cannot follow the notch. */}
+              <Svg width={barWidth} height={BAR_HEIGHT + 8} style={styles.shadow}>
+                <Path d={barPath(barWidth)} fill={colors.shadow} opacity={dark ? 0.35 : 0.07} transform="translate(0 4)" />
+                <Path d={barPath(barWidth)} fill={colors.shadow} opacity={dark ? 0.25 : 0.05} transform="translate(0 1.5)" />
+              </Svg>
+              <Svg width={barWidth} height={BAR_HEIGHT} style={StyleSheet.absoluteFill}>
+                <Path
+                  d={barPath(barWidth)}
+                  fill={dark ? colors.surfaceRaised : colors.surface}
+                  stroke={colors.glassBorder}
+                  strokeWidth={StyleSheet.hairlineWidth * 2}
+                />
+              </Svg>
+              <Animated.View
+                style={[styles.pill, { width: pillWidth, opacity: pillOpacity, transform: [{ translateX: pillX }] }]}
+              />
+            </>
+          ) : null}
+        </View>
 
-      <View style={styles.tabs} pointerEvents="box-none">
-        {state.routes.map((route, index) => {
-          const focused = index === state.index;
-          const { options } = descriptors[route.key];
-          const label = options.title ?? route.name;
+        <View style={styles.tabs} pointerEvents="box-none">
+          {state.routes.map((route, index) => {
+            const focused = index === state.index;
+            const { options } = descriptors[route.key];
+            const label = options.title ?? route.name;
 
-          const onPress = () => {
-            const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!focused && !event.defaultPrevented) navigateToTab(route.key);
-          };
-          const onLongPress = () => emitter.emit({ type: 'tabLongPress', target: route.key });
+            const onPress = () => {
+              const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+            };
+            const onLongPress = () => emitter.emit({ type: 'tabLongPress', target: route.key });
 
-          const a11y = {
-            accessibilityRole: 'tab' as const,
-            accessibilityState: { selected: focused },
-            accessibilityLabel: format(strings.tabs.a11yPosition, {
-              label,
-              index: index + 1,
-              count: state.routes.length,
-            }),
-          };
+            const a11y = {
+              accessibilityRole: 'tab' as const,
+              accessibilityState: { selected: focused },
+              accessibilityLabel: format(strings.tabs.a11yPosition, {
+                label,
+                index: index + 1,
+                count: state.routes.length,
+              }),
+            };
 
-          return route.name === PRIMARY_ROUTE ? (
-            <PrimaryTab
-              key={route.key}
-              compact={compact}
-              label={label}
-              focused={focused}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              {...a11y}
-            />
-          ) : (
-            <Tab
-              key={route.key}
-              compact={compact}
-              icon={ICONS[route.name] ?? 'home'}
-              label={label}
-              focused={focused}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              {...a11y}
-            />
-          );
-        })}
+            return route.name === PRIMARY_ROUTE ? (
+              <PrimaryTab
+                key={route.key}
+                compact={compact}
+                label={label}
+                focused={focused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                {...a11y}
+              />
+            ) : (
+              <Tab
+                key={route.key}
+                compact={compact}
+                icon={ICONS[route.name] ?? 'home'}
+                label={label}
+                focused={focused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                {...a11y}
+              />
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -206,7 +218,7 @@ function Tab({ icon, label, focused, compact, ...pressable }: TabProps & { icon:
         color={color}
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
-        style={[styles.label, compact && styles.labelCompact]}
+        style={[styles.label, focused && styles.labelFocused, compact && styles.labelCompact]}
       >
         {label}
       </Text>
@@ -231,16 +243,14 @@ function PrimaryTab({ label, focused, compact, ...pressable }: TabProps) {
 
   return (
     <PressableScale haptic="tap" style={styles.primaryTab} {...pressable}>
-      <View style={styles.primaryButton}>
+      <View style={[styles.primaryButton, focused && styles.primaryButtonFocused]}>
         {/* A quarter turn of the plus marks the active state without changing the shape. */}
         <Animated.View
           style={{
-            transform: [
-              { rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) },
-            ],
+            transform: [{ rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) }],
           }}
         >
-          <Icon name="plus" size={30} color="textOnAccent" strokeWidth={2.6} />
+          <Icon name="plus" size={28} color="textOnAccent" strokeWidth={2.6} />
         </Animated.View>
       </View>
       <Text
@@ -248,7 +258,7 @@ function PrimaryTab({ label, focused, compact, ...pressable }: TabProps) {
         color={focused ? 'accentText' : 'textMuted'}
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
-        style={[styles.label, compact && styles.labelCompact]}
+        style={[styles.label, styles.labelFocused, compact && styles.labelCompact]}
       >
         {label}
       </Text>
@@ -265,23 +275,29 @@ const styles = themedStyles(() =>
       // The container includes the space above the bar where the centre button
       // rises: Android ignores touches outside a parent's bounds.
       height: BAR_HEIGHT + RISE,
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+    },
+    frame: {
+      width: '100%',
+      maxWidth: MAX_BAR_WIDTH,
+      height: BAR_HEIGHT + RISE,
       justifyContent: 'flex-end',
     },
     bar: {
       height: BAR_HEIGHT,
-      borderRadius: radii.pill,
-      backgroundColor: colors.surfaceRaised,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.glassBorder,
-      justifyContent: 'center',
-      ...shadows.card,
+    },
+    shadow: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
     },
     pill: {
       position: 'absolute',
-      left: PILL_INSET,
+      left: 0,
       top: PILL_INSET,
       bottom: PILL_INSET,
-      borderRadius: radii.pill,
+      borderRadius: radii.lg,
       backgroundColor: colors.accentSoft,
     },
     tabs: {
@@ -301,14 +317,16 @@ const styles = themedStyles(() =>
       flex: 1,
       height: BAR_HEIGHT + RISE,
       alignItems: 'center',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
       paddingBottom: LABEL_BOTTOM,
-      gap: 4,
     },
     label: {
       alignSelf: 'stretch',
       textAlign: 'center',
       paddingHorizontal: 1,
+    },
+    labelFocused: {
+      fontFamily: fontFamilies.bodySemiBold,
     },
     labelCompact: {
       fontSize: 11,
@@ -319,11 +337,12 @@ const styles = themedStyles(() =>
       height: PRIMARY_SIZE,
       borderRadius: PRIMARY_SIZE / 2,
       backgroundColor: colors.accent,
-      borderWidth: 4,
-      borderColor: colors.bg,
       alignItems: 'center',
       justifyContent: 'center',
       ...shadows.glow,
+    },
+    primaryButtonFocused: {
+      backgroundColor: colors.accentPressed,
     },
   }),
 );
