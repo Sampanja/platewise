@@ -33,7 +33,7 @@ import {
   swapMeal,
 } from '@/domain/generate';
 import { recipeCostCents } from '@/domain/recipes';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { format, formatCents, formatInteger, formatWholeEuros, strings } from '@/i18n';
 import { addDays, relativeDayLabel } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing } from '@/theme';
@@ -106,7 +106,7 @@ export default function ProposalScreen() {
   const raiseBudget = (budgetCents: number) => {
     haptics.tap();
     updateAnswers({ budgetCents });
-    showToast(format(t.budgetRaised, { amount: formatCents(budgetCents) }));
+    showToast(format(t.budgetRaised, { amount: formatWholeEuros(budgetCents) }));
   };
   const removeMeal = (dayOffset: number) => {
     haptics.tap();
@@ -249,7 +249,7 @@ function IssueCard({
   const fixLabel = (fix: Assessment['fixes'][number]) => {
     switch (fix.kind) {
       case 'raiseBudget':
-        return format(t.fixRaise, { amount: formatCents(fix.byCents) });
+        return format(t.fixRaise, { amount: formatWholeEuros(fix.byCents) });
       case 'fewerMeals':
         return format(t.fixFewer, { total: formatCents(fix.totalCents) });
       case 'cheaperChain':

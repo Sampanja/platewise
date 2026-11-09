@@ -27,6 +27,11 @@ export function formatCents(cents: number): string {
   return formatEuro(cents / 100);
 }
 
+/** Whole euros without decimals, e.g. 6600 → "66 €". For budgets and round-up suggestions. */
+export function formatWholeEuros(cents: number): string {
+  return `${integerFormatter.format(Math.round(cents / 100))} €`;
+}
+
 /** Rounds and groups thousands the Finnish way, e.g. 1240.4 → "1 240". */
 export function formatInteger(value: number): string {
   return integerFormatter.format(Math.round(value));

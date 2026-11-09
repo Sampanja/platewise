@@ -24,7 +24,7 @@ import { tightBudgetFixes } from '@/domain/feasibility';
 import { minimumBudgetCents } from '@/domain/generate';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
-import { format, formatCents, strings } from '@/i18n';
+import { format, formatCents, formatWholeEuros, strings } from '@/i18n';
 import { colors, radii, spacing } from '@/theme';
 
 const t = strings.plan;
@@ -286,7 +286,7 @@ export default function QuestionnaireScreen() {
               {fixes ? (
                 <View style={styles.fixes}>
                   <Button
-                    label={format(t.budget.raiseTo, { amount: formatCents(fixes.raiseToCents) })}
+                    label={format(t.budget.raiseTo, { amount: formatWholeEuros(fixes.raiseToCents) })}
                     size="compact"
                     variant="secondary"
                     onPress={() => setBudgetEur(Math.round(fixes.raiseToCents / 100))}
@@ -355,7 +355,7 @@ export default function QuestionnaireScreen() {
   const footer =
     step === 'summary' ? (
       tooLow ? (
-        <Button label={t.budget.title} onPress={() => goTo(0)} />
+        <Button label={t.budget.change} onPress={() => goTo(0)} />
       ) : (
         <Button label={t.summary.create} onPress={create} haptic="success" />
       )

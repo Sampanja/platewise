@@ -290,6 +290,7 @@ export const fi = {
       tooLowTitle: 'Budjetti on liian tiukka',
       tooLowBody: 'Halvin realistinen lista näillä valinnoilla on noin {amount}, joten budjetti ei riitä. Valitse ratkaisu:',
       raiseTo: 'Nosta budjetiksi {amount}',
+      change: 'Muuta budjettia',
       fewerMeals: 'Vähennä yksi ruokakerta ({count} kpl)',
     },
     eaters: {
