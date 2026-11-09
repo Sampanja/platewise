@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { buttonHeight, colors, radii, shadows, spacing, themedStyles, touchTarget } from '@/theme';
+import { buttonHeight, colors, fixed, radii, shadows, spacing, themedStyles, touchTarget } from '@/theme';
 
 import { PressableScale, type PressableScaleProps } from './PressableScale';
 import { Text } from './Text';
@@ -83,7 +83,7 @@ const variantStyles = themedStyles(() =>
     primary: {
       backgroundColor: colors.accent,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.25)',
+      borderColor: fixed.buttonHighlight,
     },
     secondary: {
       backgroundColor: colors.surfaceRaised,

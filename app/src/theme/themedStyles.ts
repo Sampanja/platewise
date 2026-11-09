@@ -1,19 +1,19 @@
-import { activeTheme, type ThemeName } from './colors';
+import { themeKey } from './colors';
 
 /**
- * Styles that follow the active theme. The factory runs once per theme, on
- * first use, so it can read `colors` and `shadows` like a plain
- * `StyleSheet.create` block:
+ * Styles that follow the active theme (character + light/dark). The factory
+ * runs once per theme, on first use, so it can read `colors` and `shadows`
+ * like a plain `StyleSheet.create` block:
  *
  *   const styles = themedStyles(() => StyleSheet.create({ card: { backgroundColor: colors.surface } }));
  *
  * Reading `styles.card` during render returns the active theme's style.
  */
 export function themedStyles<T extends object>(factory: () => T): T {
-  const cache: Partial<Record<ThemeName, T>> = {};
+  const cache: Record<string, T> = {};
   const current = (): T => {
-    const theme = activeTheme();
-    return (cache[theme] ??= factory());
+    const key = themeKey();
+    return (cache[key] ??= factory());
   };
   return new Proxy({} as T, {
     get: (_target, key) => current()[key as keyof T],

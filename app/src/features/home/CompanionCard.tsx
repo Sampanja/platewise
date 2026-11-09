@@ -9,15 +9,17 @@ import { useWaterStore } from '@/data/stores/water';
 import { mascotGreeting } from '@/domain/mascotMood';
 import { mealDate } from '@/domain/plan';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, strings } from '@/i18n';
 import { parseLocalDate, today } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const DAY_MS = 86_400_000;
 
-/** Nuppu's greeting for the moment, a glance at streak, level and quests, and the way to the chat. */
+/** The character's greeting for the moment, a glance at streak, level and quests, and the way to the chat. */
 export function CompanionCard() {
   const now = today();
+  const { voice } = useCharacter();
   const game = useGame();
   const entries = useDiaryStore((s) => s.entries);
   const water = useWaterStore((s) => s.byDate[now] ?? 0);
@@ -40,7 +42,7 @@ export function CompanionCard() {
 
   return (
     <Card style={styles.card}>
-      <MascotSays state={mood.state} message={strings.mascot.greetings[mood.key]} size={76} />
+      <MascotSays state={mood.state} message={voice.greetings[mood.key]} size={76} />
       {game ? (
         <PressableScale
           onPress={() => router.push('/progress')}
@@ -58,7 +60,7 @@ export function CompanionCard() {
         </PressableScale>
       ) : null}
       <Button
-        label={strings.chat.open}
+        label={format(strings.chat.open, { ablative: voice.ablative })}
         variant="secondary"
         size="compact"
         icon={<Icon name="chat" size={18} />}

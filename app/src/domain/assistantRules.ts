@@ -76,7 +76,7 @@ const SAFETY_ANSWERS: Record<Exclude<SafetyTopic, null>, string> = {
     'Tähän en voi antaa lääketieteellistä arviota – en tunne terveydentilaasi enkä voi tehdä diagnooseja. Kysy asiasta lääkäriltä, terveydenhoitajalta tai ravitsemusterapeutilta. Voin kyllä auttaa yleisissä ruokavinkeissä, reseptien valinnassa ja ostoslistassa!',
 };
 
-/** Rule-based test answer in Nuppu's voice. Safety topics always win. */
+/** Rule-based test answer (neutral voice, same for every character). Safety topics always win. */
 export function testAnswer(message: string, context: AssistantContext): string {
   const safety = classifySafety(message);
   if (safety) return SAFETY_ANSWERS[safety];

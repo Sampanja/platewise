@@ -3,13 +3,9 @@ import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 
 import { Icon, type IconName } from '@/components/ui';
 import type { Tier } from '@/domain/gamification';
-import { colors } from '@/theme';
+import { colors, fixed } from '@/theme';
 
-const TIER_COLORS: Record<Tier, { from: string; to: string; ribbon: string }> = {
-  bronze: { from: '#E7A46B', to: '#B4692F', ribbon: '#C9461A' },
-  silver: { from: '#E6EBF0', to: '#9AA6B2', ribbon: '#1F6FA8' },
-  gold: { from: '#FFE08A', to: '#D49B16', ribbon: '#2F7D4A' },
-};
+const TIER_COLORS: Record<Tier, { from: string; to: string; ribbon: string }> = fixed.badge;
 
 /**
  * Achievement medal: a ribbon and a gradient disc in the tier's metal with
@@ -31,10 +27,10 @@ export function Badge({ tier, icon, size = 64, locked = false }: { tier: Tier; i
         <Path d="M30 70 L20 112 L38 102 L48 114 L52 74 Z" fill={locked ? colors.border : c.ribbon} />
         <Path d="M70 70 L80 112 L62 102 L52 114 L48 74 Z" fill={locked ? colors.border : c.ribbon} opacity={0.85} />
         <Circle cx={50} cy={46} r={42} fill={`url(#${id})`} />
-        <Circle cx={50} cy={46} r={34} fill="none" stroke="#FFFFFF" strokeOpacity={locked ? 0.2 : 0.55} strokeWidth={3} />
+        <Circle cx={50} cy={46} r={34} fill="none" stroke={fixed.badge.shine} strokeOpacity={locked ? 0.2 : 0.55} strokeWidth={3} />
       </Svg>
       <View style={[styles.icon, { top: size * 0.4 - size * 0.18, width: size, height: size * 0.36 }]}>
-        <Icon name={icon} size={size * 0.34} tint={locked ? colors.textSubtle : '#2B1D15'} strokeWidth={2.2} />
+        <Icon name={icon} size={size * 0.34} tint={locked ? colors.textSubtle : fixed.badge.ink} strokeWidth={2.2} />
       </View>
     </View>
   );

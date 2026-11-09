@@ -22,6 +22,7 @@ import { entriesOn } from '@/domain/diary';
 import { useDiaryStore } from '@/data/stores/diary';
 import { Mascot } from '@/features/mascot/Mascot';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
@@ -31,12 +32,14 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 const t = strings.chat;
 
 /**
- * "Kysy Nupulta": chat with the mascot. Today's diary and goals are shared
+ * "Kysy Nupulta" (or whichever character the user picked): chat with the character. Today's diary and goals are shared
  * only with consent. Answers come from services/assistant.ts (test answers
  * now, Claude through the backend later). Daily message limit for cost control.
  */
 export default function ChatScreen() {
   const now = today();
+  const { id: character, voice } = useCharacter();
+  const names = { name: voice.name, ablative: voice.ablative };
   const messages = useChatStore((s) => s.messages);
   const sentToday = useChatStore((s) => s.sentByDate[now] ?? 0);
   const add = useChatStore((s) => s.add);
@@ -83,7 +86,7 @@ export default function ChatScreen() {
     countSent(now);
     setWaiting(true);
     try {
-      const answer = await assistant.reply({ messages: [...useChatStore.getState().messages], context });
+      const answer = await assistant.reply({ messages: [...useChatStore.getState().messages], context, character });
       add('assistant', answer);
     } catch {
       setFailed(trimmed);
@@ -109,7 +112,7 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader
-        title={t.title}
+        title={format(t.title, names)}
         trailing={
           messages.length > 0 ? (
             <IconButton icon="trash" variant="plain" accessibilityLabel={t.clear} onPress={confirmClear} />
@@ -123,13 +126,13 @@ export default function ChatScreen() {
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}
         >
-          <MascotSays state="happy" message={t.intro} size={72} />
+          <MascotSays state="happy" message={voice.chat.intro} size={72} />
 
           <Card padding="flush">
             <View style={styles.consent}>
               <SwitchRow
-                label={consent ? t.shareOn : t.shareOff}
-                hint={t.shareBody}
+                label={format(consent ? t.shareOn : t.shareOff, names)}
+                hint={format(t.shareBody, names)}
                 value={consent}
                 onValueChange={(chatShareConsent) => update({ chatShareConsent })}
               />
@@ -148,7 +151,7 @@ export default function ChatScreen() {
             ) : (
               <FadeInView key={message.id} style={styles.botRow}>
                 <Mascot state="idle" size={36} />
-                <View style={styles.botBubble} accessible accessibilityLabel={`${strings.mascot.name}: ${message.text}`}>
+                <View style={styles.botBubble} accessible accessibilityLabel={`${voice.name}: ${message.text}`}>
                   <Text variant="body">{message.text}</Text>
                 </View>
               </FadeInView>
@@ -156,11 +159,11 @@ export default function ChatScreen() {
           )}
 
           {waiting ? (
-            <View style={styles.botRow} accessible accessibilityLabel={t.thinking} accessibilityLiveRegion="polite">
+            <View style={styles.botRow} accessible accessibilityLabel={voice.chat.thinking} accessibilityLiveRegion="polite">
               <Mascot state="thinking" size={36} />
               <View style={styles.botBubble}>
                 <Text variant="body" color="textMuted">
-                  {t.thinking}
+                  {voice.chat.thinking}
                 </Text>
               </View>
             </View>
@@ -195,7 +198,7 @@ export default function ChatScreen() {
           ) : null}
 
           <Text variant="caption" color="textSubtle" style={styles.disclaimer}>
-            {t.disclaimer}
+            {format(t.disclaimer, names)}
           </Text>
         </ScrollView>
 

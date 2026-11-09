@@ -12,6 +12,7 @@ import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
 import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
 import { format, formatCents, formatDecimal, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
@@ -27,6 +28,7 @@ function edit(section: string): Href {
 export default function ProfileScreen() {
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore();
+  const { voice } = useCharacter();
   const addMany = useDiaryStore((s) => s.addMany);
   const latestWeight = useWeightStore((s) => s.entries.at(-1)?.kg);
   const logWeight = useWeightStore((s) => s.log);
@@ -149,7 +151,7 @@ export default function ProfileScreen() {
             />
           </View>
           <Row icon="trophy" label={strings.game.title} value={strings.game.settingHint} href="/progress" />
-          <Row icon="chat" label={strings.chat.title} href="/chat" />
+          <Row icon="chat" label={format(strings.chat.title, { ablative: voice.ablative })} href="/chat" />
           <View style={styles.switchRow}>
             <SwitchRow
               label={strings.game.setting}
@@ -164,7 +166,8 @@ export default function ProfileScreen() {
             value={reminders.enabled ? format(strings.reminders.onCount, { count: reminderCount }) : strings.reminders.off}
             href={edit('reminders')}
           />
-          <Row icon="sun" label={t.theme} value={strings.themes[profile.themePreference]} href={edit('theme')} />
+          <Row icon="sparkles" label={strings.characters.profileRow} value={voice.name} href="/choose-character" />
+          <Row icon="sun" label={strings.characters.modeTitle} value={strings.themes[profile.themePreference]} href={edit('theme')} />
           <Row icon="crown" label={t.subscription} value={t.subscriptionValue} href="/paywall" />
           <Row icon="shield" label={t.privacy} href={{ pathname: '/legal/[doc]', params: { doc: 'privacy' } }} />
           <Row icon="file" label={t.terms} href={{ pathname: '/legal/[doc]', params: { doc: 'terms' } }} />

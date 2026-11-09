@@ -15,6 +15,7 @@ import {
   type Sex,
   type Workout,
 } from '@/domain/energy';
+import { DEFAULT_CHARACTER, isCharacterId, type CharacterId } from '@/theme/characters';
 import type { ThemePreference } from '@/theme/colors';
 
 import type { AllergenCode, ChainCode, DietCode, NutritionGoals } from '../types';
@@ -105,6 +106,10 @@ export type Profile = {
   hapticsEnabled: boolean;
   /** Light, dark or follow the phone. */
   themePreference: ThemePreference;
+  /** The chosen character: sets the colour theme, voice and mascot. */
+  characterId: CharacterId;
+  /** The picker has been seen (first screen of onboarding). */
+  characterChosen: boolean;
   /** XP, streaks, quests, achievements and celebrations. Can be turned off. */
   gamificationEnabled: boolean;
   /** The assistant may read today's diary and goals (asked in the chat, revocable). */
@@ -126,6 +131,8 @@ export const DEFAULT_PROFILE: Profile = {
   hideCalories: false,
   hapticsEnabled: true,
   themePreference: 'system',
+  characterId: DEFAULT_CHARACTER,
+  characterChosen: false,
   gamificationEnabled: true,
   chatShareConsent: false,
   onboardingCompleted: false,
@@ -171,15 +178,19 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 5,
+      version: 6,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
+      // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
       migrate: (persisted) => {
         const saved = dropHouseholdSize((persisted ?? {}) as Partial<Profile>);
         return {
           ...DEFAULT_PROFILE,
           ...saved,
           chainCode: normalizeChainCode(saved.chainCode),
+          characterId: isCharacterId(saved.characterId) ? saved.characterId : DEFAULT_CHARACTER,
+          // People who already finished onboarding are not sent back to the picker.
+          characterChosen: saved.characterChosen ?? saved.onboardingCompleted ?? false,
           body: { ...DEFAULT_BODY, ...saved.body },
           weightGoal: { ...DEFAULT_WEIGHT_GOAL, ...saved.weightGoal },
         };

@@ -64,7 +64,7 @@ export default function ReportScreen() {
               {diaryDayLabel(date)}
             </Text>
             {day.entryCount === 0 ? (
-              <EmptyState icon="chart" mascot="encouraging" title={t.emptyDayTitle} body={t.emptyDayBody} />
+              <EmptyState icon="chart" mascot="encouraging" voice="diary" title={t.emptyDayTitle} body={t.emptyDayBody} />
             ) : (
               <>
                 {hideCalories ? null : (

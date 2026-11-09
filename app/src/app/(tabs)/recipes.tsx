@@ -191,11 +191,12 @@ export default function RecipesScreen() {
           renderItem={({ item }) => <RecipeCard recipe={item} style={{ width: cardWidth }} />}
           ListEmptyComponent={
             onlyFavorites ? (
-              <EmptyState icon="heart" mascot="happy" title={t.favoritesEmptyTitle} body={t.favoritesEmptyBody} />
+              <EmptyState icon="heart" mascot="happy" voice="favorites" title={t.favoritesEmptyTitle} body={t.favoritesEmptyBody} />
             ) : (
               <EmptyState
                 icon="search"
                 mascot="thinking"
+                voice="search"
                 title={t.emptyTitle}
                 body={t.emptyBody}
                 action={{ label: t.emptyCta, onPress: clearAll, variant: 'secondary' }}

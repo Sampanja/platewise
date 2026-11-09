@@ -81,6 +81,8 @@ export default function ShoppingListScreen() {
         <ScreenHeader title={t.title} />
         <EmptyState
           icon="basket"
+          mascot="idle"
+          voice="shopping"
           title={t.emptyTitle}
           body={t.emptyBody}
           action={{ label: t.emptyCta, onPress: () => router.replace('/questionnaire') }}

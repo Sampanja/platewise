@@ -3,6 +3,8 @@ import { StyleSheet, View } from 'react-native';
 import { RecipeImage } from '@/components/RecipeImage';
 import { Button, Card, Text } from '@/components/ui';
 import { RECIPES_BY_ID } from '@/data/catalog';
+import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
 import { radii, spacing, themedStyles } from '@/theme';
 
@@ -15,6 +17,7 @@ const HERO_RECIPE = RECIPES_BY_ID['chicken-curry'];
 /** No plan yet: an inviting photo card with the single main action. */
 export function EmptyPlanCard({ onCreate }: Props) {
   const t = strings.home;
+  const { voice } = useCharacter();
   return (
     <Card padding="flush">
       <View style={styles.hero}>
@@ -26,6 +29,7 @@ export function EmptyPlanCard({ onCreate }: Props) {
         </View>
       </View>
       <View style={styles.body}>
+        <MascotSays state="cooking" message={voice.empty.plan} size={60} />
         <Text variant="body" color="textMuted">
           {t.emptyBody}
         </Text>

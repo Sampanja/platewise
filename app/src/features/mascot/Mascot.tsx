@@ -3,27 +3,33 @@ import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useReducedMotion } from '@/components/ui';
-import { strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import type { CharacterId } from '@/theme/characters';
 
-import { MASCOT_IMAGES } from '../../../assets/mascot';
-import { NuppuSvg } from './NuppuSvg';
+import { CHARACTER_IMAGES } from '../../../assets/mascot';
+import { CharacterSvg } from './CharacterSvg';
 import type { MascotState } from './types';
+import { characterVoice, useCharacter } from './useCharacter';
 
 type Props = {
   state?: MascotState;
   size?: number;
   style?: StyleProp<ViewStyle>;
+  /** Draw this character instead of the user's own (the picker). */
+  character?: CharacterId;
   /** Spoken label; the mascot is decorative by default. */
   accessibilityLabel?: string;
 };
 
 /**
- * The mascot (Nuppu) in a given state. Uses the final artwork from
+ * The user's character in a given state. Uses the final artwork from
  * assets/mascot when it exists, otherwise the temporary vector drawing. The
  * motion comes from here, so still artwork comes alive too. Respects the
  * system's reduce-motion setting.
  */
-export function Mascot({ state = 'idle', size = 96, style, accessibilityLabel }: Props) {
+export function Mascot({ state = 'idle', size = 96, style, character, accessibilityLabel }: Props) {
+  const own = useCharacter();
+  const id = character ?? own.id;
   const reducedMotion = useReducedMotion();
   const [y] = useState(() => new Animated.Value(0));
   const [rotate] = useState(() => new Animated.Value(0));
@@ -90,21 +96,22 @@ export function Mascot({ state = 'idle', size = 96, style, accessibilityLabel }:
     return () => animation.stop();
   }, [state, size, reducedMotion, y, rotate, scale]);
 
-  const image = MASCOT_IMAGES[state] ?? MASCOT_IMAGES.idle;
+  const images = CHARACTER_IMAGES[id];
+  const image = images?.[state] ?? images?.idle;
   const spin = rotate.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] });
 
   return (
     <View
       style={[{ width: size, height: size }, style]}
       accessible={Boolean(accessibilityLabel)}
-      accessibilityLabel={accessibilityLabel ?? strings.mascot.name}
+      accessibilityLabel={accessibilityLabel ?? format(strings.mascot.a11y, { name: characterVoice(id).name })}
       importantForAccessibility={accessibilityLabel ? 'yes' : 'no-hide-descendants'}
     >
       <Animated.View style={[styles.fill, { transform: [{ translateY: y }, { rotate: spin }, { scale }] }]}>
         {image ? (
           <Image source={image} style={styles.fill} contentFit="contain" />
         ) : (
-          <NuppuSvg state={state} size={size} />
+          <CharacterSvg character={id} state={state} size={size} />
         )}
       </Animated.View>
     </View>

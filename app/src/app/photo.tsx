@@ -31,7 +31,7 @@ import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { foodRecognition, type RecognizedFood } from '@/services/foodRecognition';
-import { colors, radii, spacing, themedStyles } from '@/theme';
+import { colors, fixed, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.photo;
 const r = strings.photoResult;
@@ -437,7 +437,7 @@ const styles = themedStyles(() =>
     },
     scanTint: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      backgroundColor: fixed.photoDim,
     },
     scanLine: {
       height: 4,

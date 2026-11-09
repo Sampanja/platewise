@@ -254,12 +254,5 @@ export const fiDiary = {
     openSettings: 'Avaa asetukset',
     saved: 'Muistutukset päivitetty',
     channelName: 'Ateriamuistutukset',
-    notificationTitle: 'Platewise',
-    notificationBody: {
-      breakfast: 'Hyvää huomenta! Muistatko kirjata aamupalan?',
-      lunch: 'Lounasaika – kirjaa ateria, kun ehdit.',
-      dinner: 'Mitä tänään syötiin? Päivällisen voi kirjata yhdellä napautuksella.',
-      snack: 'Pieni muistutus: välipalan voi kirjata nopeasti.',
-    },
   },
 } as const;

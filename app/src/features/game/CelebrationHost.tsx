@@ -6,6 +6,7 @@ import { useGame } from '@/data/game';
 import { useGameStore } from '@/data/stores/game';
 import { ACHIEVEMENTS } from '@/domain/gamification';
 import { Mascot } from '@/features/mascot/Mascot';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, strings } from '@/i18n';
 import { colors, spacing, themedStyles } from '@/theme';
 
@@ -21,6 +22,7 @@ type Celebration = { achievements: string[]; level: number | null };
  */
 export function CelebrationHost() {
   const game = useGame();
+  const { voice } = useCharacter();
   const { initialized, seenAchievements, seenLevel, markSeen } = useGameStore();
   const [showing, setShowing] = useState<Celebration | null>(null);
   const [run, setRun] = useState(0);
@@ -60,6 +62,9 @@ export function CelebrationHost() {
             <Mascot state="celebrating" size={120} />
             <Text variant="display" style={styles.text} accessibilityRole="header">
               {showing.level !== null ? strings.celebrate.level : strings.celebrate.achievement}
+            </Text>
+            <Text variant="bodyStrong" color="accentText" style={styles.text}>
+              {`“${showing.level !== null ? voice.celebrate.level : voice.celebrate.achievement}” – ${voice.name}`}
             </Text>
             {showing.level !== null ? (
               <Text variant="body" color="textMuted" style={styles.text}>

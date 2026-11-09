@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useReducedMotion } from '@/components/ui';
+import { colors, type ColorToken } from '@/theme';
 
-const COLORS = ['#FF8A4C', '#F5C451', '#7FCB8E', '#7CC4F2', '#F28DB2', '#B57BC4'];
+// The character's own colours plus the shared highlights.
+const TOKENS: ColorToken[] = ['accent', 'gold', 'herb', 'water', 'berry', 'accentText'];
 const COUNT = 36;
 
 type Piece = { x: number; delay: number; drift: number; spin: number; color: string; w: number; h: number };
@@ -19,7 +21,7 @@ export function Confetti({ run }: { run: number }) {
       delay: Math.random() * 0.25,
       drift: (Math.random() - 0.5) * 120,
       spin: (Math.random() - 0.5) * 900,
-      color: COLORS[i % COLORS.length],
+      color: colors[TOKENS[i % TOKENS.length]],
       w: 6 + Math.random() * 6,
       h: 10 + Math.random() * 8,
     })),

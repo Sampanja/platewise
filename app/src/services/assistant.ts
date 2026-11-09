@@ -1,17 +1,19 @@
 import { testAnswer, type AssistantContext } from '@/domain/assistantRules';
+import type { CharacterId } from '@/theme/characters';
 
 export type ChatRole = 'user' | 'assistant';
 export type ChatMessage = { id: string; role: ChatRole; text: string; createdAt: string };
 
 /**
- * The assistant chat ("Kysy Nupulta"). Screens depend only on this
+ * The assistant chat ("Kysy Nupulta" etc.). Screens depend only on this
  * interface. The real implementation calls the `assistant-chat` Edge
- * Function (Claude, Nuppu's persona, safety rules, daily limit; see
+ * Function (Claude, the chosen character's persona, safety rules, daily limit; see
  * docs/GENERATION.md). `context` is today's diary and goals, sent only with
- * the user's consent; null otherwise.
+ * the user's consent; null otherwise. `character` picks the persona: only
+ * the tone changes, the safety rules are the same for every character.
  */
 export interface AssistantService {
-  reply(input: { messages: readonly ChatMessage[]; context: AssistantContext }): Promise<string>;
+  reply(input: { messages: readonly ChatMessage[]; context: AssistantContext; character: CharacterId }): Promise<string>;
 }
 
 const TEST_LATENCY_MS = 900;

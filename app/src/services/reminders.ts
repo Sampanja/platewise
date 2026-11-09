@@ -4,11 +4,13 @@ import { Platform } from 'react-native';
 
 import type { ReminderTime } from '@/data/stores/reminders';
 import type { DiaryMeal } from '@/data/types';
+import { currentCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
 
 /**
  * Meal reminders as local notifications (no server, no push token). The
- * reminder text is neutral and never mentions calories or weight.
+ * reminder text is neutral and never mentions calories or weight. The text
+ * is in the chosen character's voice (rescheduled when the character changes).
  */
 
 const CHANNEL = 'meal-reminders';
@@ -49,12 +51,13 @@ export async function scheduleMealReminders(
       .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
   if (!enabled) return 0;
+  const { voice } = currentCharacter();
   const entries = (Object.entries(times) as [DiaryMeal, ReminderTime][]).filter(([, time]) => time.on);
   for (const [meal, time] of entries) {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: strings.reminders.notificationTitle,
-        body: strings.reminders.notificationBody[meal],
+        title: voice.name,
+        body: voice.notify[meal],
         data: { tag: TAG, meal },
       },
       trigger: {

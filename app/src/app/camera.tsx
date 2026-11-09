@@ -10,14 +10,16 @@ import { Button, haptics, Icon, PressableScale, Text, TextField, useReducedMotio
 import type { DiaryMeal } from '@/data/types';
 import { isValidBarcode } from '@/domain/openFoodFacts';
 import { strings } from '@/i18n';
-import { palettes, radii, spacing } from '@/theme';
+import { activeCharacter, fixed, palettes, radii, spacing, themedStyles, type Palette } from '@/theme';
 
 const t = strings.camera;
 type Mode = 'photo' | 'barcode' | 'label';
 const MODES: readonly Mode[] = ['photo', 'barcode', 'label'];
 
-/** The camera UI is always dark: it sits on top of the live image. */
-const ink = palettes.dark;
+/** The camera UI is always dark (it sits on the live image) but in the character's colours. */
+const ink: Palette = new Proxy({} as Palette, {
+  get: (_target, key: string) => palettes[activeCharacter()].dark[key as keyof Palette],
+});
 
 /**
  * One camera for the diary: food photo (with a plate guide), barcode (live
@@ -313,161 +315,163 @@ function ManualSheet({
 
 const CORNER = 28;
 
-const styles = StyleSheet.create({
-  black: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  permission: {
-    padding: spacing.lg,
-  },
-  permissionBody: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'stretch',
-    gap: spacing.lg,
-  },
-  center: {
-    textAlign: 'center',
-  },
-  inkText: {
-    color: ink.text,
-  },
-  inkMuted: {
-    color: ink.textMuted,
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-  },
-  roundButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  roundButtonOn: {
-    backgroundColor: ink.accent,
-  },
-  roundButtonSpacer: {
-    width: 48,
-  },
-  guideArea: {
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  frame: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  framePhoto: {
-    width: 300,
-    height: 300,
-  },
-  frameBarcode: {
-    width: 300,
-    height: 150,
-  },
-  frameLabel: {
-    width: 260,
-    height: 380,
-  },
-  corner: {
-    position: 'absolute',
-    width: CORNER,
-    height: CORNER,
-    borderColor: ink.text,
-  },
-  tl: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: radii.md },
-  tr: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: radii.md },
-  bl: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: radii.md },
-  br: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: radii.md },
-  plate: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: 'rgba(255, 255, 255, 0.55)',
-  },
-  scanLine: {
-    position: 'absolute',
-    top: 0,
-    left: 16,
-    right: 16,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: ink.accent,
-  },
-  tip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.pill,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-    maxWidth: 340,
-  },
-  bottom: {
-    gap: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  modes: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    padding: spacing.xs,
-    borderRadius: radii.pill,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-  },
-  mode: {
-    minHeight: 40,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
-    justifyContent: 'center',
-  },
-  modeSelected: {
-    backgroundColor: ink.accent,
-  },
-  modeTextSelected: {
-    color: ink.textOnAccent,
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    minHeight: 84,
-  },
-  shutter: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
-    borderColor: ink.text,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shutterInner: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: ink.text,
-  },
-  textButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-  },
-});
+const styles = themedStyles(() =>
+  StyleSheet.create({
+    black: {
+      flex: 1,
+      backgroundColor: fixed.black,
+    },
+    overlay: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    permission: {
+      padding: spacing.lg,
+    },
+    permissionBody: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'stretch',
+      gap: spacing.lg,
+    },
+    center: {
+      textAlign: 'center',
+    },
+    inkText: {
+      color: ink.text,
+    },
+    inkMuted: {
+      color: ink.textMuted,
+    },
+    topBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+    },
+    roundButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: fixed.cameraPanelLight,
+      borderWidth: 1,
+      borderColor: fixed.cameraHairline,
+    },
+    roundButtonOn: {
+      backgroundColor: ink.accent,
+    },
+    roundButtonSpacer: {
+      width: 48,
+    },
+    guideArea: {
+      alignItems: 'center',
+      gap: spacing.lg,
+    },
+    frame: {
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    framePhoto: {
+      width: 300,
+      height: 300,
+    },
+    frameBarcode: {
+      width: 300,
+      height: 150,
+    },
+    frameLabel: {
+      width: 260,
+      height: 380,
+    },
+    corner: {
+      position: 'absolute',
+      width: CORNER,
+      height: CORNER,
+      borderColor: ink.text,
+    },
+    tl: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: radii.md },
+    tr: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: radii.md },
+    bl: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: radii.md },
+    br: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: radii.md },
+    plate: {
+      width: 240,
+      height: 240,
+      borderRadius: 120,
+      borderWidth: 2,
+      borderStyle: 'dashed',
+      borderColor: fixed.cameraFrame,
+    },
+    scanLine: {
+      position: 'absolute',
+      top: 0,
+      left: 16,
+      right: 16,
+      height: 2,
+      borderRadius: 1,
+      backgroundColor: ink.accent,
+    },
+    tip: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.pill,
+      backgroundColor: fixed.cameraPanel,
+      maxWidth: 340,
+    },
+    bottom: {
+      gap: spacing.lg,
+      paddingBottom: spacing.lg,
+    },
+    modes: {
+      flexDirection: 'row',
+      alignSelf: 'center',
+      padding: spacing.xs,
+      borderRadius: radii.pill,
+      backgroundColor: fixed.cameraPanel,
+    },
+    mode: {
+      minHeight: 40,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.pill,
+      justifyContent: 'center',
+    },
+    modeSelected: {
+      backgroundColor: ink.accent,
+    },
+    modeTextSelected: {
+      color: ink.textOnAccent,
+    },
+    controls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      minHeight: 84,
+    },
+    shutter: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      borderWidth: 4,
+      borderColor: ink.text,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    shutterInner: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
+      backgroundColor: ink.text,
+    },
+    textButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 48,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.pill,
+      backgroundColor: fixed.cameraPanel,
+    },
+  }),
+);

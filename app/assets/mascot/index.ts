@@ -1,18 +1,25 @@
 /**
- * Final mascot artwork goes in this folder (see docs/MASCOT.md).
+ * Final character artwork goes in this folder (see docs/MASCOT.md).
  *
- * Until a state has an image here, the app draws the temporary vector
- * version of Nuppu (src/features/mascot/NuppuSvg.tsx). To switch to the final
- * artwork, drop the files in this folder and map them below, e.g.
+ * Until a character's state has an image here, the app draws the temporary
+ * vector version (src/features/mascot/CharacterSvg.tsx). To switch to the
+ * final artwork, drop the files in this folder and map them below, e.g.
  *
- *   idle: require('./nuppu-idle.png'),
+ *   nuppu: {
+ *     idle: require('./nuppu/idle.png'),
+ *     happy: require('./nuppu/happy.png'),
+ *   },
  *
- * React Native picks @2x / @3x variants automatically when they sit next to
- * the 1x file (nuppu-idle@2x.png, nuppu-idle@3x.png). The app's own motion
- * (bob, bounce, tilt) is applied on top of the image, so still images are
- * enough; see MASCOT.md for optional animated files.
+ * Missing states fall back to the character's `idle` image and then to the
+ * vector drawing, so artwork can be added one file at a time. React Native
+ * picks @2x / @3x variants automatically when they sit next to the 1x file
+ * (idle@2x.png, idle@3x.png). The app's own motion (bob, bounce, tilt) is
+ * applied on top of the image, so still images are enough; animated WebP or
+ * GIF files also work because expo-image plays them.
  */
+
+type State = 'idle' | 'happy' | 'thinking' | 'celebrating' | 'cooking' | 'sleepy' | 'encouraging';
+type Character = 'nuppu' | 'porkkis' | 'aava' | 'tomppa' | 'mustis' | 'sitru' | 'kanttu' | 'ruis';
+
 /** Values are `require()` results (asset ids). */
-export const MASCOT_IMAGES: Partial<
-  Record<'idle' | 'happy' | 'thinking' | 'celebrating' | 'cooking' | 'sleepy' | 'encouraging', number>
-> = {};
+export const CHARACTER_IMAGES: Partial<Record<Character, Partial<Record<State, number>>>> = {};

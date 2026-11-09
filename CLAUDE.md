@@ -9,7 +9,7 @@ Alapalkissa on viisi välilehteä: Koti, Reseptit, Suunnittele (keskellä, koros
 
 Budjetti kattaa vain sovelluksen ehdottamat ateriat. MVP:ssä generoidaan vain päivällisiä; lounas syntyy tuplaamalla päivällinen. Generointimalli ja rajat ovat ylläpidon asetuksia (`app_config`), eivät käyttäjän valintoja. Tarkemmin: [docs/GENERATION.md](docs/GENERATION.md) ja [docs/DATA_MODEL.md](docs/DATA_MODEL.md).
 
-Koko suunnitelma, vaiheet ja riskit: [docs/PLAN.md](docs/PLAN.md). Nykyinen vaihe: **MVP (vaihe 1), käyttöliittymä testidatalla** (ei vielä Supabasea eikä tekoälyä). Poikkeus: viivakoodihaku toimii oikeasti Open Food Factsin kautta. Tekoälyä vaativat toiminnot (kuvantunnistus, ravintoarvotaulukko, chat) ovat palvelukerroksen takana (`src/services/*`), jotta oikean toteutuksen voi kytkeä muuttamatta näkymiä. Kaikki näkymät käyttävät Iltapöytä-design-järjestelmää (Paprika-paletti, vaalea ja tumma teema). Hahmo Nuppu ja sen tiedostot: [docs/MASCOT.md](docs/MASCOT.md).
+Koko suunnitelma, vaiheet ja riskit: [docs/PLAN.md](docs/PLAN.md). Nykyinen vaihe: **MVP (vaihe 1), käyttöliittymä testidatalla** (ei vielä Supabasea eikä tekoälyä). Poikkeus: viivakoodihaku toimii oikeasti Open Food Factsin kautta. Tekoälyä vaativat toiminnot (kuvantunnistus, ravintoarvotaulukko, chat) ovat palvelukerroksen takana (`src/services/*`), jotta oikean toteutuksen voi kytkeä muuttamatta näkymiä. Kaikki näkymät käyttävät Iltapöytä-design-järjestelmää. Käyttäjä valitsee yhden kahdeksasta hahmosta, joka määrää koko sovelluksen väriteeman (vaalea ja tumma), äänen ja ulkonäön. Hahmot, teemat ja kuvatiedostot: [docs/MASCOT.md](docs/MASCOT.md).
 
 ## Teknologiat
 

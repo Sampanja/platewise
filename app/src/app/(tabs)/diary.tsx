@@ -40,6 +40,8 @@ import { REFERENCE } from '@/domain/report';
 import { entryAmount } from '@/features/diary/entryAmount';
 import { WaterCard } from '@/features/diary/WaterCard';
 import { WeekChart } from '@/features/diary/WeekChart';
+import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
 import { addDays, diaryDayLabel, today, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
@@ -52,6 +54,7 @@ const COPY_OFFSETS = [-1, 1, 2, 3, 4, 5, 6, 7];
 export default function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
+  const { voice } = useCharacter();
   const [menuFor, setMenuFor] = useState<DiaryMeal | null>(null);
   const [copyFor, setCopyFor] = useState<DiaryMeal | null>(null);
   const [copyDay, setCopyDay] = useState(false);
@@ -213,6 +216,8 @@ export default function DiaryScreen() {
               onPress={() => setCopyDay(true)}
             />
           </View>
+
+          {dayEntries.length === 0 ? <MascotSays state="encouraging" message={voice.empty.diary} size={60} /> : null}
 
           {DIARY_MEALS.map((meal) => {
             const mealEntries = dayEntries.filter((entry) => entry.meal === meal);

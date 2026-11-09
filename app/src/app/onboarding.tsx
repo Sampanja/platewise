@@ -2,7 +2,9 @@ import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CharacterPicker } from '@/features/characters/CharacterPicker';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { WizardFrame } from '@/components/WizardFrame';
 import {
   Button,
@@ -21,7 +23,7 @@ import type { AllergenCode, DietCode } from '@/data/types';
 import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatInteger, strings } from '@/i18n';
-import { colors, radii, spacing, themedStyles } from '@/theme';
+import { activeTheme, colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.onboarding;
 const STEPS = ['welcome', 'diet', 'store', 'goal'] as const;
@@ -32,8 +34,30 @@ type Draft = Pick<
   'name' | 'allergens' | 'diets' | 'chainCode' | 'goals' | 'hasCalorieGoal'
 >;
 
-/** First-run setup: a few short screens, each one skippable. Shown only once. */
+/**
+ * First-run setup. It starts with the character picker: choosing a character
+ * re-themes the whole app (the navigator remounts), so the choice is saved
+ * right away and the rest of the setup starts after it. Then a few short
+ * screens, each one skippable. Shown only once.
+ */
 export default function OnboardingScreen() {
+  const chosen = useProfileStore((s) => s.characterChosen);
+  const characterId = useProfileStore((s) => s.characterId);
+  const update = useProfileStore((s) => s.update);
+  if (!chosen) {
+    return (
+      <CharacterPicker
+        initial={characterId}
+        mode={activeTheme()}
+        onChoose={(id) => update({ characterId: id, characterChosen: true })}
+      />
+    );
+  }
+  return <Setup />;
+}
+
+function Setup() {
+  const { voice } = useCharacter();
   const profile = useProfileStore.getState();
   const update = useProfileStore((s) => s.update);
   const [index, setIndex] = useState(0);
@@ -79,7 +103,7 @@ export default function OnboardingScreen() {
       body: t.welcomeBody,
       node: (
         <View style={styles.gap}>
-          <MascotSays state="happy" message={strings.mascot.hello} size={96} />
+          <MascotSays state="happy" message={voice.hello} size={96} />
           <Text variant="label" color="textMuted">
             {t.nameLabel}
           </Text>
@@ -184,7 +208,8 @@ export default function OnboardingScreen() {
       direction={direction}
       title={current.title}
       body={current.body}
-      onBack={index > 0 ? back : undefined}
+      // Step 1 goes back to the character picker.
+      onBack={index > 0 ? back : () => update({ characterChosen: false })}
       onSkip={skip}
       footer={
         <Button

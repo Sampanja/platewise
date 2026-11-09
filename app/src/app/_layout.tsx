@@ -18,7 +18,7 @@ import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
-import { activeTheme, colors, resolveTheme, setActiveTheme } from '@/theme';
+import { colors, DEFAULT_CHARACTER, isCharacterId, resolveTheme, setActiveTheme, themeKey } from '@/theme';
 
 
 export default function RootLayout() {
@@ -43,8 +43,12 @@ export default function RootLayout() {
   // navigators at once; this way the navigation container keeps its state and
   // the user stays on the same screen.
   const preference = useProfileStore((s) => s.themePreference);
-  const theme = resolveTheme(preference, useColorScheme());
-  if (activeTheme() !== theme) setActiveTheme(theme);
+  const mode = resolveTheme(preference, useColorScheme());
+  const savedCharacter = useProfileStore((s) => s.characterId);
+  const character = isCharacterId(savedCharacter) ? savedCharacter : DEFAULT_CHARACTER;
+  // The theme is the character's palette in light or dark mode.
+  const theme = `${character}-${mode}`;
+  if (themeKey() !== theme) setActiveTheme(mode, character);
   const [mountedTheme, setMountedTheme] = useState(theme);
   const navigation = useNavigationContainerRef();
   const savedNavigation = useRef<ReturnType<typeof navigation.getRootState> | null>(null);
@@ -67,7 +71,7 @@ export default function RootLayout() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMountedTheme(theme);
   }, [mountedTheme, theme, navigation]);
-  const barStyle = theme === 'dark' ? 'light' : 'dark';
+  const barStyle = mode === 'dark' ? 'light' : 'dark';
 
   // Keep the dark background while fonts and saved data load; fall back to system fonts on error.
   if ((!fontsLoaded && !fontError) || !hydrated) {

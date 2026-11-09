@@ -16,7 +16,7 @@ import { NutrientTable } from '@/features/diary/NutrientTable';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { colors, radii, spacing, themedStyles } from '@/theme';
+import { colors, fixed, radii, spacing, themedStyles } from '@/theme';
 
 /**
  * Adds a food to the diary: portion or grams, meal, macro preview and the
@@ -182,7 +182,7 @@ const styles = themedStyles(() =>
     image: {
       height: 160,
       borderRadius: radii.card,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: fixed.productBackdrop,
       marginBottom: spacing.sm,
     },
     chips: {
