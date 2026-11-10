@@ -45,6 +45,11 @@ Chatin turvallisuussäännöt (`domain/assistantRules.ts`) ovat samat kaikille h
   - Korostus taustaa vasten ≥ 3:1 (keltainen Sitru vaaleassa tilassa ≥ 2:1, koska sen napeissa on tumma teksti ja reunat).
 - **Kovakoodatut värit:** `theme/noHardcodedColors.test.ts` estää hex- ja rgba-arvot `src/theme`-kansion ulkopuolella. Teemasta riippumattomat värit (kameran päällä olevat paneelit, tuotekuvien valkoinen tausta, mitalien metallit) ovat tiedostossa `theme/fixed.ts`. Ainoa poikkeus on hahmojen piirrokset.
 
+### Teeman värit muualla
+
+- **Reseptien kuvituskortit** (`components/FoodIllustration.tsx`): kunnes backend tuottaa annoskuvat, jokainen resepti saa kategoriakohtaisen kortin, jonka pääaihe on kategorian viivaikoni (keitto, pata, salaatti, puuro, smoothie…) ja pikkuaiheet pääproteiinin mukaan (kala, koipi, papu, porkkana…). Kortti piirretään hahmon kahdella teemavärillä (`accent`, `herb`), ja kumpi väri johtaa vaihtelee reseptin id:n mukaan, joten ruudukko on yhtenäinen mutta ei yksitoikkoinen. Yläreuna jätetään tyhjäksi kortin päällä oleville painikkeille. Kotinäkymän ja maksumuurin hero-kuvat ovat neutraaleja kasviskulho- ja salaattikortteja, eivät koskaan tiettyä ruokaa.
+- **Juomamuistutukset** käyttävät hahmon `notify.water`-repliikkiä; hahmon vaihto ajastaa ateria- ja juomamuistutukset uudelleen.
+
 ## 3. Hahmovalitsin
 
 `app/src/features/characters/CharacterPicker.tsx` on onboardingin ensimmäinen näkymä ja reitti `/choose-character`.

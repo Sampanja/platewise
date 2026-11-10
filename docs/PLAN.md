@@ -91,6 +91,8 @@ Alapalkissa viisi välilehteä:
 | **Päiväkirja** | Kalorilaskuri |
 | **Profiili** | Asetukset ja tili |
 
+Alapalkki kelluu näytön alareunassa (leveällä näytöllä enintään 520 dp ja keskitettynä). Viisi välilehteä on jaettu tasaisesti, ikonit ja tekstit keskitetty, ja kapealla näytöllä tekstit lyhenevät. Keskimmäinen Suunnittele-painike nousee pehmeästi palkista loveen, joka piirretään SVG:llä (geometria `tabBarShape.ts`, testattu). Värit tulevat valitun hahmon teemasta.
+
 **Järjestelmän navigointipalkki:**
 - **Android:** palkki piilotetaan immersiivisesti (`expo-navigation-bar`), ja se tulee esiin hetkeksi pyyhkäisemällä ylös näytön alareunasta. Sovelluksen oma alapalkki varaa tilan turva-alueen mukaan, joten sisältö ei jää eleen alle.
 - **iOS:** sovellus ei voi piilottaa kotipalkkia (home indicator) pysyvästi. Mahdollista on (a) automaattinen himmennys muutaman sekunnin käyttämättömyyden jälkeen (`prefersHomeIndicatorAutoHidden`, vaatii natiivimoduulin tai config pluginin) ja (b) eleen lykkäys niin, että alareunan pyyhkäisy pitää tehdä kahdesti (`preferredScreenEdgesDeferringSystemGestures`). Kumpikin on tarkoitettu videoille ja peleille, ja tavallisessa sovelluksessa palkki palaa heti kosketuksesta. MVP:ssä iOS:n kotipalkkiin ei kosketa: alapalkki sijoitetaan turva-alueen yläpuolelle.
@@ -123,9 +125,10 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 
 ### 4.4 Reseptit
 
-- Iso reseptikirjasto korttinäkymänä (kuva, nimi, hinta-arvio/annos, aika, kcal/annos).
-- Haku nimellä ja suodattimet: hinta, valmistusaika, ruokavalio, kalorit. Kirjastossa näytetään vain käyttäjän allergioille ja ruokavaliolle sopivat reseptit (sama koodissa tehtävä tarkistus kuin generoinnissa).
-- **Reseptisivu:** kuva, hinta-arvio, makrot per annos (kcal, proteiini, hiilihydraatit, rasva), ainesosat määrineen (perusvarat merkitty "kotoa") ja numeroidut vaiheet. Makrot näkyvät kaikissa resepteissä.
+- Iso reseptikirjasto korttinäkymänä (kuva, nimi, hinta-arvio/annos, aika, kcal/annos). Testikirjastossa on 319 reseptiä: aamiaiset, lounaat, päivälliset, välipalat, keitot, salaatit, kala, kana, liha, kasvis, vegaani, gluteeniton, laktoositon, nopeat, edulliset, meal prep ja suomalaiset klassikot ([GENERATION.md, kohta 10.1](GENERATION.md#101-testikirjasto-vaihe-1-tehty)).
+- Ateriavalitsin (Kaikki / Aamiainen / Lounas / Päivällinen / Välipala), haku nimellä tai ainesosalla ja suodattimet (suosikit, nopeat, edulliset, kasvis, vegaaninen, gluteeniton, proteiinipitoinen, kala, kana, liha, keitot, salaatit, pasta, suomalainen, aasialainen, meksikolainen, riittää huomiseksi). Järjestys: suositellut, hinta, aika, kalorit.
+- **Tiukka suodatus:** käyttäjä näkee vain itselleen sopivat ruoat. Yksi koodissa tehtävä tarkistus (`isRecipeAllowed`) kattaa kirjaston, haun, suositukset, Kodin, Suunnittele-ehdotukset, vaihtovaihtoehdot, päiväkirjan reseptilistat, reseptisivun ja chatin. Piilotettujen määrää ei kerrota, eikä "näytä kaikki" -valintaa ole.
+- **Reseptisivu:** kuva tai kategoriakuvituskortti teeman väreissä, kategoria, vaikeus, kokonais- ja työaika, hinta-arvio, makrot per annos (Fineli), allergeenit, ainesosat määrineen (perusvarat merkitty "kotoa"), numeroidut vaiheet, vinkit sekä säilytys ja lämmitys. Päivällisen pääkehotus on "Lisää suunnitelmaan", muiden "Lisää päiväkirjaan".
 - Tyhjä tila (haulla ei tuloksia): "Ei osumia – kokeile poistaa suodattimia" ja nappi suodattimien tyhjennykseen.
 
 ### 4.5 Päiväkirja (kalorilaskuri)
@@ -147,12 +150,12 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 **Kilpailijatason lisäykset (marraskuu 2026):**
 
 - **Oma kameranäkymä** kolmella tilalla: annos (lautasopas ja vinkki "kuvaa ylhäältä, koko lautanen näkyvissä"), viivakoodi (skannausviiva, käsin syöttö tarkistusnumerolla) ja ravintoarvotaulukko. Salama, galleria ja lupatilat.
-- **Kuvantunnistuksen tulos:** jokainen ruoka erikseen: grammat, kcal, makrot ja varmuustaso (Varma / Melko varma / Epävarma – tarkista). Muokkaus liukusäätimellä ja käsivertailuilla ("kämmenen kokoinen", "nyrkin kokoinen"), ruoan vaihto, poisto ja puuttuvan lisäys. Merkintä "arvio" näkyy aina.
+- **Kuvantunnistuksen tulos:** jokainen ruoka erikseen: grammat, kcal ja makrot; epävarma rivi merkitään "Tarkista". Ennen backendia tunnistus on **testitilassa**, ja kamera ja tulos kertovat sen selvästi ("Testitila – oikea tunnistus tulossa"). Muokkaus liukusäätimellä ja käsivertailuilla ("kämmenen kokoinen", "nyrkin kokoinen"), ruoan vaihto, poisto ja puuttuvan lisäys. Merkintä "arvio" näkyy aina.
 - **Viivakoodi** (toimii oikeasti): Open Food Facts, nimi, merkki, kuva, ravintoarvot / 100 g ja annoskoko. Ei löydy / puutteellinen / ei yhteyttä → "Lisää tuote itse".
 - **Ravintoarvotaulukon luku** (`services/nutritionLabel.ts`, testidata): luvut esitäytetään, käyttäjä tarkistaa, energian ja makrojen ristiriidasta kerrotaan.
 - **Omat ruoat, omat ateriat** (päiväkirjan ateria tallennetaan yhdellä napautuksella) **ja omat reseptit** (ainesosat ja annosmäärä, lisätään annos kerrallaan). Lisäysnäkymässä välilehdet Haku / Omat / Reseptit ja pikapainikkeet Kuva, Viivakoodi, Taulukko, Pikalisäys.
 - **Pikalisäys** kaloreilla ja valinnaisilla makroilla; **koko päivän kopiointi**.
-- **Vesi** lasillisina (2,5 dl), tavoite 1,5 l. **Kuitu, sokerit ja suola** päivän näkymässä viitearvoineen (kuitu 25–35 g, suola enintään 5 g).
+- **Vesi ja juomat:** henkilökohtainen vesitavoite (paino, aktiivisuus, raskaus tai imetys; päivän liikunta ja helle), oma tavoite vaihtoehtona, juomatyypit ja pikakoot (1–5 dl), päivän loki kumoamisella, 7 päivän kaavio, putki, lempeät juomamuistutukset hahmon äänellä ja rauhallinen huomautus yli 4 litrasta. Päiväkirjan vesikortissa yhden napautuksen lasi. Laskenta `domain/hydration.ts` (testattu). **Kuitu, sokerit ja suola** päivän näkymässä viitearvoineen (kuitu 25–35 g, suola enintään 5 g).
 - **Raportit:** päivä (energia aterioittain, energian jakauma, kuitu/sokeri/suola, vesi) ja viikko (kcal- ja proteiinipylväät, kirjatut päivät, proteiinitavoitepäivät, vesi). Keskiarvot vain kirjatuista päivistä. Raportti kuvaa, ei arvostele.
 - **Ateriamuistutukset** paikallisilmoituksina, oletuksena pois päältä. Käyttäjä valitsee ateriat ja kellonajat. Teksti ei koskaan mainitse kaloreita tai painoa.
 
@@ -199,14 +202,14 @@ Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin 
 - **Pakolliset säännöt:** palkitaan vain säännöllisyydestä ja hyvistä tavoista (kirjaaminen, kokkaaminen, vesi, budjetissa pysyminen, uudet reseptit, proteiinitavoite). Vähemmästä syömisestä, isommasta vajeesta tai nopeasta laihtumisesta ei koskaan palkita. Ei rangaistuksia, ja XP ei koskaan laske. Testi varmistaa, että samat tavat antavat saman XP:n millä tahansa kalorimäärällä.
 - Kaikki johdetaan kirjatusta datasta (`domain/gamification.ts`), joten mitään ei lasketa kahteen kertaan. Pelillistämisen voi kytkeä pois Profiilista.
 
-### 4.9 Hahmo Nuppu ja chat
+### 4.9 Hahmot ja chat
 
-- **Nuppu** (docs/MASCOT.md): tilat perus, iloinen, miettivä, juhliva, kokkaava, uninen ja kannustava. Näkyy onboardingissa, tyhjissä tiloissa, juhlistuksissa, Kodin tervehdyksessä ja chatissa. Lopullinen hahmo vaihdetaan kansioon `assets/mascot`.
-- **Kysy Nupulta:** valmiit kysymysehdotukset. Nuppu näkee päivän kirjaukset ja tavoitteet vain luvalla, jonka voi perua. Päiväraja 20 viestiä. Turvallisuus: ei diagnooseja, ohjaus ammattilaiselle, syömishäiriöherkkyys, ei äärimmäisiä dieettejä eikä neuvoja alle turvarajojen ([GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)).
+- **Kahdeksan hahmoa** ([MASCOT.md](MASCOT.md)), joista käyttäjä valitsee yhden ensikäynnistyksessä; valinta määrää väriteeman, äänen ja ulkonäön. Tilat perus, iloinen, miettivä, juhliva, kokkaava, uninen ja kannustava. Näkyy onboardingissa, tyhjissä tiloissa, juhlistuksissa, Kodin tervehdyksessä, muistutuksissa ja chatissa. Lopulliset kuvat vaihdetaan kansioon `assets/mascot`.
+- **Kysy hahmolta:** valmiit kysymysehdotukset. Reseptiehdotukset tulevat vain käyttäjälle sallituista resepteistä ja näkyvät napautettavina kortteina. Hahmo näkee päivän kirjaukset ja tavoitteet vain luvalla, jonka voi perua. Päiväraja 20 viestiä. Turvallisuus: ei diagnooseja, ohjaus ammattilaiselle, syömishäiriöherkkyys, ei äärimmäisiä dieettejä eikä neuvoja alle turvarajojen ([GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)).
 
 ### 4.10 Väriteema
 
-Paprika-paletti vaaleana ja tummana. Käyttäjä voi valita "Puhelimen asetus" (oletus), "Vaalea" tai "Tumma". Kaikki tekstitokenit täyttävät WCAG AA:n kaikilla taustoilla molemmissa teemoissa (`theme/contrast.test.ts`). Värit luetaan aina aktiivisesta teemasta (`colors`, `themedStyles`), ja teeman vaihto säilyttää navigointitilan. Kamera- ja hahmografiikka käyttävät kiinteitä värejä.
+Hahmokohtainen paletti vaaleana ja tummana ([MASCOT.md](MASCOT.md)). Käyttäjä voi valita "Puhelimen asetus" (oletus), "Vaalea" tai "Tumma". Kaikki tekstitokenit täyttävät WCAG AA:n kaikilla taustoilla molemmissa teemoissa (`theme/contrast.test.ts`). Värit luetaan aina aktiivisesta teemasta (`colors`, `themedStyles`), ja teeman vaihto säilyttää navigointitilan. Kamera- ja hahmografiikka käyttävät kiinteitä värejä.
 
 ## 5. Vaiheittainen toteutussuunnitelma
 
@@ -220,18 +223,18 @@ Paprika-paletti vaaleana ja tummana. Käyttäjä voi valita "Puhelimen asetus" (
 Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmasta 6–8 viikosta.
 
 1. Projektipohja: Expo, Supabase (EU), CI ja EAS Build.
-2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen.
-3. Fineli-tuonti ja oma ainesosataulu: noin 300 ainesosaa ja ketjukohtaiset hintakertoimet (alussa 3–4 ketjua). Finelin annoskoot päiväkirjaa varten.
+2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen. Tehty: yksilösovellus (ei kotitalouden kokoa), 8 hahmoa teemoineen, alapalkki, Fineli-ainesosataulu (235 ainesosaa), 319 validoitua reseptiä, tiukka allergia- ja ruokavaliosuodatus, kuvantunnistuksen testitila ja vesitavoite.
+3. Fineli-tuonti tauluihin: sovelluksen ainesosataulu on jo rakennettu Finelin avoimesta datasta (`scripts/fineli`); backendissä sama aineisto ja ketjukohtaiset hintakertoimet tauluihin. Finelin annoskoot päiväkirjaa varten.
 4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (allergiat, ruokavalio, kauppa).
 5. `generate-plan`-funktio: Claude, allergiatarkistus, makrot, hinta ja budjettisilmukka. Ehdotus → hyväksyntä → ostoslista.
-6. Reseptikirjaston esitäyttö ennen julkaisua (noin 200 tarkistettua reseptiä) ja `list-recipes`-funktio.
+6. Reseptikirjaston siirto tauluihin (319 testireseptiä pohjana, täydennys generoinnilla ja ihmistarkistuksella) ja `list-recipes`-funktio.
 7. Kuvageneraatio asynkronisesti ja välimuistiin. Odotellessa näytetään paikkamerkki.
 8. Päiväkirja: Fineli-haku, reseptin lisäys, `recognize-food-photo`-funktio ja kustannusraja.
 9. RevenueCat: maksumuuri ja kokeilujakso.
 10. Tietosuojaseloste, käyttöehdot, allergiavastuuvapaus ja tilin poisto (App Store vaatii).
 11. Suljettu beta TestFlightissa ja Google Playn sisäisessä testauksessa 20–50 käyttäjällä.
 
-**MVP:stä jätetään pois:** erikseen generoidut aamiaiset ja lounaat (lounas vain tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
+**MVP:stä jätetään pois:** aamiaisten ja välipalojen suunnittelu ostoslistaan (ne ovat kirjastossa ja päiväkirjassa, mutta Suunnittele tekee vain päivällisiä; lounas tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
 
 ### Vaihe 2: Julkaisu ja oppiminen (4–6 viikkoa)
 - Julkaisu kauppoihin ja kauppasivujen optimointi (ASO).

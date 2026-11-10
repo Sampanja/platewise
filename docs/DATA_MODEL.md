@@ -368,7 +368,11 @@ Webhookien raakaloki idempotenssia ja vianselvitystä varten.
 
 Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uudelleen kaikille yhteensopiville profiileille (periaate 6). Määrät tallennetaan **yhdelle annokselle** ja skaalataan suunnitelman syöjien määrällä.
 
-**Reseptikirjasto** (Reseptit-välilehti) näyttää `active`-reseptit, jotka läpäisevät käyttäjän allergia- ja ruokavaliotarkistuksen. Kirjasto haetaan Edge Functionilla `list-recipes`, joka suodattaa (hinta, aika, ruokavalio, kalorit, hakusana), ajaa `checkRecipe`-tarkistuksen jokaiselle palautettavalle reseptille ja laskee hinta-arvion käyttäjän ketjulle. RLS pysyy suppeana (vain omien suunnitelmien reseptit), joten koko kantaa ei voi ladata suoraan. Kirjasto esitäytetään ennen julkaisua noin 200 reseptillä ([GENERATION.md, kohta 10](GENERATION.md#10-reseptikirjaston-esitäyttö)).
+**Reseptikirjasto** (Reseptit-välilehti) näyttää `active`-reseptit, jotka läpäisevät käyttäjän allergia- ja ruokavaliotarkistuksen. Kirjasto haetaan Edge Functionilla `list-recipes`, joka suodattaa (ateria, hinta, aika, ruokavalio, kalorit, hakusana), ajaa saman `isRecipeAllowed`-tarkistuksen jokaiselle palautettavalle reseptille ja laskee hinta-arvion käyttäjän ketjulle. RLS pysyy suppeana (vain omien suunnitelmien reseptit), joten koko kantaa ei voi ladata suoraan.
+
+**Tiukka suodatus.** `isRecipeAllowed(recipe, rules)` (`domain/recipes.ts`) on ainoa portti reseptin näyttämiseen tai ehdottamiseen: kirjasto, haku, Kodin suositukset, Suunnittele-ehdotukset ja vaihtovaihtoehdot, päiväkirjan reseptilistat, reseptisivu (myös suora linkki) ja chatin ehdotukset. Sopimattomia ei näytetä missään, piilotettujen määrää ei kerrota eikä "näytä kaikki" -valintaa ole. Jos säännöt muuttuvat, keskeneräinen ehdotus korjataan heti (`repairProposal`), ja hyväksytyn listan sopimaton päivällinen näytetään vain "Ei enää sovi ruokavalioosi – vaihda sopivaan" -rivinä (`replacementDinner`).
+
+**Testikirjasto (vaihe 1):** 319 reseptiä 13 erässä (`app/src/data/catalog/recipes*.ts`), jokainen validoitu testeillä (`catalog.test.ts`, ks. GENERATION.md, kohta 10). Backend-vaiheessa sama aineisto siirretään tauluihin ja kirjasto täydentyy generoinnilla.
 
 ### `recipes`
 
@@ -377,11 +381,17 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | `id` | `uuid` PK | |
 | `title_fi` | `text` NOT NULL | |
 | `description_fi` | `text` | Yksi lause |
-| `steps_fi` | `jsonb` NOT NULL | Taulukko merkkijonoja; validoitu Zodilla ennen tallennusta |
-| `cook_time_min` | `smallint` NOT NULL | CHECK BETWEEN 5 AND 120 |
-| `difficulty` | enum `difficulty` NOT NULL | `easy`, `medium` (MVP: ei vaikeita) |
-| `dish_type` | enum `dish_type` NOT NULL | `soup`, `stew`, `pasta`, `rice`, `potato`, `oven`, `stir_fry`, `salad`, `bowl`, `wrap`, `other`; vaihtelun ja kuvien uudelleenkäytön tunnistukseen |
-| `cuisine` | enum `cuisine` NOT NULL | `finnish`, `nordic`, `italian`, `asian`, `mexican`, `middle_eastern`, `indian`, `other`; "mitä tekee mieli" -toiveisiin ja kirjaston suodatukseen |
+| `steps_fi` | `jsonb` NOT NULL | Taulukko merkkijonoja (numeroidaan näytössä); validoitu Zodilla ennen tallennusta |
+| `tips_fi` | `jsonb` NOT NULL | 1–4 vinkkiä |
+| `storage_fi` | `text` NOT NULL | Säilytysohje; oletus kategoriasta, resepti voi ohittaa |
+| `reheating_fi` | `text` NOT NULL | Lämmitysohje; 〃 |
+| `active_time_min` | `smallint` NOT NULL | Työaika. CHECK ≤ `total_time_min` |
+| `total_time_min` | `smallint` NOT NULL | Kokonaisaika pöytään (yön yli tekeytyvät jopa 720). Korvaa entisen `cook_time_min`:n |
+| `servings` | `smallint` NOT NULL | Montako annosta ohjeen vaiheet kuvaavat (1–12). Ainesosat ovat silti per annos. Leivonnaiset (≥ 6) avautuvat koko erän kokoisina |
+| `difficulty` | enum `difficulty` NOT NULL | `easy`, `medium`, `hard` |
+| `dish_type` | enum `dish_type` NOT NULL | Kategoria: `soup`, `stew`, `pasta`, `rice`, `potato`, `oven`, `casserole`, `stir_fry`, `salad`, `bowl`, `wrap`, `patty`, `pie`, `porridge`, `egg`, `sandwich`, `pancake`, `smoothie`, `snack`, `other`; kuvituskortin aihe, vaihtelu ja kuvien uudelleenkäyttö |
+| `meal_types` | `meal_type[]` NOT NULL | `breakfast`, `lunch`, `dinner`, `snack`; ei tyhjä. **Suunnittele käyttää vain `dinner`-reseptejä.** |
+| `cuisine` | enum `cuisine` NOT NULL | `finnish`, `nordic`, `italian`, `asian`, `mexican`, `middle_eastern`, `indian`, `thai`, `japanese`, `korean`, `chinese`, `greek`, `french`, `spanish`, `american`, `other` |
 | `main_protein` | enum `main_protein` NOT NULL | `chicken`, `beef`, `pork`, `minced_meat`, `fish`, `seafood`, `egg`, `dairy`, `legumes`, `tofu`, `none`; toiveisiin ja vaihtelun tarkistukseen |
 | `good_for_leftovers` | `boolean` NOT NULL | Säilyykö ja lämpeneekö seuraavan päivän lounaaksi. Vain näitä tarjotaan "tee tuplana" -päiville. |
 | `kcal_per_serving` | `numeric(7,1)` NOT NULL | **Laskettu Finelistä** tallennushetkellä, ei tekoälyltä |
@@ -392,7 +402,7 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | `may_contain_codes` | `text[]` NOT NULL | Johdettu "saattaa sisältää" -allergeeneista |
 | `ingredient_tags` | `ingredient_tag[]` NOT NULL | Johdettu `ingredient_tags`ista |
 | `base_cost_per_serving_cents` | `integer` NOT NULL | Hinta kertoimella 1,0, uudelleenkäytön esisuodatukseen. Lopullinen hinta lasketaan ketjulle. |
-| `image_id` | `uuid` FK → `recipe_images` ON DELETE SET NULL | NULL kunnes kuva valmis |
+| `image_id` | `uuid` FK → `recipe_images` ON DELETE SET NULL | NULL kunnes kuva valmis. Sillä välin sovellus piirtää kategoriakohtaisen kuvituskortin teeman väreissä (`FoodIllustration`) |
 | `status` | enum `recipe_status` NOT NULL DEFAULT `'active'` | `active`, `retired` (esim. ainesosa passivoitu tai huono palaute) |
 | `source_generation_id` | `uuid` FK → `generation_runs` ON DELETE SET NULL | Mistä ajosta syntyi |
 | `prompt_version` | `text` NOT NULL | Promptin versio, jotta laatua voi verrata |
@@ -410,7 +420,7 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | `soup` | `dish_type = 'soup'` |
 | `asian` | `cuisine = 'asian'` |
 | `mexican` | `cuisine = 'mexican'` |
-| `quick` | `cook_time_min <= 25` |
+| `quick` | `total_time_min <= 30` |
 | `oven` | `dish_type = 'oven'` |
 
 Toiveet ovat järjestämiskriteeri, eivät suodatin (ks. GENERATION.md, kohta 4).
@@ -663,14 +673,30 @@ Omat ruoat, ravintoarvotaulukosta luetut ruoat ja Open Food Facts -tuotteet (vä
 
 Ravintoarvot per annos lasketaan ainesosista (summa / annokset) triggerillä tai näkymällä, ei tallenneta käsin.
 
-### `water_entries`
+### `water_entries` *(käsitellään terveystietona)*
+Jokainen juoma omana rivinään (paikallisesti `stores/water.ts` v2; v1:n päiväsummat siirretään yhdeksi riviksi per päivä, `waterToEntries`).
+
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
-| `user_id` | `uuid` FK | PK (`user_id`, `entry_date`) |
-| `entry_date` | `date` | |
-| `ml` | `smallint` NOT NULL | CHECK BETWEEN 0 AND 8000 |
+| `id` | `uuid` PK | |
+| `user_id` | `uuid` FK → `profiles` ON DELETE CASCADE | |
+| `entry_date` | `date` NOT NULL | Käyttäjän paikallinen päivä |
+| `entry_time` | `time` | NULL vanhoille siirretyille summille |
+| `ml` | `smallint` NOT NULL | CHECK BETWEEN 1 AND 8000; päivän summa enintään 8 000 (näppäilyvirhesuoja) |
+| `drink` | enum `drink_type` NOT NULL | `water`, `sparkling`, `tea`, `coffee`, `milk`, `juice`, `sports`, `other`. Kaikki lasketaan nesteeksi |
 
-Vesitavoite `profiles.water_goal_ml` (`smallint` DEFAULT 1500). Ei terveystieto sellaisenaan, mutta käsitellään samoin (ei analytiikkaan).
+### `water_settings` *(käsitellään terveystietona)*
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `user_id` | `uuid` PK | |
+| `goal_mode` | enum `'auto' | 'manual'` NOT NULL DEFAULT `'auto'` | `auto` laskee tavoitteen profiilista (`domain/hydration.ts`) |
+| `manual_goal_ml` | `smallint` NOT NULL DEFAULT 2000 | CHECK BETWEEN 1000 AND 4000 |
+| `glass_ml` | `smallint` NOT NULL DEFAULT 250 | Päiväkirjan pikalisäyksen koko |
+| `reminders` | `jsonb` NOT NULL | `{ on, startHour, endHour, everyHours }`; ajastetaan laitteella |
+| `day_extras` | taulu `water_day_extras` (`user_id`, `date`, `exercise_min`, `hot`) | Päivän liikunta ja helle nostavat sen päivän tavoitetta |
+
+Vesitavoite: paino × 24 ml (30 ml/kg kokonaisnesteestä, ~80 % juomista) rajattuna 1,2–2,6 litraan; ilman painoa EFSA:n juomasuositus (naiset 1,6 l, miehet 2,0 l) tai 1,5 l. Lisäykset: hyvin aktiivinen arki +0,25–0,5 l, raskaus +0,3 l, imetys +0,7 l, liikunta +0,5 l/h (enintään +1,5 l), helle tai sauna +0,5 l. Kokonaistavoite 1–4 l. Yli 4 litran päivästä näytetään rauhallinen huomautus; pelillistäminen palkitsee vain tavoitteen saavuttamisesta, ei sen ylittämisestä.
 
 ### `weight_entries` *(terveystieto)*
 Painonseuranta. Yksi kirjaus per päivä (uusi korvaa saman päivän edellisen).
@@ -798,7 +824,7 @@ Huomioita:
 6. **Yksilösovellus:** profiilissa ei ole kotitalouden kokoa. Syöjien määrä (1–6, oletus 1) valitaan jokaiselle suunnitelmalle kyselyssä (`meal_plans.eaters`).
 7. **Kyselyssä lisätyt allergiat ja ruokavaliot** koskevat vain sitä suunnitelmaa (`extra_*`). Profiilin allergioita ei voi poistaa kyselyssä.
 8. **Päiväkirja** viittaa Fineliin tai reseptiin; makrot laskee triggeri. Ruokakuvaa ei tallenneta. Päiväkirja ja ravintotavoitteet ovat terveystietoa samalla suostumuksella kuin allergiat.
-9. **Reseptikirjasto** haetaan Edge Functionilla, joka ajaa allergiatarkistuksen jokaiselle reseptille; RLS ei avaa koko reseptikantaa.
+9. **Reseptikirjasto** haetaan Edge Functionilla, joka ajaa allergiatarkistuksen jokaiselle reseptille; RLS ei avaa koko reseptikantaa. Sovelluksessa ainoa portti on `isRecipeAllowed`; sopimattomia reseptejä ei näytetä missään eikä niiden määrää kerrota.
 10. **Kalorilaskin ja painotavoite:** kehon tiedot (`profile_body`), tavoite (`profile_weight_goals`) ja painokirjaukset (`weight_entries`) ovat terveystietoa samalla suostumuksella kuin allergiat: ei lokeihin, analytiikkaan eikä Sentryyn. Turvarajat ovat koodissa, eivät promptissa eikä pelkässä UI:ssa.
 11. **Kauppavertailu:** sama ostoslista hinnoitellaan kaikilla aktiivisilla ketjuilla (`store_chains.price_multiplier`) ja näytetään ehdotusnäkymässä ("Sama lista muissa kaupoissa"). Vertailua ei tallenneta: se lasketaan `shopping_list_items`-riveistä pyydettäessä.
 12. **Kriteerien täyttyminen:** jos ehdotus ylittää budjetin tai toive jää täyttymättä, backend palauttaa syyn ja ratkaisuehdotukset (nosta budjettia X €, vähennä yksi ruokakerta, halvempi kauppa) samalla puhtaalla funktiolla kuin sovellus (`domain/feasibility.ts`). Allergioista ja ruokavaliosta ei jousteta koskaan.
@@ -809,6 +835,9 @@ Huomioita:
 17. **Pelillistäminen lasketaan, ei tallenneta.** Ainoastaan juhlistetut tallennetaan (`game_progress`). Vähemmästä syömisestä ei koskaan palkita.
 18. **Chat-viestit vain laitteelle** MVP:ssä; lupa päivän tietojen jakamiseen `chat_share_consent_at`.
 19. **Teema** (`theme_preference`) ja **muistutukset** (`reminder_settings`) ovat käyttäjäasetuksia, eivät terveystietoa.
+20. **Reseptin kaikki laskettava data lasketaan:** makrot, kalorit, allergeenit, ruokavaliosopivuus ja hinta johdetaan ainesosista; käsin kirjoitettuja ravintoarvoja ei ole. Reseptit ovat aamiaisia, lounaita, päivällisiä tai välipaloja (`meal_types`); suunnittelija käyttää vain päivällisiä.
+21. **Vesi** on juomakohtainen loki (`water_entries`) ja henkilökohtainen tavoite (`water_settings`), joka lasketaan koodissa (`domain/hydration.ts`, testattu). Tavoitteen yläraja on 4 l, eikä yli tavoitteen juomisesta palkita.
+22. **Reseptikuvat:** testikirjastossa ei ole valokuvia; kuvituskortti piirretään kategoriasta teeman väreissä, kunnes backend tuottaa `recipe_images`-kuvan.
 
 ## Avoimet kysymykset
 

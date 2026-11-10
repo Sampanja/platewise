@@ -341,11 +341,38 @@ Reseptit-välilehti tarvitsee julkaisuhetkellä kattavan kirjaston, vaikka käyt
 
 Julkaisun jälkeen kirjasto kasvaa itsestään, kun käyttäjien suunnitelmiin generoidaan uusia reseptejä.
 
+### 10.1 Testikirjasto (vaihe 1, tehty)
+
+Käyttöliittymävaiheen kirjasto on kirjoitettu käsin samaan muotoon, jota generointi tuottaa: **319 reseptiä 13 erässä** (`app/src/data/catalog/recipes1–13.ts`). Resepti antaa vain ainesosat (`ainesosa-id grammat` per annos), vaiheet, vinkit ja luokittelun; makrot, kalorit, allergeenit, ruokavaliosopivuus ja hinta lasketaan koodissa ainesosataulusta (`deriveRecipe`). Säilytys- ja lämmitysohje tulee kategorian oletuksesta, ellei resepti ohita sitä.
+
+| Kategoria | Määrä | | Ateria | Määrä |
+|---|---|---|---|---|
+| Keitot | 35 | | Päivällinen | 236 |
+| Padat | 27 | | Lounas | 254 |
+| Pastat | 24 | | Aamiainen | 60 |
+| Salaatit | 23 | | Välipala | 56 |
+| Wokit ja pannut | 22 | | | |
+| Uuniruoat | 20 | | **Ruokavalio / tyyppi** | |
+| Riisiruoat | 17 | | Kasvis | 158 |
+| Kulhot | 17 | | Vegaaninen | 81 |
+| Tortillat ja täytetyt leivät | 16 | | Gluteeniton | 174 |
+| Puurot | 14 | | Laktoositon | 190 |
+| Laatikot | 11 | | Maidoton | 169 |
+| Perunaruoat, pihvit ja pyörykät | 10 + 10 | | Nopeat (≤ 20 min) | 108 |
+| Leivät, letut, smoothiet, munaruoat | 9 + 7 + 8 + 7 | | Edulliset (≤ 2,50 €/annos) | 218 |
+| Piirakat | 5 | | Meal prep (riittää huomiseksi) | 88 |
+| Välipalat | 28 | | Suomalaiset | 64 |
+| Muut | 9 | | | |
+
+**Validointi** (`catalog.test.ts`, ajetaan jokaisen erän jälkeen): jokainen ainesosa löytyy suljetusta taulusta (kerran, grammat > 0), vaiheita ja vinkkejä on, kcal per annos 100–1 500 (päivälliset 300–1 300), makrot vastaavat energiaa, nimet ja id:t ovat yksilöllisiä, allergeenit ja tagit vastaavat täsmälleen ainesosia, tekstissä ei mainita allergeenia, jota ainesosissa ei ole, pääproteiini vastaa ainesosia, nimen ruokavaliosanat ("vegaaninen", "kasvis", "laktoositon", "gluteeniton") pitävät paikkansa, ja **21 yleiselle allergia- ja ruokavalioyhdistelmälle** jää vähintään 25 päivällistä ja lounasta, 6 aamiaista ja 5 välipalaa.
+
+Avainsanatarkistus (`keywordAllergens`) tunnistaa yhdyssanat (maapähkinävoi → maapähkinä), mutta ei hälytä vapaamuotoisista kieltosanoista ("gluteeniton korppujauho", "soijaton", "pähkinätön") eikä taivutetuista harhaanjohtavista sanoista (munakoiso-, kookosmai-, juustokumin-).
+
 ## 11. Ruokakuvan tunnistus (päiväkirja)
 
 Päiväkirjan "Ota kuva" tunnistaa ruoat valokuvasta ja arvioi määrät. Periaatteet ovat samat kuin reseptigeneroinnissa: **malli valitsee suljetusta listasta ja arvioi grammat, makrot lasketaan Finelistä**. Mallin ilmoittamia ravintoarvoja ei pyydetä eikä näytetä.
 
-> **Nykyinen vaihe:** käyttöliittymä tehdään testidatalla. "Ota kuva" palauttaa kiinteän esimerkkituloksen lyhyen viiveen jälkeen. Oikea toteutus tehdään tekoälyvaiheessa tämän kohdan mukaan.
+> **Nykyinen vaihe: testitila.** "Ota kuva" palauttaa esimerkkiaterian lyhyen viiveen jälkeen. Kameranäkymässä ja tuloksessa näkyy selvästi "Testitila – oikea tunnistus tulossa", eikä testituloksissa ole varmuusmerkintöjä. Palvelu (`services/foodRecognition.ts`) on valmis oikealle toteutukselle: `createBackendRecognition` lähettää kuvan multipart-lomakkeena Edge Functionille ja validoi vastauksen Zodilla (`parseRecognitionResponse`: tuntemattomat id:t pudotetaan, grammat rajataan 1–2 000, mallin ravintoarvot jätetään huomiotta). Käyttöön otto: vaihda `foodRecognition` = `createBackendRecognition(...)`; näkymät eivät muutu. Tulosrivi näyttää vain "Tarkista", kun `confidence` < 0,55; "varma"-merkintää ei ole koskaan, koska jokainen tulos on arvio.
 
 ### 11.1 Kulku
 
@@ -526,6 +553,13 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 11. Suunnitelma on ehdotus, kunnes käyttäjä hyväksyy sen. Ehdotukseen lasketaan valmiiksi kaksi vaihtoehtoa per ateria; niistä tehty vaihto ei kuluta vaihtorajaa.
 12. Ruokakuvan tunnistus: Haiku 5.5, suljettu Fineli-ehdokaslista, makrot Finelistä, kuvaa ei tallenneta. Rajat 10 / päivä ja 150 / 30 päivää sekä käyttäjän kustannuskatto 1,50 $ / 30 päivää.
 
+**Päätetty (2026-11-10):**
+
+13. Reseptit ovat aamiaisia, lounaita, päivällisiä tai välipaloja (`meal_types`). Suunnittelija ja generointi käyttävät vain päivällisiä; muut näkyvät kirjastossa ja päiväkirjassa.
+14. Generoinnin tulosteeseen lisätään tekstikentät vinkit, säilytys ja lämmitys sekä työaika, kokonaisaika, vaikeus ja annosmäärä; ravintoarvot ja allergeenit lasketaan aina koodissa.
+15. `isRecipeAllowed` on ainoa näyttöportti kaikkialla, myös chatissa: avustajalle annetaan vain sallitut reseptit, ja se ehdottaa vain niistä. Sama portti ajetaan backendissä.
+16. Kuvantunnistus on testitilassa, kunnes backend on valmis; käyttöliittymä kertoo sen selvästi.
+
 **Avoimet:**
 
 - Ehdokaslistan koko ja sisältö kuvantunnistukseen (600–900 riviä) valitaan Fineli-tuonnin yhteydessä.
@@ -589,6 +623,8 @@ Rajat (ehdottomat):
 **Konteksti** (vain luvalla): tämän päivän syödyt ruoat nimeltä, kcal ja proteiini, päivätavoitteet, vesi, tavoitteen tyyppi ja "Piilota kalorit" -tila. Allergiat ja ruokavalio lähetetään vain sääntöinä ("älä ehdota: maito, gluteeni") eikä syinä, kuten resepteissäkin (kohta 15).
 
 ### 17.4 Turvallisuus
+
+- **Reseptiehdotukset:** sovellus lähettää avustajalle vain käyttäjälle sallitut reseptit (`RecipeHint`, `isRecipeAllowed`), ja vastauksen reseptikortit tarkistetaan vielä näytettäessä. Testivastaus (`suggestRecipes`) valitsee proteiinikysymykseen kolme proteiinipitoisinta sallittua päivällistä eikä mainitse muita ruokia.
 
 - **Kaksi kerrosta:** sääntöpohjainen luokitus ennen mallia ja jälkeen sen (`classifySafety`, yksikkötestattu). Prompti yksin ei riitä (vrt. CLAUDE.md, periaate 4).
 - **Luokat:** `eatingDisorder` → välittävä vastaus ja tukitahot, ei lukuja; `extremeDiet` → kieltäytyminen ja turvarajat; `medical` → ohjaus ammattilaiselle.
