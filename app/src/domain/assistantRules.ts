@@ -54,6 +54,13 @@ export type AssistantContext = {
   hideCalories: boolean;
 } | null;
 
+/**
+ * A recipe the assistant may suggest. The caller passes only recipes that
+ * passed isRecipeAllowed for the user, so a suggestion can never break their
+ * allergies or diets (the backend applies the same gate server-side).
+ */
+export type RecipeHint = { id: string; title: string; proteinG: number; dinner: boolean; legumes: boolean };
+
 export type Intent = 'proteinDinner' | 'weightSwings' | 'moreVeg' | 'leftovers' | 'water' | 'greeting' | 'unknown';
 
 export function detectIntent(message: string): Intent {
@@ -76,8 +83,30 @@ const SAFETY_ANSWERS: Record<Exclude<SafetyTopic, null>, string> = {
     'Tähän en voi antaa lääketieteellistä arviota – en tunne terveydentilaasi enkä voi tehdä diagnooseja. Kysy asiasta lääkäriltä, terveydenhoitajalta tai ravitsemusterapeutilta. Voin kyllä auttaa yleisissä ruokavinkeissä, reseptien valinnassa ja ostoslistassa!',
 };
 
+/** Up to three allowed recipes that fit the question; none for safety topics. */
+export function suggestRecipes(message: string, recipes: readonly RecipeHint[]): RecipeHint[] {
+  if (classifySafety(message)) return [];
+  switch (detectIntent(message)) {
+    case 'proteinDinner':
+      return recipes
+        .filter((r) => r.dinner)
+        .sort((a, b) => b.proteinG - a.proteinG)
+        .slice(0, 3);
+    case 'moreVeg':
+      return recipes.filter((r) => r.legumes && r.dinner).slice(0, 3);
+    default:
+      return [];
+  }
+}
+
+function titles(list: readonly RecipeHint[]): string {
+  const names = list.map((r) => r.title.toLocaleLowerCase('fi'));
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} tai ${names[names.length - 1]}`;
+}
+
 /** Rule-based test answer (neutral voice, same for every character). Safety topics always win. */
-export function testAnswer(message: string, context: AssistantContext): string {
+export function testAnswer(message: string, context: AssistantContext, recipes: readonly RecipeHint[] = []): string {
   const safety = classifySafety(message);
   if (safety) return SAFETY_ANSWERS[safety];
   const numbers = context !== null && !context.hideCalories;
@@ -86,14 +115,19 @@ export function testAnswer(message: string, context: AssistantContext): string {
       const left =
         numbers && context?.goals ? Math.max(0, Math.round(context.goals.proteinG - context.eaten.proteinG)) : null;
       const start = left !== null && left > 0 ? `Tänään proteiinia on vielä noin ${left}\u00a0g jäljellä tavoitteesta. ` : '';
-      return `${start}Illaksi sopisi esimerkiksi lohta uunissa perunoiden kanssa, broileriwokki, linssikeitto rahkatilkalla tai munakas kasviksilla. Rahka tai raejuusto iltapalana nostaa proteiinia helposti. Löydät vastaavia reseptejä Reseptit-välilehdeltä!`;
+      const picks = suggestRecipes(message, recipes);
+      const idea =
+        picks.length > 0
+          ? `Illaksi sopisi esimerkiksi ${titles(picks)}. Napauta alta, niin näet reseptin.`
+          : 'Reseptit-välilehden Proteiinipitoinen-suodatin näyttää sinulle sopivat vaihtoehdot.';
+      return `${start}${idea}`;
     }
     case 'weightSwings':
       return 'Paino heiluu päivästä toiseen ihan normaalisti – yleensä 0,5–2 kg. Syynä ovat nesteet, suola, hiilihydraatit, vatsan sisältö ja vaikka unen määrä. Siksi Platewise näyttää 7 päivän keskiarvon: se kertoo suunnan paremmin kuin yksittäinen punnitus. Katso viikkojen trendiä, älä yksittäistä aamua. 🌱';
     case 'moreVeg':
-      return 'Helppoja tapoja: lisää kourallinen pakastekasviksia keittoon tai pastaan, pidä porkkanaa ja kurkkua välipalana, laita leivän päälle tomaattia ja salaattia, ja valitse resepti, jossa on palkokasveja. Tavoitteeksi riittää aluksi yksi kasvisannos lisää päivään!';
+      return 'Helppoja tapoja: lisää kourallinen pakastekasviksia keittoon tai pataan, pidä porkkanaa ja kurkkua välipalana ja valitse välillä resepti, jossa on palkokasveja. Tavoitteeksi riittää aluksi yksi kasvisannos lisää päivään!';
     case 'leftovers':
-      return 'Jääneet kasvikset sopivat mainiosti uunipellille, keittoon, munakkaaseen tai wokkiin. Puolikkaan kaalin saa coleslawiksi ja ylikypsät banaanit smoothieen. Ostoslista yrittää jo jakaa samat ainekset useampaan ruokaan, ettei mitään jää yli.';
+      return 'Jääneet kasvikset sopivat mainiosti uunipellille, keittoon tai wokkiin, ja puolikkaan kaalin saa raikkaaksi salaatiksi. Ostoslista yrittää jo jakaa samat ainekset useampaan ruokaan, ettei mitään jää yli.';
     case 'water': {
       const status =
         context !== null

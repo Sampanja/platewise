@@ -6,6 +6,7 @@ import { Animated, Easing, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { TestModeBanner } from '@/components/TestModeBanner';
 import { Sheet } from '@/components/Sheet';
 import {
   Button,
@@ -25,12 +26,12 @@ import { FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal, Food } from '@/data/types';
 import { entryMacros, sumEntries } from '@/domain/diary';
-import { closestGuide, confidenceLevel, portionGuides } from '@/domain/portionGuides';
+import { closestGuide, portionGuides } from '@/domain/portionGuides';
 import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { format, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
-import { foodRecognition, type RecognizedFood } from '@/services/foodRecognition';
+import { foodRecognition, needsCheck, type RecognizedFood } from '@/services/foodRecognition';
 import { colors, fixed, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.photo;
@@ -46,7 +47,7 @@ function basisOf(food: Food) {
 /**
  * Food from a photo. The photo comes from the app's camera (or the gallery)
  * and goes only to the recognition service; it is not stored. Every
- * recognised food shows grams, energy, macros and how sure the estimate is,
+ * recognised food shows grams, energy and macros (uncertain ones say "Tarkista"),
  * and can be changed, resized or removed before saving. Always "arvio".
  */
 export default function PhotoScreen() {
@@ -123,6 +124,7 @@ export default function PhotoScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader variant="close" title={t.title} />
       <ScrollView contentContainerStyle={styles.content}>
+        {foodRecognition.mode === 'test' ? <TestModeBanner title={r.testModeTitle} body={r.testModeBody} /> : null}
         {uri ? (
           <View style={styles.photoWrap}>
             <Image source={uri} style={styles.photo} contentFit="cover" accessibilityLabel={t.title} />
@@ -146,9 +148,6 @@ export default function PhotoScreen() {
               }
             />
             <Button label={r.fromGallery} variant="secondary" onPress={() => void pickFromGallery()} />
-            <Text variant="caption" color="textSubtle">
-              {t.testDataNote}
-            </Text>
           </View>
         ) : null}
 
@@ -190,7 +189,7 @@ export default function PhotoScreen() {
               items.map((item, index) => {
                 const food = FOODS_BY_ID[item.foodId];
                 const macros = entryMacros({ basis: basisOf(food), quantity: item.grams });
-                const level = confidenceLevel(item.confidence);
+                const check = needsCheck(item);
                 const guide = closestGuide(food.category, item.grams);
                 return (
                   <FadeInView key={`${item.foodId}-${index}`} delay={index * 60}>
@@ -200,7 +199,7 @@ export default function PhotoScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`${food.name}, ${item.grams} g, ${format(strings.common.kcal, {
                           value: formatInteger(macros.kcal),
-                        })}. ${format(r.confidenceA11y, { level: r.confidence[level] })}. ${r.edit}`}
+                        })}. ${check ? `${r.checkA11y}. ` : ''}${r.edit}`}
                         style={styles.itemBody}
                       >
                         <View style={styles.row}>
@@ -213,7 +212,7 @@ export default function PhotoScreen() {
                           <Text variant="label" color="textMuted" style={styles.flex}>
                             {`${item.grams} g${guide ? ` · ${format(r.about, { guide: strings.guides[guide.key].toLowerCase() })}` : ''}`}
                           </Text>
-                          <ConfidenceChip level={level} />
+                          {check ? <Chip tone="accent" label={r.check} /> : null}
                         </View>
                         <MacroLine proteinG={macros.proteinG} carbsG={macros.carbsG} fatG={macros.fatG} />
                       </PressableScale>
@@ -312,12 +311,12 @@ export default function PhotoScreen() {
         onPick={(foodId) => {
           const food = FOODS_BY_ID[foodId];
           if (picker?.mode === 'replace') {
-            // A corrected food is the user's choice: full confidence.
-            update(picker.index, { foodId, confidence: 1 });
+            // A corrected food is the user's choice: no longer uncertain.
+            update(picker.index, { foodId, confidence: undefined });
           } else if (food) {
             setItems((current) => [
               ...current,
-              { foodId, grams: portionGuides(food.category)[0]?.grams ?? 100, confidence: 1 },
+              { foodId, grams: portionGuides(food.category)[0]?.grams ?? 100 },
             ]);
           }
           haptics.select();
@@ -336,10 +335,6 @@ function MacroLine({ proteinG, carbsG, fatG }: { proteinG: number; carbsG: numbe
       )} g · ${strings.macros.fat} ${formatInteger(fatG)} g`}
     </Text>
   );
-}
-
-function ConfidenceChip({ level }: { level: 'high' | 'medium' | 'low' }) {
-  return <Chip tone={level === 'high' ? 'success' : level === 'medium' ? 'neutral' : 'accent'} label={r.confidence[level]} />;
 }
 
 /** Sweeping line and soft pulse over the photo while recognising. */

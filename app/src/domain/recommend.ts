@@ -1,7 +1,7 @@
 import type { Recipe } from '@/data/types';
 
 import { seededRandom } from './generate';
-import { checkRecipe, type DietRules, type IngredientIndex } from './recipes';
+import { isRecipeAllowed, type DietRules, type IngredientIndex } from './recipes';
 
 /**
  * "Sinulle suositeltuja": recipes that pass the user's allergy and diet check,
@@ -23,7 +23,7 @@ export function recommendRecipes(
   const cuisines = new Set(favorites.map((recipe) => recipe.cuisine));
 
   return recipes
-    .filter((recipe) => !excludeIds.has(recipe.id) && checkRecipe(recipe, index, rules).ok)
+    .filter((recipe) => !excludeIds.has(recipe.id) && isRecipeAllowed(recipe, rules, index))
     .map((recipe) => ({
       recipe,
       score:

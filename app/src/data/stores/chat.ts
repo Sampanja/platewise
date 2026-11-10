@@ -17,7 +17,7 @@ type ChatState = {
   messages: ChatMessage[];
   /** Messages sent per local date. */
   sentByDate: Record<string, number>;
-  add: (role: ChatRole, text: string) => ChatMessage;
+  add: (role: ChatRole, text: string, recipeIds?: string[]) => ChatMessage;
   countSent: (date: string) => void;
   clear: () => void;
   reset: () => void;
@@ -28,8 +28,8 @@ export const useChatStore = create<ChatState>()(
     (set) => ({
       messages: [],
       sentByDate: {},
-      add: (role, text) => {
-        const message: ChatMessage = { id: newId(), role, text, createdAt: new Date().toISOString() };
+      add: (role, text, recipeIds) => {
+        const message: ChatMessage = { id: newId(), role, text, createdAt: new Date().toISOString(), recipeIds };
         set((state) => ({ messages: [...state.messages, message].slice(-KEEP_MESSAGES) }));
         return message;
       },

@@ -1,56 +1,87 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Card, haptics, Icon, IconButton, ProgressMeter, Text } from '@/components/ui';
-import { GLASS_ML, useWaterStore } from '@/data/stores/water';
+import { Card, haptics, Icon, IconButton, PressableScale, ProgressMeter, Text } from '@/components/ui';
+import { useWaterGoal } from '@/data/hooks';
+import { useWaterStore } from '@/data/stores/water';
 import { format, formatDecimal, strings } from '@/i18n';
 import type { LocalDate } from '@/lib/dates';
-import { colors, spacing, themedStyles } from '@/theme';
+import { showToast } from '@/lib/toast';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.water;
 
-/** Water for the day in glasses (2.5 dl). One tap adds a glass; reaching the goal is celebrated gently. */
+export const litres = (ml: number) => formatDecimal(ml / 1000, 2);
+export const decilitres = (ml: number) => format(t.dl, { value: formatDecimal(ml / 100, ml % 100 === 0 ? 0 : 1) });
+
+/**
+ * Drinks for the day in the diary: progress against the personal goal, a
+ * one-tap glass (the size is set on the drinks screen) and a minus that
+ * removes the latest drink. Tapping the card opens the drinks screen.
+ */
 export function WaterCard({ date, onGlass }: { date: LocalDate; onGlass?: (ml: number) => void }) {
   const ml = useWaterStore((s) => s.byDate[date] ?? 0);
-  const goalMl = useWaterStore((s) => s.goalMl);
+  const glassMl = useWaterStore((s) => s.glassMl);
   const add = useWaterStore((s) => s.add);
-  const glasses = Math.round(ml / GLASS_ML);
-  const goalGlasses = Math.ceil(goalMl / GLASS_ML);
-  const liters = (value: number) => formatDecimal(value / 1000, 2);
+  const removeLast = useWaterStore((s) => s.removeLast);
+  const restore = useWaterStore((s) => s.restore);
+  const goal = useWaterGoal(date).totalMl;
+  const reached = ml >= goal;
+  const glassCount = Math.ceil(goal / glassMl);
+  const fullGlasses = Math.floor(ml / glassMl);
+  const a11y = format(t.a11y, { value: litres(ml), goal: litres(goal) });
 
-  const change = (delta: number) => {
-    if (delta < 0 && ml <= 0) return;
+  const addGlass = () => {
     haptics.tap();
-    add(date, delta);
-    onGlass?.(ml + delta);
+    const entry = add(date, glassMl);
+    if (entry) onGlass?.(ml + entry.ml);
+  };
+  const undoLast = () => {
+    const removed = removeLast(date);
+    if (!removed) return;
+    haptics.tap();
+    showToast(t.deleted, { label: strings.common.undo, onPress: () => restore(removed) });
   };
 
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.icon}>
-          <Icon name="water" size={20} color="water" />
-        </View>
-        <View style={styles.flex}>
-          <Text variant="heading">{t.title}</Text>
-          <Text
-            variant="caption"
-            color="textSubtle"
-            accessibilityLabel={format(t.a11y, { value: liters(ml), goal: liters(goalMl) })}
-          >
-            {`${format(t.amount, { value: liters(ml), goal: liters(goalMl) })} · ${format(t.glasses, { count: glasses })}`}
-          </Text>
-        </View>
-        <IconButton icon="minus" accessibilityLabel={t.remove} onPress={() => change(-GLASS_ML)} haptic="none" disabled={ml <= 0} />
-        <IconButton icon="plus" variant="accent" accessibilityLabel={t.add} onPress={() => change(GLASS_ML)} haptic="none" />
+        <PressableScale
+          onPress={() => router.push({ pathname: '/water', params: { date } })}
+          accessibilityRole="button"
+          accessibilityLabel={`${t.title}. ${a11y}. ${t.open}`}
+          style={styles.open}
+        >
+          <View style={styles.icon}>
+            <Icon name="water" size={20} color="water" />
+          </View>
+          <View style={styles.flex}>
+            <View style={styles.titleRow}>
+              <Text variant="heading">{t.title}</Text>
+              <Icon name="chevronRight" size={16} color="textSubtle" />
+            </View>
+            <Text variant="caption" color="textSubtle">
+              {format(t.amount, { value: litres(ml), goal: litres(goal) })}
+            </Text>
+          </View>
+        </PressableScale>
+        <IconButton icon="minus" accessibilityLabel={t.removeLast} onPress={undoLast} haptic="none" disabled={ml <= 0} />
+        <IconButton
+          icon="plus"
+          variant="accent"
+          accessibilityLabel={format(t.add, { amount: decilitres(glassMl) })}
+          onPress={addGlass}
+          haptic="none"
+        />
       </View>
       <View style={styles.glasses} accessible={false} importantForAccessibility="no-hide-descendants">
-        {Array.from({ length: Math.max(goalGlasses, glasses) }, (_, i) => (
-          <View key={i} style={[styles.glass, i < glasses && styles.glassFull]} />
+        {Array.from({ length: Math.min(16, Math.max(glassCount, fullGlasses)) }, (_, i) => (
+          <View key={i} style={[styles.glass, i < fullGlasses && styles.glassFull]} />
         ))}
       </View>
-      <ProgressMeter value={ml / goalMl} size="thin" tone="success" accessibilityLabel={format(t.a11y, { value: liters(ml), goal: liters(goalMl) })} />
-      <Text variant="caption" color="textSubtle">
-        {t.hint}
+      <ProgressMeter value={ml / goal} size="thin" tone="success" accessibilityLabel={a11y} />
+      <Text variant="caption" color={reached ? 'success' : 'textSubtle'}>
+        {reached ? t.reached : format(t.left, { value: litres(goal - ml) })}
       </Text>
     </Card>
   );
@@ -64,7 +95,20 @@ const styles = themedStyles(() =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      gap: spacing.sm,
+    },
+    open: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: spacing.md,
+      minHeight: 48,
+      borderRadius: radii.md,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
     },
     flex: {
       flex: 1,

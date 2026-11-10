@@ -132,30 +132,34 @@ export const ALLERGEN_KEYWORDS: Readonly<Partial<Record<AllergenCode, readonly s
   lupin: ['lupiini'],
 };
 
-/** Whole words that start with a keyword but are not the allergen. */
-const KEYWORD_EXCEPTIONS: ReadonlySet<string> = new Set([
-  'juustokumina',
-  'juustokuminaa',
-  'juustokuminan',
-  'kookosmaito',
-  'kookosmaidon',
-  'kookosmaitoa',
-  'munakoiso',
-  'munakoisoa',
-]);
+/** Word beginnings that start with a keyword but are not the allergen (any inflection). */
+const KEYWORD_EXCEPTIONS: readonly string[] = ['juustokumin', 'kookosmai', 'munakois'];
+
+/** "soijaton", "pähkinätön", "munattomat": the word says the food is free from it. */
+const FREE_FROM_SUFFIX = /^(ton|tön|ttom|ttöm)/;
 
 function words(text: string): string[] {
   return text.toLowerCase().match(/[a-zåäöé]+/g) ?? [];
 }
 
+/** "gluteeniton korppujauho", "gluteenittomat jauhot": the gluten keyword is negated. */
+function negatesGluten(previous: string | undefined): boolean {
+  return previous !== undefined && previous.startsWith('gluteenit');
+}
+
 /** Allergens whose keywords appear in the recipe's free text. */
 export function keywordAllergens(texts: readonly string[]): Set<AllergenCode> {
   const found = new Set<AllergenCode>();
-  for (const word of texts.flatMap(words)) {
-    if (KEYWORD_EXCEPTIONS.has(word)) continue;
-    for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS) as [AllergenCode, string[]][]) {
-      if (keywords.some((keyword) => word.startsWith(keyword))) found.add(code);
-    }
+  for (const text of texts) {
+    const list = words(text);
+    list.forEach((word, i) => {
+      if (KEYWORD_EXCEPTIONS.some((prefix) => word.startsWith(prefix))) return;
+      for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS) as [AllergenCode, string[]][]) {
+        if (code === 'gluten' && negatesGluten(list[i - 1])) continue;
+        if (keywords.some((keyword) => word.startsWith(keyword) && !FREE_FROM_SUFFIX.test(word.slice(keyword.length))))
+          found.add(code);
+      }
+    });
   }
   return found;
 }
@@ -187,6 +191,17 @@ export function checkRecipe(
     DIET_EXCLUDED_TAGS[diet].some((tag) => containedTags.has(tag)),
   );
   return { ok: allergens.length === 0 && diets.length === 0, allergens, diets };
+}
+
+/**
+ * The one gate for showing or suggesting a recipe anywhere in the app:
+ * library, search, recommendations, Home, Suunnittele proposals, swap
+ * alternatives and chat. A recipe that breaks any of the user's allergies or
+ * diets is never shown; there is no "show all" and no hidden count.
+ */
+export function isRecipeAllowed(recipe: RecipeSource, rules: DietRules, index: IngredientIndex): boolean {
+  if (rules.allergens.length === 0 && rules.diets.length === 0) return true;
+  return checkRecipe(recipe, index, rules).ok;
 }
 
 /** Chain-adjusted cost of `servings` servings, leaving out the user's pantry staples. */

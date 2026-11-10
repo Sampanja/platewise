@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Card, Icon, PressableScale, Text } from '@/components/ui';
 import { useGame } from '@/data/game';
-import { useActivePlan } from '@/data/hooks';
+import { useActivePlan, useWaterGoal } from '@/data/hooks';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useWaterStore } from '@/data/stores/water';
 import { mascotGreeting } from '@/domain/mascotMood';
@@ -23,7 +23,7 @@ export function CompanionCard() {
   const game = useGame();
   const entries = useDiaryStore((s) => s.entries);
   const water = useWaterStore((s) => s.byDate[now] ?? 0);
-  const waterGoal = useWaterStore((s) => s.goalMl);
+  const waterGoal = useWaterGoal(now).totalMl;
   const plan = useActivePlan();
 
   const loggedToday = entries.filter((e) => e.date === now).length;

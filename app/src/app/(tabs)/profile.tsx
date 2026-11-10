@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Card, haptics, Icon, PressableScale, SwitchRow, Text, type IconName } from '@/components/ui';
 import { CHAINS_BY_CODE } from '@/data/catalog';
+import { useWaterGoal } from '@/data/hooks';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
@@ -26,6 +27,7 @@ function edit(section: string): Href {
 }
 
 export default function ProfileScreen() {
+  const waterGoal = useWaterGoal(today());
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore();
   const { voice } = useCharacter();
@@ -127,6 +129,12 @@ export default function ProfileScreen() {
             label={t.weight}
             value={latestWeight !== undefined ? format(strings.calculator.weightValue, { value: formatDecimal(latestWeight) }) : t.weightNone}
             href="/weight"
+          />
+          <Row
+            icon="water"
+            label={strings.water.goalTitle}
+            value={`${formatDecimal(waterGoal.totalMl / 1000, 1)} l`}
+            href="/water"
           />
           <View style={[styles.switchRow, styles.lastSwitch]}>
             <SwitchRow

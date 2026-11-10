@@ -5,8 +5,8 @@
 
 import type { RecognizedFood } from './foodRecognition';
 
-/** Test plates; confidence is added per position (the main item is the clearest). */
-const PLATES: readonly (readonly Omit<RecognizedFood, 'confidence'>[])[] = [
+/** Test plates. They carry no confidence: test results are examples, never "sure". */
+const PLATES: readonly (readonly RecognizedFood[])[] = [
   [
     { foodId: 'chicken-breast', grams: 140 },
     { foodId: 'rice-cooked', grams: 160 },
@@ -56,6 +56,5 @@ function hash(text: string): number {
 }
 
 export function testDataPlate(photoUri: string): RecognizedFood[] {
-  const confidences = [0.9, 0.74, 0.52];
-  return PLATES[hash(photoUri) % PLATES.length].map((food, i) => ({ ...food, confidence: confidences[i] ?? 0.5 }));
+  return PLATES[hash(photoUri) % PLATES.length].map((food) => ({ ...food }));
 }

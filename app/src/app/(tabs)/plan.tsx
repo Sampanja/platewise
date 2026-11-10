@@ -6,10 +6,14 @@ import { openRecipe } from '@/components/RecipeCard';
 import { RecipeImage } from '@/components/RecipeImage';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Button, Card, FadeInView, Icon, PressableScale, Text } from '@/components/ui';
-import { CHAINS_BY_CODE, RECIPES_BY_ID } from '@/data/catalog';
-import { useActivePlan } from '@/data/hooks';
+import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
+import { useActivePlan, useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
+import type { MealPlan } from '@/data/types';
+import { replacementDinner, replacePlanDinner } from '@/domain/generate';
 import { lastDinnerDate, mealDate } from '@/domain/plan';
+import { isRecipeAllowed } from '@/domain/recipes';
+import { showToast } from '@/lib/toast';
 import { ProposalCard } from '@/features/home/ProposalCard';
 import { format, formatCents, strings } from '@/i18n';
 import { relativeDayLabel, shortDate, today } from '@/lib/dates';
@@ -23,7 +27,35 @@ export default function PlanScreen() {
   const plan = useActivePlan();
   const proposal = usePlansStore((s) => s.proposal);
   const pinned = usePlansStore((s) => s.pinnedRecipeIds);
+  const savePlan = usePlansStore((s) => s.savePlan);
+  const rules = useUserRules();
   const start = () => router.push('/questionnaire');
+
+  // The one strict gate, with the plan's own extra rules on top of the profile's.
+  const suits = (target: MealPlan, recipeId: string) => {
+    const recipe = RECIPES_BY_ID[recipeId];
+    return (
+      recipe !== undefined &&
+      isRecipeAllowed(
+        recipe,
+        {
+          allergens: [...rules.allergens, ...target.extraAllergens],
+          diets: [...rules.diets, ...target.extraDiets],
+        },
+        INGREDIENTS_BY_ID,
+      )
+    );
+  };
+  const swapToSuitable = (target: MealPlan, dayOffset: number, dayLabel: string) => {
+    const replacement = replacementDinner(target, dayOffset, RECIPES, INGREDIENTS_BY_ID, rules);
+    if (!replacement) return;
+    savePlan(replacePlanDinner(target, dayOffset, replacement.id, RECIPES_BY_ID, INGREDIENTS_BY_ID, rules.pantry));
+    showToast(format(t.swappedToast, { day: dayLabel, title: replacement.title }));
+  };
+  const pinnedTitles = pinned
+    .map((id) => RECIPES_BY_ID[id])
+    .filter((recipe) => recipe && isRecipeAllowed(recipe, rules, INGREDIENTS_BY_ID))
+    .map((recipe) => recipe.title);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -43,14 +75,14 @@ export default function PlanScreen() {
           </FadeInView>
         ) : null}
 
-        {pinned.length > 0 ? (
+        {pinnedTitles.length > 0 ? (
           <FadeInView>
             <Card style={styles.pinned}>
               <Icon name="sparkles" color="accentText" />
               <View style={styles.flex}>
                 <Text variant="bodyStrong">{t.pinnedTitle}</Text>
                 <Text variant="caption" color="textMuted">
-                  {pinned.map((id) => RECIPES_BY_ID[id]?.title).filter(Boolean).join(', ')}
+                  {pinnedTitles.join(', ')}
                 </Text>
               </View>
             </Card>
@@ -87,6 +119,33 @@ export default function PlanScreen() {
                     if (!recipe) return null;
                     const date = mealDate(plan, meal);
                     const past = date < today();
+                    if (!suits(plan, recipe.id)) {
+                      // Never show an unsuitable dish; offer a suitable one instead.
+                      return (
+                        <View key={meal.dayOffset} style={[styles.mealRow, past && styles.past]}>
+                          <View style={[styles.thumb, styles.blocked]}>
+                            <Icon name="shield" size={22} color="textSubtle" />
+                          </View>
+                          <View style={styles.flex}>
+                            <Text variant="caption" color="textSubtle">
+                              {relativeDayLabel(date)}
+                            </Text>
+                            <Text variant="bodyStrong">{t.notSuitable}</Text>
+                            <Text variant="caption" color="textSubtle">
+                              {t.notSuitableBody}
+                            </Text>
+                          </View>
+                          {!past ? (
+                            <Button
+                              size="compact"
+                              variant="secondary"
+                              label={t.swapToSuitable}
+                              onPress={() => swapToSuitable(plan, meal.dayOffset, relativeDayLabel(date))}
+                            />
+                          ) : null}
+                        </View>
+                      );
+                    }
                     return (
                       <PressableScale
                         key={meal.dayOffset}
@@ -192,6 +251,11 @@ const styles = themedStyles(() =>
       width: 52,
       height: 52,
       borderRadius: radii.sm,
+    },
+    blocked: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surfaceRaised,
     },
     how: {
       gap: spacing.lg,

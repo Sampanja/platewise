@@ -11,7 +11,7 @@ import type {
   Recipe,
 } from '@/data/types';
 
-import { checkRecipe, recipeCostCents, type IngredientIndex } from './recipes';
+import { isRecipeAllowed, recipeCostCents, type IngredientIndex } from './recipes';
 import { buildShoppingList, type ShoppingList } from './shoppingList';
 
 /**
@@ -68,7 +68,7 @@ export function matchesCraving(recipe: Recipe, craving: CravingCode): boolean {
     case 'mexican':
       return recipe.cuisine === 'mexican';
     case 'quick':
-      return recipe.cookTimeMin <= QUICK_MAX_MIN;
+      return recipe.totalTimeMin <= QUICK_MAX_MIN;
     case 'oven':
       return recipe.oven;
   }
@@ -82,12 +82,17 @@ export function planRules(user: UserRules, answers: PlanAnswers) {
   };
 }
 
+/**
+ * Dinners the planner may use: recipes marked as dinners that pass the one
+ * strict allergy and diet gate (isRecipeAllowed). Breakfasts and snacks are
+ * never planned.
+ */
 export function eligibleRecipes(
   recipes: readonly Recipe[],
   index: IngredientIndex,
   rules: { allergens: readonly AllergenCode[]; diets: readonly DietCode[] },
 ): Recipe[] {
-  return recipes.filter((recipe) => checkRecipe(recipe, index, rules).ok);
+  return recipes.filter((recipe) => recipe.meals.includes('dinner') && isRecipeAllowed(recipe, rules, index));
 }
 
 /** Servings cooked for one dinner: everyone eats, doubled when tomorrow's lunch is included. */
@@ -360,4 +365,65 @@ export function replacePlanDinner(
     multiplier,
   );
   return { ...plan, meals, estimatedTotalCents: list.totalCents };
+}
+
+/**
+ * A plan dinner that no longer passes the user's rules (an allergy or diet was
+ * added after the plan was accepted) is not shown; this picks the replacement
+ * offered instead: an allowed dinner not already in the plan, with the same
+ * main protein when possible, otherwise the cheapest.
+ */
+export function replacementDinner(
+  plan: MealPlan,
+  dayOffset: number,
+  recipes: readonly Recipe[],
+  index: IngredientIndex,
+  user: UserRules,
+): Recipe | null {
+  const meal = plan.meals.find((m) => m.slot === 'dinner' && m.dayOffset === dayOffset);
+  if (!meal) return null;
+  const rules = {
+    allergens: [...new Set([...user.allergens, ...plan.extraAllergens])],
+    diets: [...new Set([...user.diets, ...plan.extraDiets])],
+  };
+  const inPlan = new Set(plan.meals.map((m) => m.recipeId));
+  const current = recipes.find((recipe) => recipe.id === meal.recipeId);
+  const multiplier = CHAINS_BY_CODE[plan.chainCode].priceMultiplier;
+  const pool = eligibleRecipes(recipes, index, rules)
+    .filter((recipe) => !inPlan.has(recipe.id))
+    .sort(
+      (a, b) =>
+        recipeCostCents(a, index, user.pantry, multiplier) - recipeCostCents(b, index, user.pantry, multiplier),
+    );
+  return pool.find((recipe) => recipe.mainProtein === current?.mainProtein) ?? pool[0] ?? null;
+}
+
+/**
+ * Keeps a pending proposal suitable when the user's allergies or diets change
+ * before it is accepted: unsuitable dinners are replaced (suitable ones stay,
+ * with their locks) and stale "Vaihda" alternatives are regenerated. Returns
+ * the same object when nothing needs to change, and null when no recipe suits
+ * the new rules at all.
+ */
+export function repairProposal(
+  proposal: Proposal,
+  recipes: readonly Recipe[],
+  index: IngredientIndex,
+  user: UserRules,
+): Proposal | null {
+  const pool = new Set(eligibleRecipes(recipes, index, planRules(user, proposal.answers)).map((r) => r.id));
+  const stale = proposal.meals.some((meal) => !pool.has(meal.recipeId) || meal.alternatives.some((id) => !pool.has(id)));
+  if (!stale) return proposal;
+  if (pool.size === 0) return null;
+  const keep = proposal.meals
+    .filter((meal) => pool.has(meal.recipeId))
+    .map(({ dayOffset, recipeId }) => ({ dayOffset, recipeId }));
+  const meals = generateMeals({ answers: proposal.answers, recipes, index, user, seed: proposal.meals.length + keep.length, keep });
+  return {
+    ...proposal,
+    meals: meals.map((meal) => ({
+      ...meal,
+      locked: proposal.meals.some((old) => old.dayOffset === meal.dayOffset && old.recipeId === meal.recipeId && old.locked),
+    })),
+  };
 }

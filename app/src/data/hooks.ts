@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 
 
 import { goalsForDate } from '@/domain/dailyGoals';
+import { repairProposal } from '@/domain/generate';
+import { manualWaterGoal, NO_EXTRAS, recommendedWaterGoal, type HydrationProfile, type WaterGoal } from '@/domain/hydration';
 import { entriesOn, sumEntries } from '@/domain/diary';
 import { lastDinnerDate, savingsCents } from '@/domain/plan';
-import { recipeCostCents } from '@/domain/recipes';
+import { isRecipeAllowed, recipeCostCents } from '@/domain/recipes';
 import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/shoppingList';
 import { parseLocalDate, today, type LocalDate } from '@/lib/dates';
 
-import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES_BY_ID } from './catalog';
+import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
 import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
@@ -20,7 +22,7 @@ import { useMyMealsStore } from './stores/myMeals';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
-import type { DayNutrition, MealPlan, NutritionGoals, Recipe, StoreChain } from './types';
+import type { DayNutrition, MealPlan, NutritionGoals, Recipe, RecipeSource, StoreChain } from './types';
 
 /**
  * Hooks that combine the local repositories with the catalog. Screens use
@@ -66,6 +68,72 @@ export function useUserRules() {
     () => ({ allergens, diets, pantry: new Set(pantryList) as ReadonlySet<string> }),
     [allergens, diets, pantryList],
   );
+}
+
+/**
+ * The one strict allergy and diet gate as a predicate for screens: every list,
+ * search, recommendation, swap alternative and chat suggestion goes through
+ * it. Unsuitable recipes are never shown, counted or offered.
+ */
+export function useRecipeAllowed(): (recipe: RecipeSource) => boolean {
+  const allergens = useProfileStore((s) => s.allergens);
+  const diets = useProfileStore((s) => s.diets);
+  return useMemo(() => {
+    const rules = { allergens, diets };
+    return (recipe: RecipeSource) => isRecipeAllowed(recipe, rules, INGREDIENTS_BY_ID);
+  }, [allergens, diets]);
+}
+
+/**
+ * Mounted once in the root layout: when allergies or diets change, a pending
+ * proposal is repaired at once so no screen ever shows an unsuitable dinner
+ * or "Vaihda" alternative from it.
+ */
+export function useKeepProposalSuitable(): void {
+  const proposal = usePlansStore((s) => s.proposal);
+  const rules = useUserRules();
+  useEffect(() => {
+    if (!proposal) return;
+    const repaired = repairProposal(proposal, RECIPES, INGREDIENTS_BY_ID, rules);
+    if (repaired !== proposal) usePlansStore.getState().setProposal(repaired);
+  }, [proposal, rules]);
+}
+
+/** The person's data the water recommendation uses; the latest weigh-in wins over the calculator weight. */
+function useHydrationProfile(): HydrationProfile {
+  const body = useProfileStore((s) => s.body);
+  const weighIns = useWeightStore((s) => s.entries);
+  const latest = weighIns.length > 0 ? weighIns[weighIns.length - 1].kg : null;
+  return useMemo(
+    () => ({ weightKg: latest ?? body.weightKg, sex: body.sex, activity: body.activity, pregnancy: body.pregnancy }),
+    [latest, body.weightKg, body.sex, body.activity, body.pregnancy],
+  );
+}
+
+/** Goal for any date: automatic (personal) or manual, plus that day's exercise and heat. */
+export function useWaterGoalFor(): (date: string) => WaterGoal {
+  const profile = useHydrationProfile();
+  const mode = useWaterStore((s) => s.goalMode);
+  const manualMl = useWaterStore((s) => s.manualGoalMl);
+  const extras = useWaterStore((s) => s.dayExtras);
+  return useMemo(
+    () => (date: string) => {
+      const day = extras[date] ?? NO_EXTRAS;
+      return mode === 'manual' ? manualWaterGoal(manualMl, day) : recommendedWaterGoal(profile, day);
+    },
+    [profile, mode, manualMl, extras],
+  );
+}
+
+export function useWaterGoal(date: string): WaterGoal {
+  const goalFor = useWaterGoalFor();
+  return useMemo(() => goalFor(date), [goalFor, date]);
+}
+
+/** The recommendation without day extras, shown next to a manual goal. */
+export function useRecommendedWaterGoal(): WaterGoal {
+  const profile = useHydrationProfile();
+  return useMemo(() => recommendedWaterGoal(profile), [profile]);
 }
 
 export function useChain(): StoreChain {

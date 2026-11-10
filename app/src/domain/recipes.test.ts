@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID } from '@/data/catalog/ingredients';
-import { r } from '@/data/catalog/recipeHelpers';
+import { dish } from '@/data/catalog/recipeHelpers';
 import type { RecipeSource } from '@/data/types';
 
 import { checkRecipe, deriveRecipe, keywordAllergens, recipeCostCents } from './recipes';
@@ -10,18 +10,19 @@ const index = INGREDIENTS_BY_ID;
 
 function recipe(ingredients: [string, number][], extra: Partial<RecipeSource> = {}): RecipeSource {
   return {
-    ...r({
+    ...dish({
       id: 'test',
       title: 'Testiruoka',
-      description: '',
-      cookTimeMin: 20,
-      dishType: 'other',
+      desc: '',
+      cat: 'other',
       cuisine: 'other',
-      mainProtein: 'none',
-      imageUrl: null,
-      ingredients,
+      protein: 'none',
+      time: [20, 20],
+      ing: '',
       steps: ['Sekoita.'],
+      tips: [],
     }),
+    ingredients: ingredients.map(([ingredientId, grams]) => ({ ingredientId, grams })),
     ...extra,
   };
 }
@@ -128,6 +129,27 @@ describe('keywordAllergens', () => {
 
   it('ignores listed false friends', () => {
     expect(keywordAllergens(['juustokumina', 'kookosmaito']).size).toBe(0);
+    expect(keywordAllergens(['munakoisosta ja kookosmaitoon juustokuminalla']).size).toBe(0);
+  });
+
+  it('ignores "free from" words such as soijaton and pähkinätön', () => {
+    expect(keywordAllergens(['Soijaton ja pähkinätön, munattomat letut.']).size).toBe(0);
+    expect([...keywordAllergens(['soijakastike'])]).toEqual(['soy']);
+    expect([...keywordAllergens(['maitotölkki'])]).toEqual(['milk']);
+  });
+
+  it('treats "gluteeniton" before a gluten word as gluten-free', () => {
+    expect(keywordAllergens(['Lisää gluteenittomat korppujauhot.']).size).toBe(0);
+    expect(keywordAllergens(['gluteeniton korppujauho']).size).toBe(0);
+    expect([...keywordAllergens(['korppujauho'])]).toEqual(['gluten']);
+    // Only the gluten keyword is negated; milk in the same phrase still counts.
+    expect([...keywordAllergens(['gluteeniton juustoleipä'])]).toEqual(['milk']);
+  });
+
+  it('finds allergens in compound words such as maapähkinävoi', () => {
+    expect([...keywordAllergens(['Levitä maapähkinävoita.'])]).toEqual(['peanut']);
+    expect([...keywordAllergens(['hasselpähkinärouhe'])]).toEqual(['nuts']);
+    expect([...keywordAllergens(['ruisleipä'])]).toEqual(['gluten']);
   });
 });
 

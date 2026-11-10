@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { closestGuide, confidenceLevel, portionGuides } from './portionGuides';
+import { closestGuide, portionGuides } from './portionGuides';
 
 describe('portion guides', () => {
   it('offers a palm-sized portion for meat and a fist for starches', () => {
@@ -14,10 +14,3 @@ describe('portion guides', () => {
   });
 });
 
-describe('confidenceLevel', () => {
-  it('maps 0–1 to three plain levels', () => {
-    expect(confidenceLevel(0.9)).toBe('high');
-    expect(confidenceLevel(0.6)).toBe('medium');
-    expect(confidenceLevel(0.3)).toBe('low');
-  });
-});

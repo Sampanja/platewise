@@ -1,4 +1,5 @@
-import type { Recipe } from '@/data/types';
+import { DIET_EXCLUDED_TAGS } from '@/data/catalog/reference';
+import type { MealType, Recipe } from '@/data/types';
 
 import { matchesCraving } from './generate';
 import type { IngredientIndex } from './recipes';
@@ -8,12 +9,16 @@ export type RecipeFilter =
   | 'quick'
   | 'cheap'
   | 'vegetarian'
+  | 'vegan'
+  | 'glutenFree'
   | 'highProtein'
   | 'fish'
   | 'chicken'
   | 'meat'
   | 'soup'
+  | 'salad'
   | 'pasta'
+  | 'finnish'
   | 'asian'
   | 'mexican'
   | 'leftovers';
@@ -23,16 +28,24 @@ export const RECIPE_FILTERS: readonly RecipeFilter[] = [
   'quick',
   'cheap',
   'vegetarian',
+  'vegan',
+  'glutenFree',
   'highProtein',
   'fish',
   'chicken',
   'meat',
   'soup',
+  'salad',
   'pasta',
+  'finnish',
   'asian',
   'mexican',
   'leftovers',
 ];
+
+/** "Kaikki" or one meal of the day. */
+export type MealChoice = MealType | 'all';
+export const MEAL_CHOICES: readonly MealChoice[] = ['all', 'breakfast', 'lunch', 'dinner', 'snack'];
 
 export type RecipeSort = 'recommended' | 'price' | 'time' | 'kcal';
 
@@ -63,6 +76,14 @@ export function matchesFilter(recipe: Recipe, filter: RecipeFilter, context: Fil
       return context.servingPrice(recipe) <= CHEAP_MAX_CENTS;
     case 'highProtein':
       return recipe.perServing.proteinG >= HIGH_PROTEIN_MIN_G;
+    case 'vegan':
+      return !DIET_EXCLUDED_TAGS.vegan.some((tag) => recipe.tags.includes(tag));
+    case 'glutenFree':
+      return !recipe.allergens.includes('gluten');
+    case 'salad':
+      return recipe.dishType === 'salad';
+    case 'finnish':
+      return recipe.cuisine === 'finnish';
     case 'meat':
       return ['beef', 'pork', 'minced_meat'].includes(recipe.mainProtein);
     case 'leftovers':
@@ -93,6 +114,8 @@ export function filterRecipes(
   recipes: readonly Recipe[],
   options: {
     query: string;
+    /** Meal of the day; omitted or 'all' = every meal. */
+    meal?: MealChoice;
     filters: readonly RecipeFilter[];
     sort: RecipeSort;
     context: FilterContext;
@@ -100,8 +123,10 @@ export function filterRecipes(
   },
 ): Recipe[] {
   const { query, filters, sort, context, index } = options;
+  const meal = options.meal ?? 'all';
   const result = recipes.filter(
     (recipe) =>
+      (meal === 'all' || recipe.meals.includes(meal)) &&
       matchesSearch(recipe, query, index) &&
       filters.every((filter) => matchesFilter(recipe, filter, context)),
   );
@@ -109,7 +134,7 @@ export function filterRecipes(
     case 'price':
       return result.sort((a, b) => context.servingPrice(a) - context.servingPrice(b));
     case 'time':
-      return result.sort((a, b) => a.cookTimeMin - b.cookTimeMin);
+      return result.sort((a, b) => a.totalTimeMin - b.totalTimeMin);
     case 'kcal':
       return result.sort((a, b) => a.perServing.kcal - b.perServing.kcal);
     case 'recommended':

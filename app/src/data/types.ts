@@ -6,6 +6,7 @@ import type { LocalDate } from '@/lib/dates';
  * local test data.
  */
 
+/** Recipe category (`recipes.category`): the form of the dish. */
 export type DishType =
   | 'soup'
   | 'stew'
@@ -13,11 +14,48 @@ export type DishType =
   | 'rice'
   | 'potato'
   | 'oven'
+  | 'casserole'
   | 'stir_fry'
   | 'salad'
   | 'bowl'
   | 'wrap'
+  | 'patty'
+  | 'pie'
+  | 'porridge'
+  | 'egg'
+  | 'sandwich'
+  | 'pancake'
+  | 'smoothie'
+  | 'snack'
   | 'other';
+
+export const DISH_TYPES: readonly DishType[] = [
+  'soup',
+  'stew',
+  'pasta',
+  'rice',
+  'potato',
+  'oven',
+  'casserole',
+  'stir_fry',
+  'salad',
+  'bowl',
+  'wrap',
+  'patty',
+  'pie',
+  'porridge',
+  'egg',
+  'sandwich',
+  'pancake',
+  'smoothie',
+  'snack',
+  'other',
+];
+
+/** When a recipe is eaten (`recipes.meal_types`). Suunnittele uses only dinners. */
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export const MEAL_TYPES: readonly MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export type Cuisine =
   | 'finnish'
@@ -27,7 +65,17 @@ export type Cuisine =
   | 'mexican'
   | 'middle_eastern'
   | 'indian'
+  | 'thai'
+  | 'japanese'
+  | 'korean'
+  | 'chinese'
+  | 'greek'
+  | 'french'
+  | 'spanish'
+  | 'american'
   | 'other';
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type MainProtein =
   | 'chicken'
@@ -164,8 +212,17 @@ export type RecipeSource = {
   id: string;
   title: string;
   description: string;
-  cookTimeMin: number;
+  /** Hands-on time (minutes). */
+  activeTimeMin: number;
+  /** Time from start to table (minutes). */
+  totalTimeMin: number;
+  difficulty: Difficulty;
+  /** How many servings the recipe is written for (ingredients are per serving). */
+  servings: number;
+  /** Category. */
   dishType: DishType;
+  /** Meals the recipe suits; never empty. */
+  meals: readonly MealType[];
   cuisine: Cuisine;
   mainProtein: MainProtein;
   /** Cooked in the oven (questionnaire wish "uunissa"). */
@@ -174,7 +231,13 @@ export type RecipeSource = {
   /** Null while the image is still being generated. */
   imageUrl: string | null;
   ingredients: readonly RecipeIngredient[];
+  /** Numbered in the UI. */
   steps: readonly string[];
+  tips: readonly string[];
+  /** How to store leftovers. */
+  storage: string;
+  /** How to reheat. */
+  reheating: string;
 };
 
 /** Recipe with fields the backend derives from ingredient data. */

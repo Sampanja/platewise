@@ -2,26 +2,37 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Icon } from '@/components/ui';
+import { FoodIllustration } from '@/components/FoodIllustration';
 import type { Recipe } from '@/data/types';
 import { format, strings } from '@/i18n';
-import { colors, gradients, themedStyles } from '@/theme';
+import { gradients, themedStyles } from '@/theme';
 
 type Props = {
-  recipe: Pick<Recipe, 'imageUrl' | 'title'>;
+  recipe: Pick<Recipe, 'id' | 'imageUrl' | 'title' | 'dishType' | 'mainProtein'>;
   style?: StyleProp<ViewStyle>;
   /** Darken the bottom so text on top stays legible. */
   scrim?: boolean;
 };
 
-/** Dish photo with a calm placeholder while loading or when no image exists yet. */
+/**
+ * The dish image. Until the backend adds a real photo (`imageUrl`), the
+ * recipe's category illustration card in the active theme's colours is shown;
+ * it also stays underneath a photo while it loads.
+ */
 export function RecipeImage({ recipe, style, scrim = false }: Props) {
   return (
-    <View style={[styles.wrap, style]}>
-      <LinearGradient colors={[colors.surfaceRaised, colors.surface]} style={StyleSheet.absoluteFill} />
-      <View style={styles.placeholderIcon}>
-        <Icon name="plate" size={28} color="textSubtle" />
-      </View>
+    <View
+      style={[styles.wrap, style]}
+      accessible={recipe.imageUrl !== null}
+      accessibilityRole={recipe.imageUrl ? 'image' : undefined}
+      accessibilityLabel={recipe.imageUrl ? format(strings.recipe.imageLabel, { title: recipe.title }) : undefined}
+    >
+      <FoodIllustration
+        dishType={recipe.dishType}
+        protein={recipe.mainProtein}
+        seed={recipe.id}
+        style={StyleSheet.absoluteFill}
+      />
       {recipe.imageUrl ? (
         <Image
           source={recipe.imageUrl}
@@ -30,7 +41,6 @@ export function RecipeImage({ recipe, style, scrim = false }: Props) {
           transition={250}
           cachePolicy="memory-disk"
           recyclingKey={recipe.imageUrl}
-          accessibilityLabel={format(strings.recipe.imageLabel, { title: recipe.title })}
         />
       ) : null}
       {scrim ? (
@@ -44,11 +54,6 @@ const styles = themedStyles(() =>
   StyleSheet.create({
     wrap: {
       overflow: 'hidden',
-    },
-    placeholderIcon: {
-      ...StyleSheet.absoluteFill,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
   }),
 );

@@ -9,6 +9,7 @@ import { Sheet } from '@/components/Sheet';
 import { Button, haptics, Icon, PressableScale, Text, TextField, useReducedMotion } from '@/components/ui';
 import type { DiaryMeal } from '@/data/types';
 import { isValidBarcode } from '@/domain/openFoodFacts';
+import { foodRecognition } from '@/services/foodRecognition';
 import { strings } from '@/i18n';
 import { activeCharacter, fixed, palettes, radii, spacing, themedStyles, type Palette } from '@/theme';
 
@@ -127,18 +128,39 @@ export default function CameraScreen() {
         onBarcodeScanned={mode === 'barcode' ? onBarcode : undefined}
       />
       <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
-        <View style={styles.topBar}>
-          <CloseButton />
-          <PressableScale
-            onPress={() => setTorch((on) => !on)}
-            accessibilityRole="button"
-            accessibilityLabel={torch ? t.torchOff : t.torchOn}
-            accessibilityState={{ selected: torch }}
-            haptic="select"
-            style={[styles.roundButton, torch && styles.roundButtonOn]}
-          >
-            <Icon name="zap" size={22} tint={torch ? ink.textOnAccent : ink.text} />
-          </PressableScale>
+        <View>
+          <View style={styles.topBar}>
+            <CloseButton />
+            <PressableScale
+              onPress={() => setTorch((on) => !on)}
+              accessibilityRole="button"
+              accessibilityLabel={torch ? t.torchOff : t.torchOn}
+              accessibilityState={{ selected: torch }}
+              haptic="select"
+              style={[styles.roundButton, torch && styles.roundButtonOn]}
+            >
+              <Icon name="zap" size={22} tint={torch ? ink.textOnAccent : ink.text} />
+            </PressableScale>
+          </View>
+
+          {mode === 'photo' && foodRecognition.mode === 'test' ? (
+            <View
+              style={styles.testMode}
+              accessible
+              accessibilityRole="alert"
+              accessibilityLabel={`${strings.photoResult.testModeTitle}. ${strings.photoResult.testModeCamera}`}
+            >
+              <Icon name="info" size={18} tint={ink.gold} />
+              <View style={styles.testModeText}>
+                <Text variant="label" style={styles.inkText}>
+                  {strings.photoResult.testModeTitle}
+                </Text>
+                <Text variant="caption" style={styles.inkMuted}>
+                  {strings.photoResult.testModeCamera}
+                </Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.guideArea} pointerEvents="none">
@@ -412,6 +434,24 @@ const styles = themedStyles(() =>
       height: 2,
       borderRadius: 1,
       backgroundColor: ink.accent,
+    },
+    testMode: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      alignSelf: 'center',
+      maxWidth: 360,
+      marginHorizontal: spacing.lg,
+      marginTop: spacing.sm,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.md,
+      backgroundColor: fixed.cameraPanel,
+      borderWidth: 1,
+      borderColor: ink.gold,
+    },
+    testModeText: {
+      flexShrink: 1,
     },
     tip: {
       paddingHorizontal: spacing.lg,

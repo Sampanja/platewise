@@ -17,15 +17,16 @@ import {
 } from '@/components/ui';
 import { INGREDIENTS_BY_ID } from '@/data/catalog';
 import { useServingPrice, useUserRules } from '@/data/hooks';
-import { useRecipesQuery } from '@/data/queries';
+import { useAllowedRecipesQuery } from '@/data/queries';
 import { useFavoritesStore } from '@/data/stores/favorites';
 import {
   filterRecipes,
+  MEAL_CHOICES,
   RECIPE_FILTERS,
+  type MealChoice,
   type RecipeFilter,
   type RecipeSort,
 } from '@/domain/recipeFilters';
-import { checkRecipe } from '@/domain/recipes';
 import { format, strings } from '@/i18n';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -37,31 +38,28 @@ export default function RecipesScreen() {
   const { width } = useWindowDimensions();
   // Two columns; a lone last card keeps its column width instead of stretching.
   const cardWidth = (width - spacing.lg * 2 - spacing.md) / 2;
-  const recipesQuery = useRecipesQuery();
+  // Only recipes that suit the user's allergies and diets ever reach this screen.
+  const recipesQuery = useAllowedRecipesQuery();
   const rules = useUserRules();
+  const hasRules = rules.allergens.length > 0 || rules.diets.length > 0;
   const favoriteIds = useFavoritesStore((s) => s.ids);
   const servingPrice = useServingPrice();
   const [query, setQuery] = useState('');
+  const [meal, setMeal] = useState<MealChoice>('all');
   const [filters, setFilters] = useState<RecipeFilter[]>([]);
   const [sort, setSort] = useState<RecipeSort>('recommended');
 
-  // Allergies and diets are applied before anything else, with the same check as plans.
-  const { allowed, hiddenCount } = useMemo(() => {
-    const all = recipesQuery.data ?? [];
-    const ok = all.filter((recipe) => checkRecipe(recipe, INGREDIENTS_BY_ID, rules).ok);
-    return { allowed: ok, hiddenCount: all.length - ok.length };
-  }, [recipesQuery.data, rules]);
-
   const visible = useMemo(
     () =>
-      filterRecipes(allowed, {
+      filterRecipes(recipesQuery.data ?? [], {
         query,
+        meal,
         filters,
         sort,
         context: { favoriteIds, servingPrice },
         index: INGREDIENTS_BY_ID,
       }),
-    [allowed, query, filters, sort, favoriteIds, servingPrice],
+    [recipesQuery.data, query, meal, filters, sort, favoriteIds, servingPrice],
   );
 
   const toggleFilter = (filter: RecipeFilter) =>
@@ -70,9 +68,10 @@ export default function RecipesScreen() {
     );
   const clearAll = () => {
     setQuery('');
+    setMeal('all');
     setFilters([]);
   };
-  const onlyFavorites = filters.length === 1 && filters[0] === 'favorites' && query === '';
+  const onlyFavorites = filters.length === 1 && filters[0] === 'favorites' && query === '' && meal === 'all';
 
   const header = (
     <View style={styles.header}>
@@ -107,6 +106,27 @@ export default function RecipesScreen() {
           ) : null
         }
       />
+
+      <View style={styles.meals} accessibilityRole="radiogroup">
+        {MEAL_CHOICES.map((value) => {
+          const selected = meal === value;
+          return (
+            <PressableScale
+              key={value}
+              haptic="select"
+              onPress={() => setMeal(value)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              accessibilityLabel={format(t.mealsA11y, { value: t.meals[value] })}
+              style={[styles.meal, selected && styles.mealSelected]}
+            >
+              <Text variant="label" color={selected ? 'textOnAccent' : 'textMuted'} numberOfLines={1} adjustsFontSizeToFit>
+                {t.meals[value]}
+              </Text>
+            </PressableScale>
+          );
+        })}
+      </View>
 
       <ScrollView
         horizontal
@@ -147,7 +167,7 @@ export default function RecipesScreen() {
         })}
       </View>
 
-      {hiddenCount > 0 ? (
+      {hasRules ? (
         <PressableScale
           onPress={() => router.push({ pathname: '/profile-edit/[section]', params: { section: 'allergies' } })}
           accessibilityRole="button"
@@ -155,7 +175,7 @@ export default function RecipesScreen() {
         >
           <Icon name="shield" size={18} color="textSubtle" />
           <Text variant="caption" color="textSubtle" style={styles.flex}>
-            {hiddenCount === 1 ? t.hiddenByAllergiesOne : format(t.hiddenByAllergies, { count: hiddenCount })}
+            {t.dietNote}
           </Text>
           <Icon name="chevronRight" size={16} color="textSubtle" />
         </PressableScale>
@@ -230,6 +250,26 @@ const styles = themedStyles(() =>
       justifyContent: 'space-between',
       flexWrap: 'wrap',
       paddingHorizontal: spacing.xs,
+    },
+    meals: {
+      flexDirection: 'row',
+      padding: spacing.xs,
+      gap: spacing.xs,
+      borderRadius: radii.pill,
+      backgroundColor: colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.border,
+    },
+    meal: {
+      flex: 1,
+      minHeight: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xs,
+      borderRadius: radii.pill,
+    },
+    mealSelected: {
+      backgroundColor: colors.accent,
     },
     bleed: {
       marginHorizontal: -spacing.lg,

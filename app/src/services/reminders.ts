@@ -6,6 +6,7 @@ import type { ReminderTime } from '@/data/stores/reminders';
 import type { DiaryMeal } from '@/data/types';
 import { currentCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
+import { reminderHours } from '@/domain/hydration';
 
 /**
  * Meal reminders as local notifications (no server, no push token). The
@@ -69,4 +70,35 @@ export async function scheduleMealReminders(
     });
   }
   return entries.length;
+}
+
+const WATER_TAG = 'platewise-water';
+
+/**
+ * Gentle drink reminders through the day, in the character's voice. The text
+ * never mentions amounts. Replaces any earlier water reminders; returns how
+ * many daily reminders were scheduled.
+ */
+export async function scheduleWaterReminders(settings: {
+  on: boolean;
+  startHour: number;
+  endHour: number;
+  everyHours: number;
+}): Promise<number> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    scheduled
+      .filter((n) => n.content.data?.tag === WATER_TAG)
+      .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
+  if (!settings.on) return 0;
+  const { voice } = currentCharacter();
+  const hours = reminderHours(settings.startHour, settings.endHour, settings.everyHours);
+  for (const hour of hours) {
+    await Notifications.scheduleNotificationAsync({
+      content: { title: voice.name, body: voice.notify.water, data: { tag: WATER_TAG } },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute: 0, channelId: CHANNEL },
+    });
+  }
+  return hours.length;
 }

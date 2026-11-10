@@ -28,3 +28,25 @@ export function planWithEaters<T>(plan: T): T {
   const eaters = typeof householdSize === 'number' && householdSize >= 1 && householdSize <= 6 ? householdSize : 1;
   return { ...rest, eaters } as T;
 }
+
+/**
+ * Water v2 keeps every drink as an entry (time and type) instead of one total
+ * per day. Old totals become one plain-water entry per day without a time;
+ * an own goal that differs from the old 1.5 l default is kept as a manual
+ * goal, otherwise the new personal (automatic) goal is used.
+ */
+export function waterToEntries(persisted: unknown): {
+  entries: { id: string; date: string; time: null; ml: number; drink: 'water' }[];
+  goalMode: 'auto' | 'manual';
+  manualGoalMl: number;
+} {
+  const old = isObject(persisted) ? persisted : {};
+  const byDate = isObject(old.byDate) ? old.byDate : {};
+  const entries = Object.entries(byDate)
+    .filter(([date, ml]) => /^\d{4}-\d{2}-\d{2}$/.test(date) && typeof ml === 'number' && ml > 0)
+    .map(([date, ml]) => ({ id: `legacy-${date}`, date, time: null, ml: Math.min(8000, Math.round(ml as number)), drink: 'water' as const }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const goal = typeof old.goalMl === 'number' && old.goalMl >= 1000 && old.goalMl <= 4000 ? old.goalMl : null;
+  const manual = goal !== null && goal !== 1500;
+  return { entries, goalMode: manual ? 'manual' : 'auto', manualGoalMl: manual ? goal : 2000 };
+}

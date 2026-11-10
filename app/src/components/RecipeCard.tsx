@@ -26,7 +26,7 @@ export function openRecipe(recipeId: string) {
 export function RecipeCard({ recipe, overline, showHeart = true, style, onPress }: Props) {
   const servingPrice = useServingPrice();
   const price = formatCents(servingPrice(recipe));
-  const time = format(strings.common.minutes, { count: recipe.cookTimeMin });
+  const time = format(strings.common.minutes, { count: recipe.totalTimeMin });
   const kcal = format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) });
 
   return (

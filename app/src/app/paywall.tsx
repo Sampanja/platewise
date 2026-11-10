@@ -2,16 +2,14 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { RecipeImage } from '@/components/RecipeImage';
+import { FoodIllustration } from '@/components/FoodIllustration';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Chip, Icon, OptionRow, Text } from '@/components/ui';
-import { RECIPES_BY_ID } from '@/data/catalog';
 import { strings } from '@/i18n';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.paywall;
-const HERO = RECIPES_BY_ID['salmon-zucchini'];
 
 /**
  * Paywall preview. Purchases come with RevenueCat later; here the buttons
@@ -25,7 +23,7 @@ export default function PaywallScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader variant="close" />
       <ScrollView contentContainerStyle={styles.content}>
-        {HERO ? <RecipeImage recipe={HERO} scrim style={styles.hero} /> : null}
+        <FoodIllustration dishType="salad" protein="none" seed="paywall-hero" style={styles.hero} />
         <View style={styles.titleBlock}>
           <Chip tone="accent" label={strings.common.comingSoon} />
           <Text variant="displayLarge" accessibilityRole="header">

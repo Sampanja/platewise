@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Card, EmptyState, FadeInView, PressableScale, ProgressMeter, Text } from '@/components/ui';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
+import { useWaterGoal } from '@/data/hooks';
 import { useWaterStore } from '@/data/stores/water';
 import { DIARY_MEALS } from '@/domain/diary';
 import { dayReport, REFERENCE, weekReport } from '@/domain/report';
@@ -28,7 +29,7 @@ export default function ReportScreen() {
   const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
   const hideCalories = useProfileStore((s) => s.hideCalories);
   const water = useWaterStore((s) => s.byDate);
-  const waterGoal = useWaterStore((s) => s.goalMl);
+  const waterGoal = useWaterGoal(date).totalMl;
 
   const day = useMemo(() => dayReport(entries, date), [entries, date]);
   const week = useMemo(() => weekReport(entries, date, hasGoal ? goals : null, water), [entries, date, hasGoal, goals, water]);

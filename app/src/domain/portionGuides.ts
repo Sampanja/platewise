@@ -68,10 +68,3 @@ export function closestGuide(category: FoodCategory, grams: number): PortionGuid
 }
 
 /** Recognition confidence (0–1) as a plain level shown with every estimate. */
-export type ConfidenceLevel = 'high' | 'medium' | 'low';
-
-export function confidenceLevel(confidence: number): ConfidenceLevel {
-  if (confidence >= 0.8) return 'high';
-  if (confidence >= 0.55) return 'medium';
-  return 'low';
-}

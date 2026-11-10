@@ -11,10 +11,12 @@ import {
   minimumBudgetCents,
   NoRecipesError,
   proposalShoppingList,
+  repairProposal,
+  replacementDinner,
   replacePlanDinner,
   swapMeal,
 } from './generate';
-import { checkRecipe } from './recipes';
+import { checkRecipe, isRecipeAllowed } from './recipes';
 
 const index = INGREDIENTS_BY_ID;
 const user = { allergens: [], diets: [], pantry: new Set(DEFAULT_PANTRY) };
@@ -200,5 +202,81 @@ describe('replacePlanDinner', () => {
 
   it('leaves the plan unchanged for an unknown day', () => {
     expect(replacePlanDinner(plan, 9, 'dal', RECIPES_BY_ID, index, user.pantry)).toBe(plan);
+  });
+});
+
+describe('plannable dinners', () => {
+  it('never plans breakfasts or snacks', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      for (const meal of generateMeals({ answers: answers({ mealCount: 7 }), recipes: RECIPES, index, user, seed })) {
+        for (const id of [meal.recipeId, ...meal.alternatives]) expect(RECIPES_BY_ID[id].meals).toContain('dinner');
+      }
+    }
+  });
+});
+
+describe('replacementDinner', () => {
+  const proposal: Proposal = {
+    id: 'p3',
+    createdAt: '',
+    startDate: '2026-11-08',
+    answers: answers({ mealCount: 2 }),
+    meals: [
+      { dayOffset: 0, recipeId: 'chicken-curry', locked: false, alternatives: [] },
+      { dayOffset: 1, recipeId: 'salmon-coconut', locked: false, alternatives: [] },
+    ],
+  };
+  const plan = acceptProposal(proposal, RECIPES_BY_ID, index, user.pantry, new Date());
+
+  it('offers an allowed dinner that is not already in the plan', () => {
+    const fishAllergy = { ...user, allergens: ['fish' as const] };
+    const replacement = replacementDinner(plan, 1, RECIPES, index, fishAllergy);
+    expect(replacement).not.toBeNull();
+    expect(isRecipeAllowed(replacement!, fishAllergy, index)).toBe(true);
+    expect(replacement!.meals).toContain('dinner');
+    expect(['chicken-curry', 'salmon-coconut']).not.toContain(replacement!.id);
+  });
+
+  it('keeps the main protein when it still suits the user', () => {
+    const lactoseFree = { ...user, diets: ['lactose_free' as const] };
+    const replacement = replacementDinner(plan, 0, RECIPES, index, lactoseFree);
+    expect(replacement?.mainProtein).toBe('chicken');
+    expect(isRecipeAllowed(replacement!, lactoseFree, index)).toBe(true);
+  });
+
+  it("respects the plan's own extra rules", () => {
+    const veganPlan = { ...plan, extraDiets: ['vegan' as const] };
+    const replacement = replacementDinner(veganPlan, 0, RECIPES, index, user);
+    expect(isRecipeAllowed(replacement!, { allergens: [], diets: ['vegan'] }, index)).toBe(true);
+  });
+});
+
+describe('repairProposal', () => {
+  const base = generateMeals({ answers: answers({ mealCount: 5 }), recipes: RECIPES, index, user, seed: 7 });
+  const proposal: Proposal = { id: 'p4', createdAt: '', startDate: '2026-11-08', answers: answers({ mealCount: 5 }), meals: base };
+
+  it('returns the same proposal when everything still suits', () => {
+    expect(repairProposal(proposal, RECIPES, index, user)).toBe(proposal);
+  });
+
+  it('replaces unsuitable dinners and alternatives after a new allergy', () => {
+    const withFish: Proposal = {
+      ...proposal,
+      meals: proposal.meals.map((m, i) => (i === 0 ? { ...m, recipeId: 'salmon-coconut', locked: true } : m)),
+    };
+    const fishAllergy = { ...user, allergens: ['fish' as const] };
+    const repaired = repairProposal(withFish, RECIPES, index, fishAllergy)!;
+    expect(repaired.meals).toHaveLength(5);
+    for (const meal of repaired.meals) {
+      for (const id of [meal.recipeId, ...meal.alternatives]) {
+        expect(isRecipeAllowed(RECIPES_BY_ID[id], fishAllergy, index)).toBe(true);
+      }
+    }
+    // Suitable meals stay on their days.
+    for (const old of withFish.meals.slice(1)) {
+      if (isRecipeAllowed(RECIPES_BY_ID[old.recipeId], fishAllergy, index)) {
+        expect(repaired.meals[old.dayOffset].recipeId).toBe(old.recipeId);
+      }
+    }
   });
 });

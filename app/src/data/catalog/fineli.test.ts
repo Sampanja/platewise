@@ -43,6 +43,7 @@ const KNOWN_GAPS: Record<string, string> = {
   'black-beans: not vegan': 'Canned beans in brine.',
   'breadcrumbs: not vegan': 'Finnish breadcrumbs are wheat, water, yeast and salt.',
   'cheddar: lactose': 'Aged hard cheese is naturally lactose-free.',
+  'chia: egg': 'Plain chia seeds.',
 };
 
 /** Ingredients whose Fineli food has diet flags and is the product itself. */

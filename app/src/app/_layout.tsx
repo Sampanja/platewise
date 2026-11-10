@@ -16,7 +16,7 @@ import { useColorScheme, View } from 'react-native';
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { setHapticsEnabled } from '@/components/ui';
-import { useHydrated } from '@/data/hooks';
+import { useHydrated, useKeepProposalSuitable } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
 import { colors, DEFAULT_CHARACTER, isCharacterId, resolveTheme, setActiveTheme, themeKey } from '@/theme';
 
@@ -33,6 +33,7 @@ export default function RootLayout() {
     DMSans_700Bold,
   });
   const hydrated = useHydrated();
+  useKeepProposalSuitable();
   const hapticsEnabled = useProfileStore((s) => s.hapticsEnabled);
   useEffect(() => setHapticsEnabled(hapticsEnabled), [hapticsEnabled]);
 

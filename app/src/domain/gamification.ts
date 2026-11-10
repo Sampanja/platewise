@@ -36,7 +36,8 @@ export type DayActivity = {
 export type ActivityInput = {
   entries: readonly DiaryEntry[];
   waterByDate: Readonly<Record<string, number>>;
-  waterGoalMl: number;
+  /** The water goal of each day (personal goals change with exercise and heat). */
+  waterGoalFor: (date: string) => number;
   /** Null when no protein goal is set: then protein never counts. */
   proteinGoalG: number | null;
   weighInDates: readonly string[];
@@ -82,7 +83,7 @@ export function buildDays(input: ActivityInput): Map<LocalDate, DayActivity> {
     for (const [date, grams] of protein) if (grams >= input.proteinGoalG) day(date).proteinReached = true;
   }
   for (const [date, ml] of Object.entries(input.waterByDate)) {
-    if (ml >= input.waterGoalMl) day(date).waterReached = true;
+    if (ml > 0 && ml >= input.waterGoalFor(date)) day(date).waterReached = true;
   }
   for (const date of input.weighInDates) day(date).weighed = true;
   return days;

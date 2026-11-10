@@ -39,7 +39,7 @@ describe('filterRecipes', () => {
   });
 
   it('sorts by price, time and kcal ascending', () => {
-    const byTime = run({ sort: 'time' }).map((r) => r.cookTimeMin);
+    const byTime = run({ sort: 'time' }).map((r) => r.totalTimeMin);
     expect(byTime).toEqual([...byTime].sort((a, b) => a - b));
     const byPrice = run({ sort: 'price' }).map(context.servingPrice);
     expect(byPrice).toEqual([...byPrice].sort((a, b) => a - b));

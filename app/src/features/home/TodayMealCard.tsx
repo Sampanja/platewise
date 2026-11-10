@@ -34,7 +34,7 @@ export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
         <View style={styles.hero}>
           <RecipeImage recipe={recipe} scrim style={StyleSheet.absoluteFill} />
           <View style={styles.heroTop}>
-            <Chip tone="glass" label={format(strings.common.minutes, { count: recipe.cookTimeMin })} />
+            <Chip tone="glass" label={format(strings.common.minutes, { count: recipe.totalTimeMin })} />
             <Chip
               tone="glass"
               label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })}

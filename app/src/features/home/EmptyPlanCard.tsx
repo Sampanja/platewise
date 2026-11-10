@@ -1,8 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { RecipeImage } from '@/components/RecipeImage';
+import { FoodIllustration } from '@/components/FoodIllustration';
 import { Button, Card, Text } from '@/components/ui';
-import { RECIPES_BY_ID } from '@/data/catalog';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
@@ -12,16 +11,18 @@ type Props = {
   onCreate: () => void;
 };
 
-const HERO_RECIPE = RECIPES_BY_ID['chicken-curry'];
-
-/** No plan yet: an inviting photo card with the single main action. */
+/**
+ * No plan yet: an inviting card with the single main action. The hero is a
+ * neutral vegetable bowl illustration, never a specific dish that might not
+ * suit the user's diet.
+ */
 export function EmptyPlanCard({ onCreate }: Props) {
   const t = strings.home;
   const { voice } = useCharacter();
   return (
     <Card padding="flush">
       <View style={styles.hero}>
-        {HERO_RECIPE ? <RecipeImage recipe={HERO_RECIPE} scrim style={StyleSheet.absoluteFill} /> : null}
+        <FoodIllustration dishType="bowl" protein="none" seed="home-hero" style={StyleSheet.absoluteFill} />
         <View style={styles.heroText}>
           <Text variant="display" accessibilityRole="header">
             {t.emptyTitle}

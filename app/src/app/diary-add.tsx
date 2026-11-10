@@ -19,7 +19,7 @@ import {
 } from '@/components/ui';
 import { RECIPES_BY_ID } from '@/data/catalog';
 import { useSearchableFoods } from '@/data/foods';
-import { useActivePlan } from '@/data/hooks';
+import { useActivePlan, useRecipeAllowed } from '@/data/hooks';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useFavoritesStore } from '@/data/stores/favorites';
 import { useMyMealsStore } from '@/data/stores/myMeals';
@@ -126,6 +126,7 @@ export default function DiaryAddScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedMeals, ownRecipes, foods, meal, date]);
 
+  const allowed = useRecipeAllowed();
   const recipeRows = useMemo<Row[]>(() => {
     const rows: Row[] = [];
     const planIds = [...new Set(plan?.meals.map((m) => m.recipeId) ?? [])];
@@ -133,16 +134,16 @@ export default function DiaryAddScreen() {
       rows.push({ type: 'heading', key: 'h-plan', title: t.fromPlan });
       planIds
         .map((id) => RECIPES_BY_ID[id])
-        .filter(Boolean)
+        .filter((recipe) => recipe && allowed(recipe))
         .forEach((recipe) => rows.push({ type: 'recipe', key: `plan-${recipe.id}`, recipe }));
     }
-    const favorites = favoriteIds.map((id) => RECIPES_BY_ID[id]).filter(Boolean);
+    const favorites = favoriteIds.map((id) => RECIPES_BY_ID[id]).filter((recipe) => recipe && allowed(recipe));
     if (favorites.length > 0) {
       rows.push({ type: 'heading', key: 'h-fav', title: t.fromFavorites });
       favorites.forEach((recipe) => rows.push({ type: 'recipe', key: `fav-${recipe.id}`, recipe }));
     }
     return rows;
-  }, [plan, favoriteIds]);
+  }, [plan, favoriteIds, allowed]);
 
   const confirmAdded = (message: string, undo: () => void) => {
     haptics.success();

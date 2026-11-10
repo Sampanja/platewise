@@ -9,6 +9,7 @@ import { useDiaryStore } from './stores/diary';
 import { useMyMealsStore } from './stores/myMeals';
 import { usePlansStore } from './stores/plans';
 import { useProfileStore } from './stores/profile';
+import { useWaterGoalFor } from './hooks';
 import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
 
@@ -17,7 +18,7 @@ export function useGame(): GameState | null {
   const enabled = useProfileStore((s) => s.gamificationEnabled);
   const entries = useDiaryStore((s) => s.entries);
   const water = useWaterStore((s) => s.byDate);
-  const waterGoal = useWaterStore((s) => s.goalMl);
+  const waterGoalFor = useWaterGoalFor();
   const goals = useProfileStore((s) => s.goals);
   const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
   const weights = useWeightStore((s) => s.entries);
@@ -32,7 +33,7 @@ export function useGame(): GameState | null {
     return computeGame({
       entries,
       waterByDate: water,
-      waterGoalMl: waterGoal,
+      waterGoalFor: (date: string) => waterGoalFor(date).totalMl,
       proteinGoalG: hasGoal ? goals.proteinG : null,
       weighInDates: weights.map((w) => w.date),
       categoryOf: (foodId) => FOODS_BY_ID[foodId]?.category ?? customFoods.find((f) => f.id === foodId)?.category,
@@ -42,5 +43,5 @@ export function useGame(): GameState | null {
       ownRecipes,
       barcodeFoods: customFoods.filter((f) => f.source === 'barcode').length,
     });
-  }, [enabled, entries, water, waterGoal, goals.proteinG, hasGoal, weights, plans, savedMeals, ownRecipes, customFoods, day]);
+  }, [enabled, entries, water, waterGoalFor, goals.proteinG, hasGoal, weights, plans, savedMeals, ownRecipes, customFoods, day]);
 }

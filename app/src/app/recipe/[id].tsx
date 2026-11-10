@@ -19,7 +19,7 @@ import {
   Text,
 } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
-import { useServingPrice, useUserRules } from '@/data/hooks';
+import { useRecipeAllowed, useServingPrice, useUserRules } from '@/data/hooks';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS, mealForHour } from '@/domain/diary';
 import { MacroBars } from '@/features/recipe/MacroBars';
@@ -37,10 +37,12 @@ export default function RecipeScreen() {
   const { width } = useWindowDimensions();
   const rules = useUserRules();
   const servingPrice = useServingPrice();
+  const allowed = useRecipeAllowed();
   const actions = useRecipeActions(recipe);
 
   // Single-person app: start from one serving; the stepper scales the amounts.
-  const [servings, setServings] = useState(1);
+  // Bakes (a whole pie, a tray of muffins) start from the whole batch.
+  const [servings, setServings] = useState(() => (recipe && recipe.servings >= 6 ? recipe.servings : 1));
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
   const [sheet, setSheet] = useState<'diary' | 'plan' | null>(null);
   const [scrollY] = useState(() => new Animated.Value(0));
@@ -55,6 +57,20 @@ export default function RecipeScreen() {
       </SafeAreaView>
     );
   }
+
+  // The strict gate also covers deep links and old links: an unsuitable recipe is never shown.
+  if (!allowed(recipe)) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.topBarStatic}>
+          <IconButton icon="chevronLeft" accessibilityLabel={strings.common.back} onPress={() => router.back()} />
+        </View>
+        <EmptyState icon="shield" title={t.notAllowedTitle} body={t.notAllowedBody} />
+      </SafeAreaView>
+    );
+  }
+
+  const isDinner = recipe.meals.includes('dinner');
 
   const heroHeight = Math.min(width * 0.95, 420);
   const perServing = servingPrice(recipe);
@@ -119,7 +135,20 @@ export default function RecipeScreen() {
               {recipe.description}
             </Text>
             <View style={styles.chips}>
-              <Chip label={format(strings.common.minutes, { count: recipe.cookTimeMin })} />
+              <Chip label={t.categories[recipe.dishType]} />
+              <Chip label={t.difficulty[recipe.difficulty]} />
+              <View
+                accessible
+                accessibilityLabel={format(t.timeA11y, { total: recipe.totalTimeMin, active: recipe.activeTimeMin })}
+              >
+                <Chip
+                  label={
+                    recipe.activeTimeMin < recipe.totalTimeMin
+                      ? `${format(t.totalTime, { count: recipe.totalTimeMin })} · ${format(t.activeTime, { count: recipe.activeTimeMin })}`
+                      : format(t.totalTime, { count: recipe.totalTimeMin })
+                  }
+                />
+              </View>
               <Chip label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })} />
               {recipe.goodForLeftovers ? <Chip tone="success" label={t.leftovers} /> : null}
             </View>
@@ -153,14 +182,16 @@ export default function RecipeScreen() {
               </View>
             </View>
             <View style={styles.actionRow}>
-              <Button
-                size="compact"
-                variant="secondary"
-                label={t.addToDiary}
-                icon={<Icon name="diary" size={18} />}
-                onPress={() => setSheet('diary')}
-                style={styles.flex}
-              />
+              {isDinner ? (
+                <Button
+                  size="compact"
+                  variant="secondary"
+                  label={t.addToDiary}
+                  icon={<Icon name="diary" size={18} />}
+                  onPress={() => setSheet('diary')}
+                  style={styles.flex}
+                />
+              ) : null}
               <Button
                 size="compact"
                 variant="secondary"
@@ -229,6 +260,11 @@ export default function RecipeScreen() {
           </Section>
 
           <Section title={t.steps}>
+            {servings !== recipe.servings ? (
+              <Text variant="caption" color="textSubtle">
+                {format(t.writtenFor, { count: recipe.servings })}
+              </Text>
+            ) : null}
             <View style={styles.steps}>
               {recipe.steps.map((step, index) => (
                 <View
@@ -248,6 +284,44 @@ export default function RecipeScreen() {
                 </View>
               ))}
             </View>
+          </Section>
+
+          {recipe.tips.length > 0 ? (
+            <Section title={t.tipsTitle}>
+              <View style={styles.tips}>
+                {recipe.tips.map((tip) => (
+                  <View key={tip} style={styles.tip}>
+                    <Icon name="sparkles" size={18} color="accentText" />
+                    <Text variant="body" style={styles.flex}>
+                      {tip}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </Section>
+          ) : null}
+
+          <Section title={t.storageTitle}>
+            <Card style={styles.storage}>
+              <View style={styles.tip}>
+                <Icon name="freeze" size={18} color="accentText" />
+                <View style={styles.flex}>
+                  <Text variant="bodyStrong">{t.storage}</Text>
+                  <Text variant="body" color="textMuted">
+                    {recipe.storage}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.tip}>
+                <Icon name="flame" size={18} color="accentText" />
+                <View style={styles.flex}>
+                  <Text variant="bodyStrong">{t.reheating}</Text>
+                  <Text variant="body" color="textMuted">
+                    {recipe.reheating}
+                  </Text>
+                </View>
+              </View>
+            </Card>
           </Section>
         </View>
       </Animated.ScrollView>
@@ -273,7 +347,11 @@ export default function RecipeScreen() {
       </View>
 
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-        <Button label={t.addToPlan} onPress={() => setSheet('plan')} haptic="tap" />
+        {isDinner ? (
+          <Button label={t.addToPlan} onPress={() => setSheet('plan')} haptic="tap" />
+        ) : (
+          <Button label={t.addToDiary} onPress={() => setSheet('diary')} haptic="tap" />
+        )}
       </View>
 
       <Sheet visible={sheet === 'diary'} onClose={() => setSheet(null)} title={t.chooseMeal}>
@@ -427,6 +505,16 @@ const styles = themedStyles(() =>
       backgroundColor: colors.accent,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    tips: {
+      gap: spacing.md,
+    },
+    tip: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    storage: {
+      gap: spacing.lg,
     },
     titleBar: {
       position: 'absolute',

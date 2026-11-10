@@ -36,7 +36,7 @@ function input(entries: DiaryEntry[], overrides: Partial<GameInput> = {}): GameI
   return {
     entries,
     waterByDate: {},
-    waterGoalMl: 1500,
+    waterGoalFor: () => 1500,
     proteinGoalG: null,
     weighInDates: [],
     categoryOf: (id) => (id === 'apple' ? 'fruit' : id === 'carrot' ? 'produce' : 'meal'),

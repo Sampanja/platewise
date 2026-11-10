@@ -411,7 +411,7 @@ function MealCard({
             </Text>
             <Text variant="caption" color="textSubtle">
               {formatCents(perServing)} {strings.common.perServing} · {formatInteger(recipe.perServing.kcal)} kcal ·{' '}
-              {format(strings.common.minutes, { count: recipe.cookTimeMin })}
+              {format(strings.common.minutes, { count: recipe.totalTimeMin })}
             </Text>
             {answers.cookDouble ? (
               <View style={styles.chipRow}>

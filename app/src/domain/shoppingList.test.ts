@@ -1,25 +1,17 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID } from '@/data/catalog/ingredients';
-import { r } from '@/data/catalog/recipeHelpers';
+import { dish as makeDish } from '@/data/catalog/recipeHelpers';
 
 import { buildShoppingList, groupByAisle } from './shoppingList';
 
 const index = INGREDIENTS_BY_ID;
 
 function dish(id: string, ingredients: [string, number][]) {
-  return r({
-    id,
-    title: id,
-    description: '',
-    cookTimeMin: 10,
-    dishType: 'other',
-    cuisine: 'other',
-    mainProtein: 'none',
-    imageUrl: null,
-    ingredients,
-    steps: [],
-  });
+  return {
+    ...makeDish({ id, title: id, desc: '', cat: 'other', cuisine: 'other', protein: 'none', time: [10, 10], ing: '', steps: [], tips: [] }),
+    ingredients: ingredients.map(([ingredientId, grams]) => ({ ingredientId, grams })),
+  };
 }
 
 describe('buildShoppingList', () => {

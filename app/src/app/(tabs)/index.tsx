@@ -7,13 +7,14 @@ import { useTabBarSpace } from '@/components/TabBar';
 import { FadeInView, Text } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
 import {
+  useRecipeAllowed,
   useActivePlan,
   useCurrentShoppingList,
   useDayNutrition,
   useMonthSavingsCents,
   useUserRules,
 } from '@/data/hooks';
-import { useRecipesQuery } from '@/data/queries';
+import { useAllowedRecipesQuery } from '@/data/queries';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useFavoritesStore } from '@/data/stores/favorites';
 import { usePlansStore } from '@/data/stores/plans';
@@ -52,7 +53,7 @@ export default function HomeScreen() {
   const shopping = useCurrentShoppingList();
   const rules = useUserRules();
   const favoriteIds = useFavoritesStore((s) => s.ids);
-  const recipesQuery = useRecipesQuery();
+  const recipesQuery = useAllowedRecipesQuery();
 
   const recommended = useMemo(() => {
     if (!recipesQuery.data) return [];
@@ -140,12 +141,18 @@ type PlanSectionProps = {
 
 function PlanSection({ plan, shoppingDone, shoppingTotal, delay, onCreate }: PlanSectionProps) {
   const now = today();
-  const [next, ...later] = upcomingDinners(plan, now);
+  const allowed = useRecipeAllowed();
+  // A dinner that stopped suiting the user (rules changed after accepting) is
+  // not shown here; the Suunnittele tab offers a suitable replacement.
+  const suits = (recipeId: string) => RECIPES_BY_ID[recipeId] !== undefined && allowed(RECIPES_BY_ID[recipeId]);
+  const [next, ...later] = upcomingDinners(plan, now).filter((meal) => suits(meal.recipeId));
   const endDate = lastDinnerDate(plan);
   // When the list is about to run out, making a new one is the most useful next step.
   const endingSoon = endDate <= addDays(now, 1);
   const nextRecipe = next ? RECIPES_BY_ID[next.recipeId] : undefined;
-  const lunchToday = plan.meals.find((meal) => meal.slot === 'lunch' && mealDate(plan, meal) === now);
+  const lunchToday = plan.meals.find(
+    (meal) => meal.slot === 'lunch' && mealDate(plan, meal) === now && suits(meal.recipeId),
+  );
 
   return (
     <>

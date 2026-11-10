@@ -13,11 +13,15 @@ import {
   Text,
   TextField,
 } from '@/components/ui';
-import { useDayNutrition } from '@/data/hooks';
+import { openRecipe } from '@/components/RecipeCard';
+import { RecipeImage } from '@/components/RecipeImage';
+import { RECIPES_BY_ID } from '@/data/catalog';
+import { useDayNutrition, useRecipeAllowed, useWaterGoal } from '@/data/hooks';
+import { useAllowedRecipesQuery } from '@/data/queries';
 import { useChatStore } from '@/data/stores/chat';
 import { useProfileStore } from '@/data/stores/profile';
 import { useWaterStore } from '@/data/stores/water';
-import { DAILY_MESSAGE_LIMIT, type AssistantContext } from '@/domain/assistantRules';
+import { DAILY_MESSAGE_LIMIT, type AssistantContext, type RecipeHint } from '@/domain/assistantRules';
 import { entriesOn } from '@/domain/diary';
 import { useDiaryStore } from '@/data/stores/diary';
 import { Mascot } from '@/features/mascot/Mascot';
@@ -54,7 +58,21 @@ export default function ChatScreen() {
   const allEntries = useDiaryStore((s) => s.entries);
   const dayEntries = useMemo(() => entriesOn(allEntries, now), [allEntries, now]);
   const waterMl = useWaterStore((s) => s.byDate[now] ?? 0);
-  const waterGoalMl = useWaterStore((s) => s.goalMl);
+  const waterGoalMl = useWaterGoal(now).totalMl;
+  // The assistant may only suggest recipes that pass the strict allergy and diet gate.
+  const allowedRecipes = useAllowedRecipesQuery().data;
+  const allowed = useRecipeAllowed();
+  const recipeHints = useMemo<RecipeHint[]>(
+    () =>
+      (allowedRecipes ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        proteinG: r.perServing.proteinG,
+        dinner: r.meals.includes('dinner'),
+        legumes: r.mainProtein === 'legumes',
+      })),
+    [allowedRecipes],
+  );
   const [text, setText] = useState('');
   const [waiting, setWaiting] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
@@ -86,8 +104,13 @@ export default function ChatScreen() {
     countSent(now);
     setWaiting(true);
     try {
-      const answer = await assistant.reply({ messages: [...useChatStore.getState().messages], context, character });
-      add('assistant', answer);
+      const answer = await assistant.reply({
+        messages: [...useChatStore.getState().messages],
+        context,
+        character,
+        recipes: recipeHints,
+      });
+      add('assistant', answer.text, answer.recipeIds);
     } catch {
       setFailed(trimmed);
     } finally {
@@ -151,8 +174,28 @@ export default function ChatScreen() {
             ) : (
               <FadeInView key={message.id} style={styles.botRow}>
                 <Mascot state="idle" size={36} />
-                <View style={styles.botBubble} accessible accessibilityLabel={`${voice.name}: ${message.text}`}>
-                  <Text variant="body">{message.text}</Text>
+                <View style={styles.botColumn}>
+                  <View style={styles.botBubble} accessible accessibilityLabel={`${voice.name}: ${message.text}`}>
+                    <Text variant="body">{message.text}</Text>
+                  </View>
+                  {(message.recipeIds ?? [])
+                    .map((id) => RECIPES_BY_ID[id])
+                    // Checked again: the user's rules may have changed since the answer.
+                    .filter((recipe) => recipe && allowed(recipe))
+                    .map((recipe) => (
+                      <PressableScale
+                        key={recipe.id}
+                        onPress={() => openRecipe(recipe.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={recipe.title}
+                        style={styles.recipeLink}
+                      >
+                        <RecipeImage recipe={recipe} style={styles.recipeThumb} />
+                        <Text variant="label" numberOfLines={2} style={styles.flex}>
+                          {recipe.title}
+                        </Text>
+                      </PressableScale>
+                    ))}
                 </View>
               </FadeInView>
             ),
@@ -265,9 +308,29 @@ const styles = themedStyles(() =>
       alignItems: 'flex-end',
       gap: spacing.sm,
     },
-    botBubble: {
+    botColumn: {
       flexShrink: 1,
       maxWidth: '82%',
+      gap: spacing.sm,
+    },
+    recipeLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      padding: spacing.sm,
+      paddingRight: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    recipeThumb: {
+      width: 44,
+      height: 44,
+      borderRadius: radii.sm,
+    },
+    botBubble: {
+      flexShrink: 1,
       padding: spacing.md,
       borderRadius: radii.lg,
       borderBottomLeftRadius: radii.sm,

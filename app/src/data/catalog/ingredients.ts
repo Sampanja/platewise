@@ -132,6 +132,10 @@ export const INGREDIENTS: readonly Ingredient[] = [
   i('blueberry', 'Mustikka', 'frozen', 442, 9, 250),
   i('lingonberry-fresh', 'Puolukka', 'frozen', 440, 7, 250),
   i('strawberry', 'Mansikka', 'frozen', 447, 7, 250),
+  i('raspberry', 'Vadelma', 'frozen', 448, 10, 250),
+  i('mango', 'Mango (pakaste)', 'frozen', 34361, 6, 250),
+  i('banana', 'Banaani', 'produce', 11049, 2, 1000, { piece: [120, 'banaani', 'banaania'] }),
+  i('pear', 'Päärynä', 'produce', 11062, 3, 1000, { piece: [170, 'päärynä', 'päärynää'] }),
 
   // Leivät ja taikinat
   i('tortilla', 'Vehnätortilla', 'bread', 30186, 8, 320, { a: ['gluten'], piece: [40, 'tortilla', 'tortillaa'] }),
@@ -145,6 +149,18 @@ export const INGREDIENTS: readonly Ingredient[] = [
   }),
   i('baguette', 'Patonki', 'bread', 1309, 5, 400, { a: ['gluten'] }),
   i('puff-pastry', 'Voitaikina (pakaste)', 'frozen', 31672, 6, 500, { a: ['gluten', 'milk'], t: ['dairy'] }),
+  i('toast-bread', 'Täysjyväpaahtoleipä', 'bread', 31847, 4, 500, {
+    a: ['gluten'],
+    piece: [30, 'paahtoleipäviipale', 'paahtoleipäviipaletta'],
+  }),
+  i('gf-bread', 'Gluteeniton siemenleipä', 'bread', 31689, 12, 300, {
+    piece: [35, 'leipäviipale', 'leipäviipaletta'],
+  }),
+  i('crispbread', 'Ruisnäkkileipä', 'bread', 29771, 6, 250, {
+    a: ['gluten'],
+    piece: [12, 'näkkileipä', 'näkkileipää'],
+  }),
+  i('rice-cakes', 'Riisikakku', 'bread', 31252, 12, 100, { piece: [8, 'riisikakku', 'riisikakkua'] }),
 
   // Liha ja kana
   i('chicken-breast', 'Broilerin rintafilee', 'meat', 11565, 13.5, 400, { t: ['meat', 'poultry'] }),
@@ -178,6 +194,11 @@ export const INGREDIENTS: readonly Ingredient[] = [
     a: ['milk', 'soy'],
     t: ['meat', 'pork', 'dairy', 'lactose'],
   }),
+  i('ham-slices', 'Kinkkuleike', 'meat', 799, 15, 150, { t: ['meat', 'pork'] }),
+  i('turkey-slices', 'Kalkkunaleike', 'meat', 33927, 17, 150, { t: ['meat', 'poultry'] }),
+  i('reindeer', 'Poronkäristys (pakaste)', 'frozen', 734, 45, 240, { t: ['meat'] }),
+  i('liver', 'Naudanmaksa', 'meat', 786, 8, 400, { t: ['meat', 'beef'] }),
+  i('pork-belly', 'Siankylki', 'meat', 706, 9, 500, { t: ['meat', 'pork'] }),
 
   // Kala ja äyriäiset
   i('salmon', 'Lohifilee', 'fish', 871, 22, 400, FISH),
@@ -217,6 +238,17 @@ export const INGREDIENTS: readonly Ingredient[] = [
   i('goat-cheese', 'Vuohenjuusto', 'dairy', 32925, 28, 150, MILK),
   i('blue-cheese', 'Sinihomejuusto', 'dairy', 653, 20, 150, MILK),
   i('bread-cheese', 'Leipäjuusto', 'dairy', 657, 16, 300, MILK_LACTOSE),
+  i('plain-yogurt', 'Maustamaton jogurtti', 'dairy', 33162, 2.5, 1000, MILK_LACTOSE),
+  i('lf-yogurt', 'Laktoositon maustamaton jogurtti', 'dairy', 34630, 3, 1000, MILK),
+  i('lf-quark', 'Laktoositon maitorahka', 'dairy', 34602, 6, 250, MILK),
+  i('lf-cream', 'Laktoositon ruokakerma', 'dairy', 632, 6.5, 200, {
+    ...MILK,
+    liquid: true,
+    proxy: 'Fineli has no lactose-free cooking cream; ordinary cooking cream has the same nutrients.',
+  }),
+  i('soy-yogurt', 'Soijajogurtti, maustamaton', 'dairy', 31525, 4, 500, { a: ['soy'] }),
+  i('oat-yogurt', 'Kaurajogurtti, maustamaton', 'dairy', 32562, 4, 500, { a: ['gluten'] }),
+  i('hummus', 'Hummus', 'dairy', 34666, 12, 200, { a: ['sesame'] }),
   i('cream-cheese', 'Tuorejuusto', 'dairy', 650, 12, 200, MILK_LACTOSE),
   i('cottage-cheese', 'Raejuusto', 'dairy', 649, 6.5, 200, MILK_LACTOSE),
   i('quark', 'Maitorahka', 'dairy', 622, 4.5, 250, MILK_LACTOSE),
@@ -274,6 +306,16 @@ export const INGREDIENTS: readonly Ingredient[] = [
   i('barley', 'Ohrasuurimo', 'dry', 151, 2.5, 1000, { a: ['gluten'] }),
   i('buckwheat', 'Tattarisuurimo', 'dry', 161, 5, 500),
   i('oats', 'Kaurahiutale', 'dry', 153, 1.5, 1000, { a: ['gluten'], pantry: 'eligible' }),
+  i('gf-oats', 'Gluteeniton kaurahiutale', 'dry', 153, 5, 500),
+  i('muesli', 'Mysli', 'dry', 29785, 4, 500, { a: ['gluten'] }),
+  i('gf-muesli', 'Gluteeniton mysli', 'dry', 31543, 9, 375),
+  i('semolina', 'Mannasuurimo', 'dry', 112, 2.5, 500, { a: ['gluten'] }),
+  i('flaxseed', 'Pellavansiemen', 'dry', 30991, 5, 250, { pantry: 'eligible' }),
+  i('chia', 'Chiansiemen', 'dry', 34847, 15, 200),
+  i('baking-powder', 'Leivinjauhe', 'dry', 74, 15, 100, { pantry: 'eligible' }),
+  i('potato-starch', 'Perunajauho', 'dry', 162, 2.5, 500, { pantry: 'eligible' }),
+  i('cocoa', 'Kaakaojauhe', 'dry', 20, 15, 200),
+  i('yeast', 'Hiiva', 'dairy', 26, 6, 50, { packageLabel: '1 pala' }),
   i('red-lentils', 'Punainen linssi', 'dry', 31219, 4.2, 500),
   i('green-lentils', 'Vihreä linssi', 'dry', 399, 5, 500),
   i('split-peas', 'Herne, kuivattu', 'dry', 371, 3.2, 500),
@@ -318,6 +360,7 @@ export const INGREDIENTS: readonly Ingredient[] = [
   i('lingonberry', 'Puolukkasurvos', 'canned', 4403, 8, 400, {
     proxy: 'Fineli has sugared blueberry purée but not lingonberry; the sugared berry purée is the closest.',
   }),
+  i('jam', 'Marjahillo', 'canned', 450, 5, 400),
   i('pesto', 'Basilikapesto', 'canned', 3323, 20, 190, { a: ['milk', 'nuts'], t: ['dairy', 'lactose'] }),
   i('red-curry-paste', 'Currytahna (kasvis)', 'canned', 33021, 30, 110),
   i('ketchup', 'Ketsuppi', 'canned', 353, 4, 500, { pantry: 'eligible' }),
