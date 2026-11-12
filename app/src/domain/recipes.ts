@@ -152,16 +152,68 @@ export function keywordAllergens(texts: readonly string[]): Set<AllergenCode> {
   const found = new Set<AllergenCode>();
   for (const text of texts) {
     const list = words(text);
-    list.forEach((word, i) => {
-      if (KEYWORD_EXCEPTIONS.some((prefix) => word.startsWith(prefix))) return;
-      for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS) as [AllergenCode, string[]][]) {
+    for (let i = 0; i < list.length; i++) {
+      const word = list[i];
+      if (KEYWORD_EXCEPTIONS.some((prefix) => word.startsWith(prefix))) continue;
+      const candidates = KEYWORDS_BY_START.get(word.slice(0, 2));
+      if (!candidates) continue;
+      for (const [code, keyword] of candidates) {
+        if (found.has(code)) continue;
         if (code === 'gluten' && negatesGluten(list[i - 1])) continue;
-        if (keywords.some((keyword) => word.startsWith(keyword) && !FREE_FROM_SUFFIX.test(word.slice(keyword.length))))
-          found.add(code);
+        if (word.startsWith(keyword) && !FREE_FROM_SUFFIX.test(word.slice(keyword.length))) found.add(code);
       }
-    });
+    }
   }
   return found;
+}
+
+/** Keywords by their first two letters, so each word is compared only with a few candidates. */
+const KEYWORDS_BY_START: ReadonlyMap<string, readonly [AllergenCode, string][]> = (() => {
+  const map = new Map<string, [AllergenCode, string][]>();
+  for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS) as [AllergenCode, readonly string[]][]) {
+    for (const keyword of keywords) {
+      const start = keyword.slice(0, 2);
+      map.set(start, [...(map.get(start) ?? []), [code, keyword]]);
+    }
+  }
+  return map;
+})();
+
+/** Everything a recipe contains, from its ingredients and its free text. */
+export type RecipeContents = {
+  allergens: ReadonlySet<AllergenCode>;
+  tags: ReadonlySet<IngredientTag>;
+};
+
+/**
+ * Per ingredient table, per recipe object. Recipes and ingredients are
+ * immutable values, so the contents of a given object never change; caching
+ * by object identity is memoisation of a pure function, not a stored summary.
+ * Without it every allergy toggle re-scanned the free text of every recipe
+ * (≈ 130 ms per pass on a laptop, several passes per tap on a phone).
+ */
+const contentsCache = new WeakMap<IngredientIndex, WeakMap<RecipeSource, RecipeContents>>();
+
+export function recipeContents(recipe: RecipeSource, index: IngredientIndex): RecipeContents {
+  let byRecipe = contentsCache.get(index);
+  if (!byRecipe) {
+    byRecipe = new WeakMap();
+    contentsCache.set(index, byRecipe);
+  }
+  const cached = byRecipe.get(recipe);
+  if (cached) return cached;
+
+  const allergens = new Set<AllergenCode>();
+  const tags = new Set<IngredientTag>();
+  for (const { ingredientId } of recipe.ingredients) {
+    const ingredient = ingredientOf(index, ingredientId, recipe.id);
+    ingredient.allergens.forEach((code) => allergens.add(code));
+    ingredient.tags.forEach((tag) => tags.add(tag));
+  }
+  keywordAllergens([recipe.title, recipe.description, ...recipe.steps]).forEach((code) => allergens.add(code));
+  const contents = { allergens, tags };
+  byRecipe.set(recipe, contents);
+  return contents;
 }
 
 /**
@@ -174,18 +226,7 @@ export function checkRecipe(
   index: IngredientIndex,
   rules: DietRules,
 ): RecipeCheck {
-  const containedAllergens = new Set<AllergenCode>();
-  const containedTags = new Set<IngredientTag>();
-
-  for (const { ingredientId } of recipe.ingredients) {
-    const ingredient = ingredientOf(index, ingredientId, recipe.id);
-    ingredient.allergens.forEach((code) => containedAllergens.add(code));
-    ingredient.tags.forEach((tag) => containedTags.add(tag));
-  }
-  keywordAllergens([recipe.title, recipe.description, ...recipe.steps]).forEach((code) =>
-    containedAllergens.add(code),
-  );
-
+  const { allergens: containedAllergens, tags: containedTags } = recipeContents(recipe, index);
   const allergens = rules.allergens.filter((code) => containedAllergens.has(code));
   const diets = rules.diets.filter((diet) =>
     DIET_EXCLUDED_TAGS[diet].some((tag) => containedTags.has(tag)),

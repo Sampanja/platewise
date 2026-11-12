@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { useTabBarSpace } from '@/components/TabBar';
 import { FadeInView, Text } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
@@ -39,7 +40,7 @@ const t = strings.home;
 /** Delay between sections as they fade in, top to bottom. */
 const STAGGER_MS = 70;
 
-export default function HomeScreen() {
+function HomeScreen() {
   const tabBarSpace = useTabBarSpace();
   const now = today();
   const name = useProfileStore((s) => s.name);
@@ -219,3 +220,5 @@ const styles = themedStyles(() =>
     },
   }),
 );
+
+export default withFreezeOnBlur(HomeScreen);

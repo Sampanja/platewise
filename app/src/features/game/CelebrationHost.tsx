@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 import { Button, Card, FadeInView, haptics, Text, type IconName } from '@/components/ui';
 import { useGame } from '@/data/game';
@@ -23,7 +24,9 @@ type Celebration = { achievements: string[]; level: number | null };
 export function CelebrationHost() {
   const game = useGame();
   const { voice } = useCharacter();
-  const { initialized, seenAchievements, seenLevel, markSeen } = useGameStore();
+  const { initialized, seenAchievements, seenLevel, markSeen } = useGameStore(
+    useShallow((s) => ({ initialized: s.initialized, seenAchievements: s.seenAchievements, seenLevel: s.seenLevel, markSeen: s.markSeen })),
+  );
   const [showing, setShowing] = useState<Celebration | null>(null);
   const [run, setRun] = useState(0);
 

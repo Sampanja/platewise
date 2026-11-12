@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 import { Button, Card, Stepper, SwitchRow, Text } from '@/components/ui';
 import { useRemindersStore } from '@/data/stores/reminders';
@@ -21,7 +22,9 @@ function timeLabel(minutes: number): string {
 
 /** Meal reminders: off by default; each meal has its own switch and time. Changes reschedule at once. */
 export function RemindersEditor() {
-  const { enabled, times, setEnabled, setTime } = useRemindersStore();
+  const { enabled, times, setEnabled, setTime } = useRemindersStore(
+    useShallow((s) => ({ enabled: s.enabled, times: s.times, setEnabled: s.setEnabled, setTime: s.setTime })),
+  );
   const [denied, setDenied] = useState(false);
   const first = useRef(true);
 

@@ -3,7 +3,9 @@ import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useShallow } from 'zustand/react/shallow';
 
+import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Card, haptics, Icon, PressableScale, SwitchRow, Text, type IconName } from '@/components/ui';
 import { CHAINS_BY_CODE } from '@/data/catalog';
@@ -26,16 +28,33 @@ function edit(section: string): Href {
   return { pathname: '/profile-edit/[section]', params: { section } };
 }
 
-export default function ProfileScreen() {
+function ProfileScreen() {
   const waterGoal = useWaterGoal(today());
   const tabBarSpace = useTabBarSpace();
-  const profile = useProfileStore();
+  const profile = useProfileStore(
+    useShallow((s) => ({
+      allergens: s.allergens,
+      body: s.body,
+      chainCode: s.chainCode,
+      diets: s.diets,
+      gamificationEnabled: s.gamificationEnabled,
+      goals: s.goals,
+      hapticsEnabled: s.hapticsEnabled,
+      hasCalorieGoal: s.hasCalorieGoal,
+      hideCalories: s.hideCalories,
+      name: s.name,
+      pantry: s.pantry,
+      themePreference: s.themePreference,
+      update: s.update,
+      weeklyBudgetCents: s.weeklyBudgetCents,
+    })),
+  );
   const { voice } = useCharacter();
   const addMany = useDiaryStore((s) => s.addMany);
   const latestWeight = useWeightStore((s) => s.entries.at(-1)?.kg);
   const logWeight = useWeightStore((s) => s.log);
   const version = Constants.expoConfig?.version ?? '1.0.0';
-  const reminders = useRemindersStore();
+  const reminders = useRemindersStore(useShallow((s) => ({ enabled: s.enabled, times: s.times })));
   const reminderCount = Object.values(reminders.times).filter((r) => r.on).length;
 
   const listOr = (items: string[]) => (items.length > 0 ? items.join(', ') : t.noneSelected);
@@ -333,3 +352,5 @@ const styles = themedStyles(() =>
     },
   }),
 );
+
+export default withFreezeOnBlur(ProfileScreen);

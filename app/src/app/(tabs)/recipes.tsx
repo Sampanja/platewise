@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
+import { FlatList, Platform, ScrollView, StyleSheet, useWindowDimensions, View, type ListRenderItem } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { RecipeCard } from '@/components/RecipeCard';
 import { useTabBarSpace } from '@/components/TabBar';
 import {
@@ -18,6 +19,7 @@ import {
 import { INGREDIENTS_BY_ID } from '@/data/catalog';
 import { useServingPrice, useUserRules } from '@/data/hooks';
 import { useAllowedRecipesQuery } from '@/data/queries';
+import type { Recipe } from '@/data/types';
 import { useFavoritesStore } from '@/data/stores/favorites';
 import {
   filterRecipes,
@@ -33,11 +35,14 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 const t = strings.recipes;
 const SORTS: readonly RecipeSort[] = ['recommended', 'price', 'time', 'kcal'];
 
-export default function RecipesScreen() {
+function RecipesScreen() {
   const tabBarSpace = useTabBarSpace();
   const { width } = useWindowDimensions();
   // Two columns; a lone last card keeps its column width instead of stretching.
   const cardWidth = (width - spacing.lg * 2 - spacing.md) / 2;
+  // A stable style and renderItem keep the memoised cards from re-rendering on every filter tap.
+  const cardStyle = useMemo(() => ({ width: cardWidth }), [cardWidth]);
+  const renderItem = useCallback<ListRenderItem<Recipe>>(({ item }) => <RecipeCard recipe={item} style={cardStyle} />, [cardStyle]);
   // Only recipes that suit the user's allergies and diets ever reach this screen.
   const recipesQuery = useAllowedRecipesQuery();
   const rules = useUserRules();
@@ -49,17 +54,17 @@ export default function RecipesScreen() {
   const [filters, setFilters] = useState<RecipeFilter[]>([]);
   const [sort, setSort] = useState<RecipeSort>('recommended');
 
+  // The chips update at once; the list follows in an interruptible render, so a
+  // tap never waits for dozens of cards to re-render.
+  const criteria = useDeferredValue(useMemo(() => ({ query, meal, filters, sort }), [query, meal, filters, sort]));
   const visible = useMemo(
     () =>
       filterRecipes(recipesQuery.data ?? [], {
-        query,
-        meal,
-        filters,
-        sort,
+        ...criteria,
         context: { favoriteIds, servingPrice },
         index: INGREDIENTS_BY_ID,
       }),
-    [recipesQuery.data, query, meal, filters, sort, favoriteIds, servingPrice],
+    [recipesQuery.data, criteria, favoriteIds, servingPrice],
   );
 
   const toggleFilter = (filter: RecipeFilter) =>
@@ -208,7 +213,11 @@ export default function RecipesScreen() {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           ListHeaderComponent={header}
-          renderItem={({ item }) => <RecipeCard recipe={item} style={{ width: cardWidth }} />}
+          renderItem={renderItem}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
           ListEmptyComponent={
             onlyFavorites ? (
               <EmptyState icon="heart" mascot="happy" voice="favorites" title={t.favoritesEmptyTitle} body={t.favoritesEmptyBody} />
@@ -320,3 +329,5 @@ const styles = themedStyles(() =>
     },
   }),
 );
+
+export default withFreezeOnBlur(RecipesScreen);

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { PanResponder, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { Sheet } from '@/components/Sheet';
 import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -51,7 +52,7 @@ const t = strings.diary;
 /** Days a meal can be copied to, relative to the shown day. */
 const COPY_OFFSETS = [-1, 1, 2, 3, 4, 5, 6, 7];
 
-export default function DiaryScreen() {
+function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
   const { voice } = useCharacter();
@@ -543,3 +544,5 @@ const styles = themedStyles(() =>
     },
   }),
 );
+
+export default withFreezeOnBlur(DiaryScreen);

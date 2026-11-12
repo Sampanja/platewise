@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useShallow } from 'zustand/react/shallow';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
@@ -39,7 +40,25 @@ type Section = 'name' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | '
  */
 export default function ProfileEditScreen() {
   const { section } = useLocalSearchParams<{ section: Section }>();
-  const profile = useProfileStore();
+  // Everything but the body and weight goal, which the calculator edits elsewhere.
+  const profile = useProfileStore(
+    useShallow((s) => ({
+      name: s.name,
+      weeklyBudgetCents: s.weeklyBudgetCents,
+      chainCode: s.chainCode,
+      themePreference: s.themePreference,
+      allergens: s.allergens,
+      diets: s.diets,
+      goals: s.goals,
+      hasCalorieGoal: s.hasCalorieGoal,
+      pantry: s.pantry,
+      update: s.update,
+      setGoals: s.setGoals,
+      toggleAllergen: s.toggleAllergen,
+      toggleDiet: s.toggleDiet,
+      togglePantry: s.togglePantry,
+    })),
+  );
   const [budgetText, setBudgetText] = useState(String(Math.round(profile.weeklyBudgetCents / 100)));
 
   const screens: Record<Section, { title: string; body?: string; node: ReactNode }> = {

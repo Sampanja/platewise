@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { openRecipe } from '@/components/RecipeCard';
 import { RecipeImage } from '@/components/RecipeImage';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -22,7 +23,7 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 const t = strings.plan;
 
 /** Suunnittele tab: start the questionnaire, continue a proposal or look at the current plan. */
-export default function PlanScreen() {
+function PlanScreen() {
   const tabBarSpace = useTabBarSpace();
   const plan = useActivePlan();
   const proposal = usePlansStore((s) => s.proposal);
@@ -275,3 +276,5 @@ const styles = themedStyles(() =>
     },
   }),
 );
+
+export default withFreezeOnBlur(PlanScreen);

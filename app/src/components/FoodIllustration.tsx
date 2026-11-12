@@ -30,7 +30,7 @@ import {
   Wheat,
   type LucideIcon,
 } from 'lucide-react-native';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { DishType, MainProtein } from '@/data/types';
@@ -133,7 +133,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function FoodIllustration({ dishType, protein, seed, style }: Props) {
+export const FoodIllustration = memo(function FoodIllustration({ dishType, protein, seed, style }: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const hash = seedOf(seed);
   // Alternate which theme colour leads, so a grid of cards is not monotonous.
@@ -207,7 +207,7 @@ export function FoodIllustration({ dishType, protein, seed, style }: Props) {
       ) : null}
     </View>
   );
-}
+});
 
 const styles = themedStyles(() =>
   StyleSheet.create({

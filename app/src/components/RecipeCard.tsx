@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { HeartButton } from '@/components/HeartButton';
@@ -23,7 +24,7 @@ export function openRecipe(recipeId: string) {
 }
 
 /** Photo card with price estimate per serving, time and kcal. Opens the recipe. */
-export function RecipeCard({ recipe, overline, showHeart = true, style, onPress }: Props) {
+export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart = true, style, onPress }: Props) {
   const servingPrice = useServingPrice();
   const price = formatCents(servingPrice(recipe));
   const time = format(strings.common.minutes, { count: recipe.totalTimeMin });
@@ -74,7 +75,7 @@ export function RecipeCard({ recipe, overline, showHeart = true, style, onPress 
       ) : null}
     </View>
   );
-}
+});
 
 const styles = themedStyles(() =>
   StyleSheet.create({
