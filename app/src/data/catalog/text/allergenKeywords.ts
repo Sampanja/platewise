@@ -86,7 +86,7 @@ export const ALLERGEN_KEYWORDS: Readonly<Record<Language, KeywordSet>> = {
       lupin: ['lupin'],
     },
     exceptions: {
-      milk: ['ostron', 'kokosmjölk', 'havremjölk', 'mandelmjölk', 'sojamjölk', 'kokosgrädde', 'havregrädde', 'smörgås', 'ostind'],
+      milk: ['ostron', 'kokosmjölk', 'havremjölk', 'mandelmjölk', 'sojamjölk', 'kokosgrädde', 'havregrädde', 'smörgås', 'ostind', 'smörj'],
       nuts: ['nötkött', 'nötfärs'],
       crustaceans: ['räkn'],
       gluten: ['kornig', 'kornel'],

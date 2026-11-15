@@ -6,6 +6,10 @@ import { EN_RECIPES_01 } from './recipes01';
 import { EN_RECIPES_02 } from './recipes02';
 import { EN_RECIPES_03 } from './recipes03';
 import { EN_RECIPES_04 } from './recipes04';
+import { EN_RECIPES_05 } from './recipes05';
+import { EN_RECIPES_06 } from './recipes06';
+import { EN_RECIPES_07 } from './recipes07';
+import { EN_RECIPES_08 } from './recipes08';
 
 /**
  * English catalog text. Recipes are added in batches (recipesNN.ts, the same
@@ -18,6 +22,10 @@ export const enText: CatalogText = {
     ...EN_RECIPES_02,
     ...EN_RECIPES_03,
     ...EN_RECIPES_04,
+    ...EN_RECIPES_05,
+    ...EN_RECIPES_06,
+    ...EN_RECIPES_07,
+    ...EN_RECIPES_08,
   },
   ingredients: EN_INGREDIENTS,
   foods: EN_FOODS,

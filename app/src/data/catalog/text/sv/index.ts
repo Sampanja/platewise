@@ -6,6 +6,10 @@ import { SV_RECIPES_01 } from './recipes01';
 import { SV_RECIPES_02 } from './recipes02';
 import { SV_RECIPES_03 } from './recipes03';
 import { SV_RECIPES_04 } from './recipes04';
+import { SV_RECIPES_05 } from './recipes05';
+import { SV_RECIPES_06 } from './recipes06';
+import { SV_RECIPES_07 } from './recipes07';
+import { SV_RECIPES_08 } from './recipes08';
 
 /**
  * Swedish catalog text. Recipes are added in batches (recipesNN.ts, the same
@@ -18,6 +22,10 @@ export const svText: CatalogText = {
     ...SV_RECIPES_02,
     ...SV_RECIPES_03,
     ...SV_RECIPES_04,
+    ...SV_RECIPES_05,
+    ...SV_RECIPES_06,
+    ...SV_RECIPES_07,
+    ...SV_RECIPES_08,
   },
   ingredients: SV_INGREDIENTS,
   foods: SV_FOODS,
