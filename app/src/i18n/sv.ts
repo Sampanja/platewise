@@ -53,6 +53,7 @@ export const sv: Strings = {
     tsp: '{value} tsk',
     tbsp: '{value} msk',
     pcs: '{value} st',
+    pcsOne: '1 st',
     oz: '{value} oz',
     lb: '{value} lb',
     flOz: '{value} fl oz',
@@ -208,6 +209,7 @@ export const sv: Strings = {
     activeTime: 'arbetstid {count} min',
     timeA11y: 'Total tid {total} minuter, varav arbetstid {active} minuter',
     writtenFor: 'Mängderna i instruktionerna är skrivna för {count} portioner.',
+    writtenForOne: 'Mängderna i instruktionerna är skrivna för 1 portion.',
     tipsTitle: 'Tips',
     storageTitle: 'Förvaring och uppvärmning',
     storage: 'Förvaring',
@@ -371,6 +373,7 @@ export const sv: Strings = {
       no: 'Nej, bara middag',
       noHint: 'Mindre inköpslista',
       servings: 'Du lagar {count} portioner på en gång',
+      servingsOne: 'Du lagar 1 portion åt gången',
     },
     diet: {
       title: 'Allergier och kost',

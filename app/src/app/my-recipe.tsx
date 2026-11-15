@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, haptics, Icon, IconButton, Stepper, Text, TextField } from '@/components/ui';
+import { catalogName } from '@/data/catalog';
 import { findFood } from '@/data/foods';
 import { useMyMealsStore } from '@/data/stores/myMeals';
 import type { OwnRecipeIngredient } from '@/data/types';
@@ -114,13 +115,13 @@ export default function MyRecipeScreen() {
               {ingredients.map((item, index) => (
                 <View key={`${item.foodId}-${index}`} style={[styles.ingredient, index < ingredients.length - 1 && styles.divider]}>
                   <Text variant="body" style={styles.flex} numberOfLines={2}>
-                    {item.name}
+                    {catalogName({ kind: 'food', foodId: item.foodId }, item.name)}
                   </Text>
                   <TextField
                     value={gramsText[index] ?? ''}
                     onChangeText={(text) => setGrams(index, text)}
                     keyboardType="decimal-pad"
-                    accessibilityLabel={format(t.gramsA11y, { name: item.name })}
+                    accessibilityLabel={format(t.gramsA11y, { name: catalogName({ kind: 'food', foodId: item.foodId }, item.name) })}
                     style={styles.grams}
                     maxLength={5}
                   />
@@ -131,7 +132,7 @@ export default function MyRecipeScreen() {
                     icon="close"
                     variant="plain"
                     size={40}
-                    accessibilityLabel={format(t.removeA11y, { name: item.name })}
+                    accessibilityLabel={format(t.removeA11y, { name: catalogName({ kind: 'food', foodId: item.foodId }, item.name) })}
                     onPress={() => removeIngredient(index)}
                   />
                 </View>

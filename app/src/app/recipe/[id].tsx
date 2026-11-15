@@ -266,7 +266,7 @@ export default function RecipeScreen() {
           <Section title={t.steps}>
             {servings !== recipe.servings ? (
               <Text variant="caption" color="textSubtle">
-                {format(t.writtenFor, { count: recipe.servings })}
+                {recipe.servings === 1 ? t.writtenForOne : format(t.writtenFor, { count: recipe.servings })}
               </Text>
             ) : null}
             <View style={styles.steps}>

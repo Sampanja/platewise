@@ -52,6 +52,7 @@ export const fi = {
     tsp: '{value} tl',
     tbsp: '{value} rkl',
     pcs: '{value} kpl',
+    pcsOne: '1 kpl',
     oz: '{value} oz',
     lb: '{value} lb',
     flOz: '{value} fl oz',
@@ -207,6 +208,7 @@ export const fi = {
     activeTime: 'työaika {count} min',
     timeA11y: 'Kokonaisaika {total} minuuttia, josta työaikaa {active} minuuttia',
     writtenFor: 'Valmistusohjeen määrät on kirjoitettu {count} annokselle.',
+    writtenForOne: 'Valmistusohjeen määrät on kirjoitettu yhdelle annokselle.',
     tipsTitle: 'Vinkit',
     storageTitle: 'Säilytys ja lämmitys',
     storage: 'Säilytys',
@@ -370,6 +372,7 @@ export const fi = {
       no: 'Ei, vain päivällinen',
       noHint: 'Pienempi ostoslista',
       servings: 'Kokkaat {count} annosta kerralla',
+      servingsOne: 'Kokkaat 1 annoksen kerralla',
     },
     diet: {
       title: 'Allergiat ja ruokavalio',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID } from '@/data/catalog/ingredients';
+import { setActiveLanguage } from '@/i18n/locale';
 
 import { formatAmount, formatCount, formatGrams, formatPackage } from './amounts';
 
@@ -33,5 +34,16 @@ describe('amounts', () => {
     expect(formatPackage(INGREDIENTS_BY_ID.lemon)).toBe('1 kpl');
     expect(formatPackage(INGREDIENTS_BY_ID.basil)).toBe('1 ruukku');
     expect(formatPackage(INGREDIENTS_BY_ID['chicken-breast'])).toBe('400 g');
+  });
+
+  it('formats packages in US units and English', () => {
+    setActiveLanguage('en');
+    try {
+      expect(nbsp(formatPackage(INGREDIENTS_BY_ID.lemon, 'imperial'))).toBe('1 pc');
+      expect(nbsp(formatPackage(INGREDIENTS_BY_ID['chicken-breast'], 'imperial'))).toBe('14 oz');
+      expect(nbsp(formatPackage(INGREDIENTS_BY_ID.carrot, 'imperial'))).toBe('2.2 lb');
+    } finally {
+      setActiveLanguage('fi');
+    }
   });
 });

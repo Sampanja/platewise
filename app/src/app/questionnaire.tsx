@@ -28,6 +28,10 @@ import { currencySymbol, format, formatMoney, formatWholeMoney, strings } from '
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan;
+
+function cookServingsText(count: number): string {
+  return count === 1 ? t.double.servingsOne : format(t.double.servings, { count });
+}
 const STEPS = ['budget', 'eaters', 'meals', 'double', 'diet', 'cravings', 'summary'] as const;
 type Step = (typeof STEPS)[number];
 
@@ -223,7 +227,7 @@ export default function QuestionnaireScreen() {
             onPress={() => patch({ cookDouble: false })}
           />
           <Text variant="label" color="textMuted" accessibilityLiveRegion="polite">
-            {format(t.double.servings, { count: dinnerServings(answers) })}
+            {cookServingsText(dinnerServings(answers))}
           </Text>
         </View>
       ),
@@ -319,7 +323,7 @@ export default function QuestionnaireScreen() {
             />
             <SummaryRow
               label={t.summary.servings}
-              value={format(t.double.servings, { count: dinnerServings(answers) })}
+              value={cookServingsText(dinnerServings(answers))}
               onEdit={() => goTo(1)}
             />
             <SummaryRow

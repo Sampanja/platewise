@@ -1,7 +1,7 @@
 import type { Food } from '@/data/types';
 
 function normalize(text: string): string {
-  return text.toLocaleLowerCase('fi').trim();
+  return text.toLowerCase().normalize('NFC').trim();
 }
 
 /**

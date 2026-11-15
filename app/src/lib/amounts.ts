@@ -65,13 +65,14 @@ export function formatAmount(ingredient: Ingredient, grams: number, system: Unit
   return formatGrams(grams, system);
 }
 
-/** Package size for the shopping list, e.g. "400 g", "1 l", "1 ruukku" – or "14 oz", "34 fl oz". */
+/** Package size for the shopping list, e.g. "400 g", "1 l", "1 ruukku" – or "14 oz", "2.2 lb", "34 fl oz". */
 export function formatPackage(ingredient: Ingredient, system: UnitSystem = activeUnitSystem()): string {
   if (ingredient.packageLabel) return ingredient.packageLabel;
   const display = ingredient.display;
   // Loose produce sold by the piece (lemon, pepper): "1 kpl" reads better than grams.
   if (display.kind === 'piece' && ingredient.packageG / display.grams <= 4) {
-    return format(strings.units.pcs, { value: Math.round(ingredient.packageG / display.grams) });
+    const pieces = Math.round(ingredient.packageG / display.grams);
+    return pieces === 1 ? strings.units.pcsOne : format(strings.units.pcs, { value: pieces });
   }
   if (display.kind === 'liquid') {
     if (system === 'imperial') return format(strings.units.flOz, { value: formatInteger(mlToFlOz(ingredient.packageG)) });
@@ -79,7 +80,12 @@ export function formatPackage(ingredient: Ingredient, system: UnitSystem = activ
       ? format(strings.units.l, { value: formatDecimal(ingredient.packageG / 1000, 1) })
       : format(strings.units.dl, { value: formatDecimal(ingredient.packageG / 100, 1) });
   }
-  if (system === 'imperial') return format(strings.units.oz, { value: formatInteger(gToOz(ingredient.packageG)) });
+  if (system === 'imperial') {
+    // US labels: "14 oz" up to a pound, "2.2 lb" above it.
+    const oz = gToOz(ingredient.packageG);
+    if (oz > 16.5) return format(strings.units.lb, { value: formatDecimal(oz / 16, 1) });
+    return format(strings.units.oz, { value: formatInteger(oz) });
+  }
   return formatGrams(ingredient.packageG, system);
 }
 

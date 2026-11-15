@@ -206,7 +206,7 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       night: 'The forest is already asleep. Good night!',
       streak: 'A seven-day streak. Statistically excellent!',
       loggedToday: 'Good entries today. The data thanks you!',
-      waterDone: 'Water goal reached. A blueberry is nearly 85 % water, too!',
+      waterDone: 'Water goal reached. A blueberry is nearly 85% water, too!',
       cookTonight: 'Tonight we cook. The recipe is ready on your list.',
       welcomeBack: 'Welcome back! Breaks are part of life.',
     },

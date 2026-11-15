@@ -15,7 +15,7 @@ import {
 } from '@/components/ui';
 import { openRecipe } from '@/components/RecipeCard';
 import { RecipeImage } from '@/components/RecipeImage';
-import { RECIPES_BY_ID } from '@/data/catalog';
+import { catalogName, RECIPES_BY_ID } from '@/data/catalog';
 import { useDayNutrition, useRecipeAllowed, useWaterGoal } from '@/data/hooks';
 import { useAllowedRecipesQuery } from '@/data/queries';
 import { useChatStore } from '@/data/stores/chat';
@@ -85,7 +85,7 @@ export default function ChatScreen() {
         eaten: {
           kcal: nutrition.eaten.kcal,
           proteinG: nutrition.eaten.proteinG,
-          entries: dayEntries.map((e) => e.name),
+          entries: dayEntries.map((e) => catalogName(e.basis, e.name)),
         },
         goals: hasGoal ? { kcal: nutrition.goals.kcal, proteinG: nutrition.goals.proteinG } : null,
         waterMl,

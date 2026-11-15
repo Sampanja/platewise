@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Chip, EmptyState, haptics, Icon, Text } from '@/components/ui';
-import { FOODS_BY_ID } from '@/data/catalog';
+import { catalogName, FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
 import { entryMacros } from '@/domain/diary';
@@ -54,7 +54,7 @@ export default function EntryScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.titleBlock}>
           <Text variant="display" accessibilityRole="header">
-            {entry.name}
+            {catalogName(entry.basis, entry.name)}
           </Text>
           {entry.estimate ? (
             <View style={styles.estimate}>

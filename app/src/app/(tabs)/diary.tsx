@@ -22,6 +22,7 @@ import {
   Text,
   TextField,
 } from '@/components/ui';
+import { catalogName } from '@/data/catalog';
 import { useGoalsFor } from '@/data/hooks';
 import { useMyMealsStore } from '@/data/stores/myMeals';
 import { useDiaryStore } from '@/data/stores/diary';
@@ -263,9 +264,9 @@ function DiaryScreen() {
                           accessibilityHint={t.swipeHint}
                           accessibilityLabel={
                             hideCalories
-                              ? `${entry.name}, ${entryAmount(entry)}`
+                              ? `${catalogName(entry.basis, entry.name)}, ${entryAmount(entry)}`
                               : format(t.entryA11y, {
-                                  name: entry.name,
+                                  name: catalogName(entry.basis, entry.name),
                                   amount: entryAmount(entry),
                                   kcal: formatInteger(entryMacros(entry).kcal),
                                 })
@@ -274,7 +275,7 @@ function DiaryScreen() {
                         >
                           <View style={styles.flex}>
                             <Text variant="body" numberOfLines={1}>
-                              {entry.name}
+                              {catalogName(entry.basis, entry.name)}
                             </Text>
                             <View style={styles.entryMeta}>
                               <Text variant="caption" color="textSubtle">

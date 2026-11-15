@@ -93,7 +93,7 @@ export function matchesFilter(recipe: Recipe, filter: RecipeFilter, context: Fil
 
 /** Lower-cased, accent-insensitive text for search. */
 function normalize(text: string): string {
-  return text.toLocaleLowerCase('fi').normalize('NFC').trim();
+  return text.toLowerCase().normalize('NFC').trim();
 }
 
 /** Matches every word of the query against the title, description and ingredient names. */
