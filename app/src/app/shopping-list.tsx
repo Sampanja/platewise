@@ -22,7 +22,7 @@ import type { PriceRegionCode } from '@/domain/priceRegion';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { usePlansStore } from '@/data/stores/plans';
 import { groupByAisle, type ShoppingItem } from '@/domain/shoppingList';
-import { format, formatMoney, strings } from '@/i18n';
+import { format, formatMoney, formatServings, strings } from '@/i18n';
 import { formatAmount, formatPackage } from '@/lib/amounts';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -215,7 +215,7 @@ export default function ShoppingListScreen() {
                       {recipe.title}
                       <Text variant="caption" color="textSubtle">
                         {'  '}
-                        {format(strings.common.servings, { count: extra.servings })}
+                        {formatServings(extra.servings)}
                       </Text>
                     </Text>
                     <IconButton

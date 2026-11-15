@@ -10,12 +10,13 @@ import { EN_RECIPES_05 } from './recipes05';
 import { EN_RECIPES_06 } from './recipes06';
 import { EN_RECIPES_07 } from './recipes07';
 import { EN_RECIPES_08 } from './recipes08';
+import { EN_RECIPES_09 } from './recipes09';
+import { EN_RECIPES_10 } from './recipes10';
+import { EN_RECIPES_11 } from './recipes11';
+import { EN_RECIPES_12 } from './recipes12';
+import { EN_RECIPES_13 } from './recipes13';
 
-/**
- * English catalog text. Recipes are added in batches (recipesNN.ts, the same
- * batches as the Finnish text); until a batch is translated its recipes show
- * the Finnish text.
- */
+/** English catalog text: every recipe, ingredient and food. */
 export const enText: CatalogText = {
   recipes: {
     ...EN_RECIPES_01,
@@ -26,6 +27,11 @@ export const enText: CatalogText = {
     ...EN_RECIPES_06,
     ...EN_RECIPES_07,
     ...EN_RECIPES_08,
+    ...EN_RECIPES_09,
+    ...EN_RECIPES_10,
+    ...EN_RECIPES_11,
+    ...EN_RECIPES_12,
+    ...EN_RECIPES_13,
   },
   ingredients: EN_INGREDIENTS,
   foods: EN_FOODS,

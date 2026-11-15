@@ -35,7 +35,7 @@ import {
   swapMeal,
 } from '@/domain/generate';
 import { recipeCostCents } from '@/domain/recipes';
-import { format, formatMoney, formatInteger, formatWholeMoney, strings } from '@/i18n';
+import { format, formatInteger, formatMoney, formatServings, formatWholeMoney, strings } from '@/i18n';
 import { addDays, relativeDayLabel } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -366,7 +366,7 @@ function MealCard({
       </PressableScale>
       <View style={styles.mealActions}>
         <Text variant="caption" color="textSubtle" style={styles.flex}>
-          {format(strings.common.servings, { count: servings })}
+          {formatServings(servings)}
         </Text>
         <IconButton
           icon={meal.locked ? 'lock' : 'unlock'}

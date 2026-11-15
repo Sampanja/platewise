@@ -14,7 +14,7 @@ import { CATALOG_TEXT } from '.';
  * Languages whose catalog text is complete. A new language is added here
  * when all its batches are translated; from then on every recipe needs it.
  */
-const COMPLETE: readonly Language[] = ['fi'];
+const COMPLETE: readonly Language[] = ['fi', 'en', 'sv'];
 
 const recipeIds = new Set(RECIPES.map((r) => r.id));
 const ingredientIds = new Set(INGREDIENTS.map((i) => i.id));

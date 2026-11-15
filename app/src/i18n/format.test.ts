@@ -81,3 +81,10 @@ describe('unit systems', () => {
     expect(formatWater(1500)).toBe('51 fl oz');
   });
 });
+
+describe('long currency symbols', () => {
+  it('prints the short dollar sign in Swedish', () => {
+    setActiveLanguage('sv');
+    expect(formatMoney(340, 'US')).not.toMatch(/US\$|USD/);
+  });
+});

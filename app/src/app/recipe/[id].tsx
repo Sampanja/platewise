@@ -26,7 +26,7 @@ import { DIARY_MEALS, mealForHour } from '@/domain/diary';
 import { MacroBars } from '@/features/recipe/MacroBars';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
-import { format, formatMoney, formatInteger, strings } from '@/i18n';
+import { format, formatInteger, formatMoney, formatServings, strings } from '@/i18n';
 import { formatAmount } from '@/lib/amounts';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -241,7 +241,7 @@ export default function RecipeScreen() {
             </Text>
           </Section>
 
-          <Section title={`${t.ingredients} · ${format(strings.common.servings, { count: servings })}`}>
+          <Section title={`${t.ingredients} · ${formatServings(servings)}`}>
             <View>
               {recipe.ingredients.map(({ ingredientId, grams }) => {
                 const ingredient = INGREDIENTS_BY_ID[ingredientId];

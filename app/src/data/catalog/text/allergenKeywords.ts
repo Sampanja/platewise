@@ -78,7 +78,8 @@ export const ALLERGEN_KEYWORDS: Readonly<Record<Language, KeywordSet>> = {
       crustaceans: ['räk', 'kräft', 'krabb', 'hummer'],
       molluscs: ['mussl', 'bläckfisk', 'kalmar', 'ostron'],
       peanut: ['jordnöt'],
-      nuts: ['nöt', 'mandel', 'cashew', 'hasselnöt', 'valnöt', 'pistage', 'pekan'],
+      // Not a bare "nöt": it also means beef ("ytterfilé av nöt", "nötkött").
+      nuts: ['nötter', 'nötblandning', 'nötsmör', 'nötmix', 'mandel', 'cashew', 'hasselnöt', 'valnöt', 'pistage', 'pekan'],
       soy: ['soja', 'tofu', 'edamame'],
       sesame: ['sesam', 'tahini'],
       mustard: ['senap'],
@@ -87,7 +88,6 @@ export const ALLERGEN_KEYWORDS: Readonly<Record<Language, KeywordSet>> = {
     },
     exceptions: {
       milk: ['ostron', 'kokosmjölk', 'havremjölk', 'mandelmjölk', 'sojamjölk', 'kokosgrädde', 'havregrädde', 'smörgås', 'ostind', 'smörj'],
-      nuts: ['nötkött', 'nötfärs'],
       crustaceans: ['räkn'],
       gluten: ['kornig', 'kornel'],
     },

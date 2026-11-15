@@ -155,3 +155,25 @@ describe('recipeCostCents', () => {
     expect(recipeCostCents(dish, index, new Set(), 1)).toBeGreaterThan(one);
   });
 });
+
+describe('keywordAllergens in English and Swedish (translation checks)', () => {
+  it('finds allergens in English text', () => {
+    expect([...keywordAllergens(['Fry the prawns in butter'], 'en')].sort()).toEqual(['crustaceans', 'milk']);
+    expect([...keywordAllergens(['Toss with peanut butter'], 'en')]).toEqual(['peanut']);
+  });
+
+  it('does not read plant milks, aubergine or "free" foods as allergens in English', () => {
+    expect(keywordAllergens(['coconut milk', 'oat cream', 'an aubergine', 'creamy texture'], 'en').size).toBe(0);
+    expect(keywordAllergens(['gluten-free breadcrumbs', 'soy-free and egg-free'], 'en').size).toBe(0);
+  });
+
+  it('finds allergens in Swedish text', () => {
+    expect([...keywordAllergens(['Stek räkorna i smör'], 'sv')].sort()).toEqual(['crustaceans', 'milk']);
+    expect([...keywordAllergens(['hackade valnötter'], 'sv')]).toEqual(['nuts']);
+  });
+
+  it('does not read beef, greasing or counting as allergens in Swedish', () => {
+    expect(keywordAllergens(['ytterfilé av nöt', 'nötkött', 'smörj formen', 'räkna med', 'kokosmjölk'], 'sv').size).toBe(0);
+    expect(keywordAllergens(['glutenfritt ströbröd', 'mjölkfria bullar', 'sojafri'], 'sv').size).toBe(0);
+  });
+});

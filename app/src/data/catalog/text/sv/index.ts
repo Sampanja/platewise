@@ -10,12 +10,13 @@ import { SV_RECIPES_05 } from './recipes05';
 import { SV_RECIPES_06 } from './recipes06';
 import { SV_RECIPES_07 } from './recipes07';
 import { SV_RECIPES_08 } from './recipes08';
+import { SV_RECIPES_09 } from './recipes09';
+import { SV_RECIPES_10 } from './recipes10';
+import { SV_RECIPES_11 } from './recipes11';
+import { SV_RECIPES_12 } from './recipes12';
+import { SV_RECIPES_13 } from './recipes13';
 
-/**
- * Swedish catalog text. Recipes are added in batches (recipesNN.ts, the same
- * batches as the Finnish text); until a batch is translated its recipes show
- * the Finnish text.
- */
+/** Swedish catalog text: every recipe, ingredient and food. */
 export const svText: CatalogText = {
   recipes: {
     ...SV_RECIPES_01,
@@ -26,6 +27,11 @@ export const svText: CatalogText = {
     ...SV_RECIPES_06,
     ...SV_RECIPES_07,
     ...SV_RECIPES_08,
+    ...SV_RECIPES_09,
+    ...SV_RECIPES_10,
+    ...SV_RECIPES_11,
+    ...SV_RECIPES_12,
+    ...SV_RECIPES_13,
   },
   ingredients: SV_INGREDIENTS,
   foods: SV_FOODS,

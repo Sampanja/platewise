@@ -84,16 +84,20 @@ function moneyFormatter(region: PriceRegionCode, whole: boolean): Intl.NumberFor
   });
 }
 
+/** Long forms Hermes prints for some locale and currency pairs ("US$" in Swedish). */
+const LONG_SYMBOLS: Readonly<Record<string, readonly string[]>> = { USD: ['US$'], GBP: ['GB£'] };
+
 /**
- * Swaps an ISO code that Hermes or English prints in place of the symbol
- * ("50,10 SEK" → "50,10 kr"). Kronor are written after the amount in every
- * language ("800.00 kr", not "kr 800.00").
+ * Swaps an ISO code or long symbol that Hermes or English prints in place of
+ * the short symbol ("50,10 SEK" → "50,10 kr", "3,40 US$" → "3,40 $"). Kronor
+ * are written after the amount in every language ("800.00 kr", not "kr 800.00").
  */
 function withSymbol(formatted: string, region: PriceRegionCode): string {
   const code = currencyOf(region);
   const symbol = CURRENCY_SYMBOLS[code];
   if (!symbol) return formatted;
-  const swapped = formatted.includes(code) ? formatted.replace(code, symbol) : formatted;
+  const variant = [code, ...(LONG_SYMBOLS[code] ?? [])].find((form) => formatted.includes(form));
+  const swapped = variant ? formatted.replace(variant, symbol) : formatted;
   if (symbol === 'kr' && swapped.trimStart().startsWith('kr')) return `${swapped.trimStart().slice(2).trim()} kr`;
   return swapped;
 }
@@ -147,4 +151,9 @@ export function decimalSeparator(): string {
 export function parseDecimal(text: string): number {
   const cleaned = text.replace(/[\s  ]/g, '').replace(',', '.');
   return cleaned === '' ? Number.NaN : Number(cleaned);
+}
+
+/** "1 serving" or "3 servings" in the active language. */
+export function formatServings(count: number): string {
+  return count === 1 ? strings.common.servingsOne : format(strings.common.servings, { count });
 }
