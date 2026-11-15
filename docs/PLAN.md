@@ -210,6 +210,28 @@ Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin 
 
 Hahmokohtainen paletti vaaleana ja tummana ([MASCOT.md](MASCOT.md)). Käyttäjä voi valita "Puhelimen asetus" (oletus), "Vaalea" tai "Tumma". Kaikki tekstitokenit täyttävät WCAG AA:n kaikilla taustoilla molemmissa teemoissa (`theme/contrast.test.ts`). Värit luetaan aina aktiivisesta teemasta (`colors`, `themedStyles`), ja teeman vaihto säilyttää navigointitilan. Kamera- ja hahmografiikka käyttävät kiinteitä värejä.
 
+### 4.11 Kielet, hinta-alueet ja mittayksiköt
+
+- **Kielet:** suomi, englanti ja ruotsi. Ensikäynnistyksen ensimmäinen näkymä on kielen valinta; oletuksena puhelimen kieli (`expo-localization`), muuten englanti. Kieli vaihtuu heti ilman uudelleenkäynnistystä, ja sen voi vaihtaa Profiilissa. Aiemmat käyttäjät pitävät suomen.
+- **Kaikki teksti käännetään:** valikot, painikkeet, virheet, ilmoitukset, onboarding, saavutukset, tehtävät, chatin vastaukset ja jokaisen hahmon repliikit omalla puhetyylillään. Hahmojen nimet ovat samat kaikilla kielillä. Reseptien nimet, kuvaukset, vaiheet, vinkit ja säilytysohjeet sekä ainesosien ja päiväkirjan ruokien nimet ovat käännöstiedostoissa erillään rakenteesta.
+- **Uusi kieli** = käyttöliittymän käännöstiedostot (`i18n/<kieli>*.ts`), katalogin tekstit (`data/catalog/text/<kieli>/`) ja rivi kahteen rekisteriin. Testit kaatuvat, kunnes jokainen avain, hahmon repliikki, resepti, ainesosa ja ruoka on käännetty (`keys.test.ts`, `characterVoices.test.ts`, `text.test.ts`). Lint-sääntö `platewise/no-untranslated-text` estää kovakoodatut tekstit.
+- **Muotoilu Intl-rajapinnalla:** numerot, desimaalit, päivämäärät, viikonpäivät ja valuutta kielen ja alueen mukaan. Viikon ensimmäinen päivä tulee puhelimesta (Yhdysvalloissa sunnuntai). Hermes tuntee vain oikeat lokaalit (`fi-FI`, `sv-SE`, `en-GB`, `en-US`), joten kieli ja alue yhdistetään niihin.
+- **Hinta-alueet** (maa → valuutta ja hintataso) ilman kauppoja: Suomi on oikeaa hintatietoa, muut tuetut maat (SE, NO, DK, EE, DE, NL, FR, IE, GB, US) karkea arvio hintatasokertoimella, ja käyttöliittymä sanoo sen.
+- **Mittayksiköt:** metrinen (g, kg, ml, dl, l, cm) tai imperiaalinen (oz, lb, fl oz, cups, ft ja in). Oletus puhelimen mittajärjestelmästä tai alueesta; paino- ja pituusyksiköt tulevat samasta asetuksesta. Kaikki tallennetaan ja lasketaan metrisenä.
+- **Ravintoarvot:** Fineli säilyy toistaiseksi pohjana kaikilla kielillä ja kaikissa maissa. Muihin maihin laajennettaessa voidaan ottaa lisäksi käyttöön esim. USDA FoodData Central ja Open Food Facts (ks. DATA_MODEL.md, päätös 26).
+
+### 4.12 Suorituskyky
+
+Tavoite: jokainen napautus antaa visuaalisen palautteen alle 100 ms:ssa release-buildissa. Periaatteet, jotta samat virheet eivät toistu:
+
+- **Tarkat Zustand-selektorit:** luetaan vain tarvittavat kentät (`useShallow`), ei koko storea. Selektori ei palauta uutta taulukkoa tai oliota.
+- **Ei staattista dataa persistiin:** AsyncStorageen tallennetaan vain käyttäjän tila, ei reseptejä, ainesosia tai muuta katalogia. Kirjoitukset ryhmitellään (400 ms hiljaisuus, heti kun sovellus menee taustalle).
+- **Johdettu data välimuistiin:** suodatukset ja allergialaskenta `useMemo`lla ja olioidentiteettiin perustuvilla välimuisteilla (resepti on muuttumaton arvo). Satojen reseptien suodatus ei saa tapahtua joka renderissä.
+- **Virtualisoidut listat:** pitkät listat `FlatList`illa, vakaalla `renderItem`illä ja memoisoiduilla riveillä (`React.memo`), ei `.map()`-renderöintiä ScrollViewissä.
+- **Piilotetut välilehdet jäädytetään** (`freezeOnBlur`), jotta ne eivät renderöidy jokaisesta muutoksesta.
+- **Käyttöliittymä ensin:** tila päivitetään heti (optimistinen päivitys), hidas työ (tallennus, haptiikka, ilmoitusten ajastus) sen jälkeen, ei `await`ia ennen päivitystä.
+- **Mittaa ensin:** muutokset perustellaan mittauksella (renderilaskurit, `performance.now()`, emulaattorin release-build), ja tulokset kirjataan commit-viestiin.
+
 ## 5. Vaiheittainen toteutussuunnitelma
 
 ### Vaihe 0: Validointi (1–2 viikkoa)
@@ -233,7 +255,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 10. Tietosuojaseloste, käyttöehdot, allergiavastuuvapaus ja tilin poisto (App Store vaatii).
 11. Suljettu beta TestFlightissa ja Google Playn sisäisessä testauksessa 20–50 käyttäjällä.
 
-**MVP:stä jätetään pois:** aamiaisten ja välipalojen suunnittelu ostoslistaan (ne ovat kirjastossa ja päiväkirjassa, mutta Suunnittele tekee vain päivällisiä; lounas tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat, puettavien laitteiden integraatiot ja monikielisyys (vain suomi).
+**MVP:stä jätetään pois:** aamiaisten ja välipalojen suunnittelu ostoslistaan (ne ovat kirjastossa ja päiväkirjassa, mutta Suunnittele tekee vain päivällisiä; lounas tuplauksen kautta), halal- ja kosher-ruokavaliot, sosiaaliset ominaisuudet, reaaliaikaiset hinnat ja puettavien laitteiden integraatiot. Monikielisyys on MVP:ssä: suomi, englanti ja ruotsi (kohta 4.11).
 
 ### Vaihe 2: Julkaisu ja oppiminen (4–6 viikkoa)
 - Julkaisu kauppoihin ja kauppasivujen optimointi (ASO).
@@ -245,7 +267,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 - Ruokahävikin minimointi: "mitä jääkaapissa on" -syöte.
 - Tarkemmat hinnat: maakohtainen hintatieto (`ingredient_region_prices`) ja kuittiskannaus (OCR).
 - Ostoslistan jakaminen toiselle sovelluksen käyttäjälle.
-- Ruotsin ja englannin kieli, myöhemmin muut Pohjoismaat.
+- Lisää kieliä ja maita (esim. norja, tanska, saksa). Uusi kieli = käännöstiedostot ja reseptikäännökset; maakohtainen hintatieto ja ravintoarvolähteet (USDA FoodData Central, Open Food Facts) maan mukaan.
 - Ilmoitukset ("huomenna on kanapastaa, ota kana sulamaan").
 
 ## 6. Riskit ja kustannukset

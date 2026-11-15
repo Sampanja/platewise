@@ -23,7 +23,7 @@ Hahmot kannustavat aina tapoihin: kirjaamiseen, kokkaamiseen, veteen ja uusien r
 | `kanttu` | Kanttu | kantarelli | Kiireetön metsäretkeilijä, sesonkivinkit | kulta #965500 / #F5B24A, sammal |
 | `ruis` | Ruis | ruisleipä | Sisukas, lakoninen, kuiva huumori | ruskea #6F4325 / #D9A47A, kumina |
 
-Repliikit ovat tiedostossa `app/src/i18n/fiCharacters.ts`. Jokaisella hahmolla on samat avaimet:
+Repliikit ovat tiedostoissa `app/src/i18n/fiCharacters.ts`, `enCharacters.ts` ja `svCharacters.ts`: jokaisella kielellä sama puhetyyli (Nupun runollisuus, Porkkiksen tsemppi, Ruksen lakonisuus…), nimet samat kaikilla kielillä. Jokaisella hahmolla on samat avaimet:
 
 - `intro` (esittely valitsimessa), `hello` ja `tagline` sekä kolme `traits`-piirrettä.
 - `greetings` (Kodin tervehdys tilanteen mukaan, `domain/mascotMood.ts`).
@@ -139,7 +139,7 @@ Kuvat voi vaihtaa ilman koodimuutoksia näkymiin.
 ## 8. Uuden hahmon lisääminen
 
 1. Lisää id `CHARACTER_IDS`-listaan ja värisiemenet tiedostoon `theme/characters.ts`. Aja `contrast.test.ts` ja viritä korostusvärejä, kunnes testi menee läpi.
-2. Lisää repliikit tiedostoon `i18n/fiCharacters.ts`. TypeScript vaatii kaikki avaimet, ja `characterVoices.test.ts` tarkistaa sisällön.
+2. Lisää repliikit jokaisen kielen tiedostoon (`i18n/fiCharacters.ts`, `enCharacters.ts`, `svCharacters.ts`). TypeScript vaatii kaikki avaimet, ja `characterVoices.test.ts` tarkistaa sisällön jokaisella kielellä (ei kaloreita, painoa tai vähemmän syömistä; chatin esittely kertoo, ettei hahmo ole lääkäri).
 3. Lisää vartalo `BODIES`-tauluun tiedostossa `CharacterSvg.tsx`, ja lisää kuvat kun ne ovat valmiit.
 
 ## 9. Säännöt hahmoille

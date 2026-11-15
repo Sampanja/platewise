@@ -91,7 +91,7 @@ Muuttuu joka pyynnöllä, eikä siksi ole välimuistissa:
 - budjettitavoite **Suomen hinnoissa**: `budjetti / alueen hintakerroin` (`price_level × per_euro`), jolloin katalogin hinnat pätevät suoraan
 - kotoa löytyvät slugit (käyttäjän perusvarat)
 - **"Älä käytä" -slugit**: allergeenit (myös "saattaa sisältää", jos `strict`; kyselyssä lisätyt aina `strict`), ruokavalion kieltämät tagit ja inhokit yhdessä listassa, ilman syytä
-- **toiveet** suomenkielisinä sanoina ("kana, nopea"), jos käyttäjä valitsi niitä. Toiveet eivät ole terveystietoa.
+- **toiveet** suomenkielisinä sanoina ("kana, nopea"), jos käyttäjä valitsi niitä. Toiveet ovat koodeja (`craving_code`), joten ne muunnetaan suomeksi käyttäjän kielestä riippumatta. Toiveet eivät ole terveystietoa.
 - viimeaikaisten reseptien nimet toiston välttämiseksi
 
 ## 5. System prompt
@@ -213,6 +213,28 @@ Huomiot:
 - Slug-enumin koko (~300–500 arvoa) testataan heti alussa. Jos API rajoittaa enumin kokoa, `slug` muutetaan `z.string()`:ksi ja tuntemattomat slugit hylätään koodissa, kuten tarkistus tekee joka tapauksessa.
 - Validointivirhe käsitellään kuten tarkistusvirhe: korjauskierros, jossa virhe kerrotaan mallille.
 
+### 6.1 Käännökset (kielet fi, en, sv)
+
+Resepti generoidaan **suomeksi** (lähdekieli, `*_fi`-kentät yllä), ja se tallennetaan `recipe_translations`-tauluun kielellä `fi`. Kun resepti on läpäissyt tarkistuksen (kohta 7), backend pyytää käännökset kaikille muille tuetuille kielille erillisellä, halvalla kutsulla (oletus Haiku 5.5, `app_config.translation_model`):
+
+```ts
+// Luonnos – ei vielä toteutusta.
+const RecipeTranslation = z.object({
+  language: z.enum(["en", "sv"]),
+  title: z.string().min(3).max(60),
+  description: z.string().max(160),
+  steps: z.array(z.string().max(300)),   // täsmälleen yhtä monta kuin suomeksi
+  tips: z.array(z.string().max(200)),     // 〃
+  storage: z.string().nullable(),         // vain jos suomenkielinen poikkeaa oletuksesta
+  reheating: z.string().nullable(),
+});
+```
+
+- Käännös ei voi muuttaa rakennetta: ainesosat, määrät, ajat ja kaikki laskettu data ovat yhteisiä, eikä niitä lähetetä käännettäviksi kenttinä.
+- Koodissa tarkistetaan, että vaiheita ja vinkkejä on yhtä monta kuin suomeksi ja että käännös läpäisee oman kielensä allergeenien avainsanatarkistuksen (`allergen_keywords`, kieli `en`/`sv`): käännös ei saa mainita allergeenia, jota reseptissä ei ole. Hylätty käännös pyydetään uudelleen; resepti on `active` vasta, kun kaikki kielet ovat valmiit.
+- Englannin uunilämpötilat °C ja °F, ruotsin "grader". Määrät ovat ainesosarivejä, joten käyttäjän mittayksiköt (metrinen tai imperiaalinen) eivät vaikuta tekstiin.
+- Testikirjaston 319 reseptiä on käännetty valmiiksi (`data/catalog/text/<kieli>/`), ja `text.test.ts` vaatii jokaiselta reseptiltä, ainesosalta ja ruoalta tekstin jokaisella tuetulla kielellä.
+
 ## 7. Allergia- ja ruokavaliotarkistus
 
 ### 7.1 Sääntöjoukko (ennen generointia)
@@ -241,6 +263,7 @@ Avainsanahaun (6) yksityiskohdat:
 - `except_phrases` poistetaan tekstistä ennen hakua (esim. "kookosmaito" ei laukaise `maito`-sanaa).
 - Haku on **osajonohaku**, ei kokosanahaku, koska suomen yhdyssanat ("maapähkinävoi", "vehnätortilla") pitää löytää. Väärät positiiviset ovat hyväksyttäviä: ne johtavat vain uuteen yritykseen. Toistuvat väärät positiiviset korjataan lisäämällä `except_phrases`.
 - Perusvarat tarkistetaan samoin kuin muut ainesosat. Kotoa löytyvä vehnäjauho ei ole sallittu gluteeniallergikolle.
+- Turvatarkistus lukee aina **suomenkielisen lähdetekstin** käyttöliittymän kielestä riippumatta, joten tarkistus ja sen välimuisti eivät muutu, kun käyttäjä vaihtaa kieltä. Käännökset tarkistetaan julkaisussa oman kielensä sanoilla (kohta 6.1).
 
 ### 7.3 Mitä rikkeille tehdään
 - Rikkeitä sisältävä resepti **ei koskaan** tallennu `recipes`-tauluun eikä näy käyttäjälle.
@@ -560,9 +583,16 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 15. `isRecipeAllowed` on ainoa näyttöportti kaikkialla, myös chatissa: avustajalle annetaan vain sallitut reseptit, ja se ehdottaa vain niistä. Sama portti ajetaan backendissä.
 16. Kuvantunnistus on testitilassa, kunnes backend on valmis; käyttöliittymä kertoo sen selvästi.
 
+**Päätetty (2026-11-15):**
+
+17. Kielet suomi, englanti ja ruotsi. Reseptit generoidaan suomeksi ja käännetään sitten muille kielille (kohta 6.1); turvatarkistus lukee suomenkielisen tekstin, käännökset tarkistetaan oman kielensä avainsanoilla.
+18. Chat vastaa käyttäjän kielellä. Turvaluokitus (`classifySafety`) tunnistaa kaikkien tuettujen kielten ilmaukset riippumatta käyttöliittymän kielestä, koska käyttäjä voi kirjoittaa muulla kielellä kuin sovellus näyttää.
+19. Ei kauppoja: hinta lasketaan hinta-alueelle (`priceFactor`), ja toiveet välitetään mallille koodeina, ei käyttäjän kielisinä sanoina.
+
 **Avoimet:**
 
-- Ehdokaslistan koko ja sisältö kuvantunnistukseen (600–900 riviä) valitaan Fineli-tuonnin yhteydessä.
+- Ehdokaslistan koko ja sisältö kuvantunnistukseen (600–900 riviä) valitaan Fineli-tuonnin yhteydessä. Muihin maihin laajennettaessa ehdokaslista voidaan täydentää USDA FoodData Centralin riveillä.
+- Kuvantunnistuksen ja ravintoarvotaulukon luvun `label`-tekstit pyydetään käyttäjän kielellä.
 - Riittääkö Haikun tarkkuus (kohta 11.5), vai tarvitaanko Sonnet pienemmällä rajalla.
 
 ## 17. Avustajachat "Kysy Nupulta"
@@ -626,7 +656,7 @@ Rajat (ehdottomat):
 
 - **Reseptiehdotukset:** sovellus lähettää avustajalle vain käyttäjälle sallitut reseptit (`RecipeHint`, `isRecipeAllowed`), ja vastauksen reseptikortit tarkistetaan vielä näytettäessä. Testivastaus (`suggestRecipes`) valitsee proteiinikysymykseen kolme proteiinipitoisinta sallittua päivällistä eikä mainitse muita ruokia.
 
-- **Kaksi kerrosta:** sääntöpohjainen luokitus ennen mallia ja jälkeen sen (`classifySafety`, yksikkötestattu). Prompti yksin ei riitä (vrt. CLAUDE.md, periaate 4).
+- **Kaksi kerrosta:** sääntöpohjainen luokitus ennen mallia ja jälkeen sen (`classifySafety`, yksikkötestattu). Prompti yksin ei riitä (vrt. CLAUDE.md, periaate 4). Luokituksen ilmaukset ovat suomeksi, englanniksi ja ruotsiksi, ja kaikki tarkistetaan aina. Vastaukset (myös turvavastaukset) ovat käännöstiedostoissa (`i18n`, osio `assistant`); englanniksi ja ruotsiksi tukitaho on yleinen ("syömishäiriöiden tukilinja maassasi"), suomeksi SYLI.
 - **Luokat:** `eatingDisorder` → välittävä vastaus ja tukitahot, ei lukuja; `extremeDiet` → kieltäytyminen ja turvarajat; `medical` → ohjaus ammattilaiselle.
 - **Laadunvarmistus:** testiaineisto noin 150 kysymystä, joista 50 rajatapauksia (alle lattian, paastot, diagnoosit, syömishäiriön merkit). Hyväksymisraja: 100 % rajatapauksista turvallisia. Ajetaan jokaisen prompti- tai mallimuutoksen yhteydessä.
 - **Tietosuoja:** viestit ovat terveystietoa. Ne tallennetaan vain laitteelle (MVP), niitä ei lokiteta eikä lähetetä analytiikkaan, ja Anthropic on käsittelijä (DPA). Keskustelun voi tyhjentää.

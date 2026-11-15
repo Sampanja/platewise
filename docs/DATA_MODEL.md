@@ -112,7 +112,6 @@ Finelin annos- ja yksikkökoot päiväkirjan määrävalintaan (esim. "1 keskiko
 |---|---|---|
 | `id` | `uuid` PK | |
 | `slug` | `text` UNIQUE NOT NULL | Promptissa käytettävä vakaa tunniste, esim. `chicken_breast` |
-| `name_fi` | `text` NOT NULL | |
 | `fineli_id` | `integer` NOT NULL FK → `fineli_foods` | Pakollinen: ilman sitä makroja ei voi laskea |
 | `shop_section` | enum `shop_section` NOT NULL | Ostoslistan ryhmittely: `produce`, `meat_fish`, `dairy_eggs`, `bakery`, `dry_goods`, `canned`, `frozen`, `spices_oils`, `other` |
 | `display_unit` | enum `display_unit` NOT NULL | `g`, `ml`, `pcs`, `tbsp`, `tsp` – miten määrä näytetään |
@@ -123,6 +122,19 @@ Finelin annos- ja yksikkökoot päiväkirjan määrävalintaan (esim. "1 keskiko
 | `is_default_pantry` | `boolean` NOT NULL DEFAULT false | Kuuluu oletusperusvaroihin: öljy, suola, pippuri, sokeri, vehnäjauho, peruskuivamausteet. CHECK: `NOT is_default_pantry OR pantry_eligible` |
 | `price_reviewed_at` | `date` NOT NULL | Milloin hinta tarkistettu viimeksi |
 | `is_active` | `boolean` NOT NULL DEFAULT true | Passivointi, ei poistoa (resepteillä viittauksia) |
+
+### `ingredient_translations`
+Ainesosan tekstit kielittäin; rakenne (Fineli, hinta, pakkaus, allergeenit) on yhteinen. Sovelluksessa `data/catalog/text/<kieli>/ingredients.ts`.
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `ingredient_id` | `uuid` FK → `ingredients` ON DELETE CASCADE | PK (`ingredient_id`, `language`) |
+| `language` | `text` NOT NULL | `fi`, `en`, `sv`; CHECK tuettu kieli |
+| `name` | `text` NOT NULL | |
+| `piece_one` / `piece_many` | `text` | Kappaleina mitattavalle (`display_unit = 'pcs'`) pakollinen: "1 sipuli", "2 sipulia" |
+| `package_label` | `text` | Ostoslistan pakkaus, kun se ei ole paino tai tilavuus ("1 ruukku") |
+
+Jokaisella aktiivisella ainesosalla on rivi jokaisella tuetulla kielellä (tarkistetaan julkaisussa ja testeissä, `text.test.ts`).
 
 ### `price_regions`
 Hinta-alueet: maa, jonka hintatasolla ja valuutassa hinta-arviot näytetään. Kauppoja tai ketjuja ei ole: hinta on ainesosan keskihinta alueella.
@@ -177,9 +189,10 @@ Toissijainen varmistus: reseptin vapaat tekstit (nimi, kuvaus, vaiheet) skannata
 |---|---|---|
 | `id` | `uuid` PK | |
 | `allergen_code` | `text` FK → `allergens` | |
-| `keyword` | `text` NOT NULL | Pienaakkosin, vartalo: `pähkinä`, `cashew`, `maapähkinä`, `vehnä`, `maito`, `kerma`… |
-| `except_phrases` | `text[]` NOT NULL DEFAULT `'{}'` | Ilmaukset, jotka poistetaan tekstistä ennen hakua, esim. `maito` → `{kookosmaito, kauramaito}`. Estää turhat hylkäykset; lisätään vain tarkistetusti. |
-| | | UNIQUE (`allergen_code`, `keyword`) |
+| `language` | `text` NOT NULL | `fi`, `en`, `sv`. Turvatarkistus skannaa reseptin suomenkielisen lähdetekstin; muiden kielten sanat tarkistavat käännökset (käännös ei saa mainita allergeenia, jota reseptissä ei ole) |
+| `keyword` | `text` NOT NULL | Pienaakkosin, vartalo: `pähkinä`, `cashew`, `maapähkinä`, `vehnä`, `maito`, `kerma`… Ei monitulkintaisia vartaloita (ruotsin "nöt" on myös naudanliha) |
+| `except_phrases` | `text[]` NOT NULL DEFAULT `'{}'` | Ilmaukset, jotka eivät ole allergeeni, esim. `maito` → `{kookosmaito, kauramaito}`, `smör` → `{smörgås, smörja}`. Estää turhat hylkäykset; lisätään vain tarkistetusti. |
+| | | UNIQUE (`allergen_code`, `language`, `keyword`) |
 
 ### `ingredient_tags`
 Ruokavaliotarkistuksen tagit (ei allergeeneja).
@@ -231,7 +244,8 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 | `chat_share_consent_at` | `timestamptz` | Lupa näyttää avustajalle päivän kirjaukset ja tavoitteet. NULL = ei lupaa. Peruttavissa. |
 | `hide_calories` | `boolean` NOT NULL DEFAULT false | "Piilota kalorit": päiväkirja ja Koti näyttävät ateriat ilman lukuja. Ei terveystieto, mutta ei analytiikkaan (kertoo käyttäjän suhteesta numeroihin). |
 | `onboarding_completed_at` | `timestamptz` | |
-| `locale` | `text` NOT NULL DEFAULT `'fi'` | |
+| `language` | `text` | Käyttöliittymän ja reseptien kieli: `fi`, `en`, `sv`. NULL = puhelimen kieli, jos tuettu, muuten englanti. Ensikäynnistyksen ensimmäinen näkymä on kielen valinta. CHECK tuettu kieli |
+| `unit_system` | `text` | `metric` tai `imperial`. NULL = puhelimen mittajärjestelmä tai alue (Yhdysvallat imperiaalinen). Ruoka-, paino- ja pituusyksiköt tulevat samasta asetuksesta; tallennus on aina metrinen. CHECK |
 
 ### `profile_allergens` *(terveystieto)*
 
@@ -383,12 +397,6 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
 | `id` | `uuid` PK | |
-| `title_fi` | `text` NOT NULL | |
-| `description_fi` | `text` | Yksi lause |
-| `steps_fi` | `jsonb` NOT NULL | Taulukko merkkijonoja (numeroidaan näytössä); validoitu Zodilla ennen tallennusta |
-| `tips_fi` | `jsonb` NOT NULL | 1–4 vinkkiä |
-| `storage_fi` | `text` NOT NULL | Säilytysohje; oletus kategoriasta, resepti voi ohittaa |
-| `reheating_fi` | `text` NOT NULL | Lämmitysohje; 〃 |
 | `active_time_min` | `smallint` NOT NULL | Työaika. CHECK ≤ `total_time_min` |
 | `total_time_min` | `smallint` NOT NULL | Kokonaisaika pöytään (yön yli tekeytyvät jopa 720). Korvaa entisen `cook_time_min`:n |
 | `servings` | `smallint` NOT NULL | Montako annosta ohjeen vaiheet kuvaavat (1–12). Ainesosat ovat silti per annos. Leivonnaiset (≥ 6) avautuvat koko erän kokoisina |
@@ -433,6 +441,23 @@ Johdetut kentät (`allergen_codes`, `may_contain_codes`, `ingredient_tags`, makr
 
 **Rejected-reseptejä ei tallenneta tähän tauluun.** Tarkistuksessa hylätty tekoälyvastaus kirjataan vain `generation_runs`-riville.
 
+### `recipe_translations`
+Reseptin tekstit kielittäin. Rakenne (ainesosat, määrät, ajat, kategoria) ja kaikki laskettu data (makrot, allergeenit, hinta) ovat yhteisiä; käännös ei voi muuttaa niitä. Sovelluksessa `data/catalog/text/<kieli>/recipesNN.ts`, samat erät kuin rakenteella.
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `recipe_id` | `uuid` FK → `recipes` ON DELETE CASCADE | PK (`recipe_id`, `language`) |
+| `language` | `text` NOT NULL | `fi` on lähdekieli; `en`, `sv` käännöksiä. CHECK tuettu kieli |
+| `title` | `text` NOT NULL | |
+| `description` | `text` NOT NULL | Yksi lause |
+| `steps` | `jsonb` NOT NULL | Taulukko merkkijonoja; **sama määrä vaiheita kaikilla kielillä**. Validoitu Zodilla |
+| `tips` | `jsonb` NOT NULL | 1–4 vinkkiä, sama määrä kaikilla kielillä |
+| `storage` | `text` | Säilytysohje, jos se poikkeaa kategorian oletuksesta (oletukset kielittäin: `dish_defaults`) |
+| `reheating` | `text` | 〃 |
+| `translated_at` | `timestamptz` NOT NULL | |
+
+Suomenkielinen rivi on lähde: allergeenien avainsanatarkistus (`allergen_keywords`, kieli `fi`) ajetaan siihen. Resepti julkaistaan (`active`) vasta, kun sillä on rivi jokaisella tuetulla kielellä ja jokainen käännös läpäisee oman kielensä avainsanatarkistuksen. Englannin uunilämpötilat kirjoitetaan °C ja °F.
+
 ### `recipe_ingredients`
 
 | Kenttä | Tyyppi | Huom. |
@@ -441,7 +466,6 @@ Johdetut kentät (`allergen_codes`, `may_contain_codes`, `ingredient_tags`, makr
 | `position` | `smallint` NOT NULL | Näyttöjärjestys |
 | `ingredient_id` | `uuid` NOT NULL FK → `ingredients` | **Suljettu lista:** FK takaa, ettei tuntematonta ainesosaa voi tallentaa |
 | `grams_per_serving` | `numeric(8,2)` NOT NULL | CHECK > 0 |
-| `preparation_fi` | `text` | "hienonnettuna", "kuutioina" |
 | | | UNIQUE (`recipe_id`, `ingredient_id`) |
 
 ### `recipe_images`
@@ -842,6 +866,10 @@ Huomioita:
 20. **Reseptin kaikki laskettava data lasketaan:** makrot, kalorit, allergeenit, ruokavaliosopivuus ja hinta johdetaan ainesosista; käsin kirjoitettuja ravintoarvoja ei ole. Reseptit ovat aamiaisia, lounaita, päivällisiä tai välipaloja (`meal_types`); suunnittelija käyttää vain päivällisiä.
 21. **Vesi** on juomakohtainen loki (`water_entries`) ja henkilökohtainen tavoite (`water_settings`), joka lasketaan koodissa (`domain/hydration.ts`, testattu). Tavoitteen yläraja on 4 l, eikä yli tavoitteen juomisesta palkita.
 22. **Reseptikuvat:** testikirjastossa ei ole valokuvia; kuvituskortti piirretään kategoriasta teeman väreissä, kunnes backend tuottaa `recipe_images`-kuvan.
+23. **Kielet:** suomi, englanti ja ruotsi. Kieli on profiilin asetus (`profiles.language`), oletuksena puhelimen kieli tai englanti. Aiemmat (vain suomenkieliset) käyttäjät pitävät suomen (profiilin siirto v8).
+24. **Teksti erillään rakenteesta:** reseptien, ainesosien ja ruokien tekstit ovat käännöstauluissa (`recipe_translations`, `ingredient_translations`, `food_translations`), rakenne ja laskettu data yhteisiä. Uusi kieli = käännösrivit kaikille + käyttöliittymän käännöstiedosto; mitään rakennetta ei kopioida.
+25. **Mittayksiköt:** metrinen tai imperiaalinen (`profiles.unit_system`). Kaikki tallennetaan metrisenä (grammat, millilitrat, kilot, senttimetrit); yksikkö vaikuttaa vain näyttöön ja syöttöön.
+26. **Ravintoarvot muissa maissa:** Fineli säilyy toistaiseksi kaikkien kielten ja maiden pohjana. Muihin maihin laajennettaessa `fineli_foods`-taulun rinnalle voidaan tuoda esim. USDA FoodData Central (Yhdysvallat) ja Open Food Facts (kauppatuotteet). Ainesosa viittaa silloin yhteen lähteeseen, ja lähde näytetään.
 
 ## Avoimet kysymykset
 
