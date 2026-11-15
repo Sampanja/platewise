@@ -7,7 +7,7 @@ import { RecipeImage } from '@/components/RecipeImage';
 import { Icon, PressableScale, Text } from '@/components/ui';
 import { useServingPrice } from '@/data/hooks';
 import type { Recipe } from '@/data/types';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, formatInteger, strings } from '@/i18n';
 import { colors, radii, shadows, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -26,7 +26,7 @@ export function openRecipe(recipeId: string) {
 /** Photo card with price estimate per serving, time and kcal. Opens the recipe. */
 export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart = true, style, onPress }: Props) {
   const servingPrice = useServingPrice();
-  const price = formatCents(servingPrice(recipe));
+  const price = formatMoney(servingPrice(recipe));
   const time = format(strings.common.minutes, { count: recipe.totalTimeMin });
   const kcal = format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) });
 

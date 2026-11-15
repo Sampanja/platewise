@@ -8,8 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Card, haptics, Icon, PressableScale, SwitchRow, Text, type IconName } from '@/components/ui';
-import { CHAINS_BY_CODE } from '@/data/catalog';
-import { useWaterGoal } from '@/data/hooks';
+import { usePriceRegion, useWaterGoal } from '@/data/hooks';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
@@ -17,7 +16,7 @@ import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
-import { format, formatCents, formatDecimal, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, formatDecimal, formatInteger, strings } from '@/i18n';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
@@ -30,12 +29,12 @@ function edit(section: string): Href {
 
 function ProfileScreen() {
   const waterGoal = useWaterGoal(today());
+  const priceRegion = usePriceRegion();
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore(
     useShallow((s) => ({
       allergens: s.allergens,
       body: s.body,
-      chainCode: s.chainCode,
       diets: s.diets,
       gamificationEnabled: s.gamificationEnabled,
       goals: s.goals,
@@ -110,8 +109,8 @@ function ProfileScreen() {
         </PressableScale>
 
         <Section title={t.sectionShopping}>
-          <Row icon="wallet" label={t.weeklyBudget} value={formatCents(profile.weeklyBudgetCents)} href={edit('budget')} />
-          <Row icon="store" label={t.store} value={CHAINS_BY_CODE[profile.chainCode].name} href={edit('store')} last />
+          <Row icon="wallet" label={t.weeklyBudget} value={formatMoney(profile.weeklyBudgetCents)} href={edit('budget')} />
+          <Row icon="globe" label={t.priceRegion} value={strings.priceRegions.names[priceRegion]} href={edit('region')} last />
         </Section>
 
         <Section title={t.sectionFood}>

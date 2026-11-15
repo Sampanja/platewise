@@ -10,7 +10,10 @@ import { isRecipeAllowed, recipeCostCents } from '@/domain/recipes';
 import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/shoppingList';
 import { parseLocalDate, today, type LocalDate } from '@/lib/dates';
 
-import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
+import { priceFactor, priceRegionFor, type PriceRegionCode } from '@/domain/priceRegion';
+import { useDeviceLocale } from '@/lib/deviceLocale';
+
+import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
 import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
@@ -22,7 +25,7 @@ import { useMyMealsStore } from './stores/myMeals';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
 import { useWeightStore } from './stores/weight';
-import type { DayNutrition, MealPlan, NutritionGoals, Recipe, RecipeSource, StoreChain } from './types';
+import type { DayNutrition, MealPlan, NutritionGoals, Recipe, RecipeSource } from './types';
 
 /**
  * Hooks that combine the local repositories with the catalog. Screens use
@@ -136,20 +139,24 @@ export function useRecommendedWaterGoal(): WaterGoal {
   return useMemo(() => recommendedWaterGoal(profile), [profile]);
 }
 
-export function useChain(): StoreChain {
-  const code = useProfileStore((s) => s.chainCode);
-  return CHAINS_BY_CODE[code];
+/**
+ * The price region prices are estimated in: the one chosen in Profile, or the
+ * phone's region when it is supported (Finland otherwise).
+ */
+export function usePriceRegion(): PriceRegionCode {
+  const chosen = useProfileStore((s) => s.priceRegion);
+  const device = useDeviceLocale().regionCode;
+  return chosen ?? priceRegionFor(device);
 }
 
-/** Price estimate per serving at the user's store, without their pantry staples. */
+/** Price estimate per serving in the user's price region, without their pantry staples. */
 export function useServingPrice(): (recipe: Recipe, servings?: number) => number {
   const { pantry } = useUserRules();
-  const chain = useChain();
-  return useMemo(
-    () => (recipe: Recipe, servings = 1) =>
-      recipeCostCents(recipe, INGREDIENTS_BY_ID, pantry, chain.priceMultiplier, servings),
-    [pantry, chain],
-  );
+  const region = usePriceRegion();
+  return useMemo(() => {
+    const factor = priceFactor(region);
+    return (recipe: Recipe, servings = 1) => recipeCostCents(recipe, INGREDIENTS_BY_ID, pantry, factor, servings);
+  }, [pantry, region]);
 }
 
 /** The latest accepted plan that still has dinners today or later. */
@@ -165,13 +172,14 @@ export function useActivePlan(): MealPlan | null {
   return useMemo(() => activePlanOf(plans), [plans]);
 }
 
-/** "Säästöt": how far this month's accepted plans stayed under their budgets. */
+/** "Säästöt": how far this month's accepted plans stayed under their budgets (plans priced in the current region). */
 export function useMonthSavingsCents(): number {
   const plans = usePlansStore((s) => s.plans);
+  const region = usePriceRegion();
   return useMemo(() => {
     const month = today().slice(0, 7);
-    return savingsCents(plans.filter((plan) => plan.acceptedAt?.slice(0, 7) === month));
-  }, [plans]);
+    return savingsCents(plans.filter((plan) => plan.acceptedAt?.slice(0, 7) === month && plan.priceRegion === region));
+  }, [plans, region]);
 }
 
 export type CurrentShoppingList = {
@@ -181,6 +189,8 @@ export type CurrentShoppingList = {
   list: ShoppingList;
   /** Number of extra recipes added with "Lisää ostoslistaan". */
   extraCount: number;
+  /** Price region of the list's amounts. */
+  region: PriceRegionCode;
 };
 
 /** The active plan's shopping list (or the standalone list) with ticks and extras. */
@@ -188,8 +198,11 @@ export function useCurrentShoppingList(): CurrentShoppingList {
   const plan = useActivePlan();
   const shopping = usePlansStore((s) => s.shopping);
   const { pantry } = useUserRules();
+  const region = usePriceRegion();
   const listId = plan?.id ?? STANDALONE_LIST;
   const state = shoppingStateOf(shopping, listId);
+  // A plan's list stays in the region it was priced in.
+  const listRegion = plan?.priceRegion ?? region;
 
   const list = useMemo(() => {
     const entries: ListEntry[] = [];
@@ -205,11 +218,10 @@ export function useCurrentShoppingList(): CurrentShoppingList {
         entries.push({ recipe: RECIPES_BY_ID[extra.recipeId], servings: extra.servings });
       }
     }
-    const multiplier = CHAINS_BY_CODE[plan?.chainCode ?? useProfileStore.getState().chainCode].priceMultiplier;
-    return buildShoppingList(entries, INGREDIENTS_BY_ID, pantry, multiplier);
-  }, [plan, state.extras, pantry]);
+    return buildShoppingList(entries, INGREDIENTS_BY_ID, pantry, priceFactor(listRegion));
+  }, [plan, state.extras, pantry, listRegion]);
 
-  return { listId, plan, state, list, extraCount: state.extras.length };
+  return { listId, plan, state, list, extraCount: state.extras.length, region: listRegion };
 }
 
 

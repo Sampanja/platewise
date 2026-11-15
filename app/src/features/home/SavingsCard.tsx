@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Card, Icon, Text } from '@/components/ui';
-import { format, formatCents, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
 import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -25,10 +25,10 @@ export function SavingsCard({ savingsCents }: Props) {
         {hasSavings ? (
           <>
             <Text variant="display" color="success" style={styles.tabular}>
-              {formatCents(savingsCents)}
+              {formatMoney(savingsCents)}
             </Text>
             <Text variant="caption" color="textMuted">
-              {format(t.savings, { amount: formatCents(savingsCents) })}
+              {format(t.savings, { amount: formatMoney(savingsCents) })}
             </Text>
           </>
         ) : (

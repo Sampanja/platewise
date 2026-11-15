@@ -17,11 +17,21 @@ import {
   TextField,
 } from '@/components/ui';
 import { MIN_KCAL_GOAL, PANTRY_ELIGIBLE } from '@/data/catalog';
+import { usePriceRegion } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
-import { ChainPicker } from '@/features/shared/ChainPicker';
+import {
+  budgetBounds,
+  isRoughEstimate,
+  PRICE_REGION_CODES,
+  PRICE_REGIONS,
+  priceRegionFor,
+  type PriceRegionCode,
+} from '@/domain/priceRegion';
 import { RemindersEditor } from '@/features/profile/RemindersEditor';
 import { DietPicker } from '@/features/shared/DietPicker';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { currencySymbol, format, formatMoney, formatInteger, strings } from '@/i18n';
+import { useDeviceLocale } from '@/lib/deviceLocale';
+import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.profileEdit;
@@ -32,7 +42,7 @@ const THEME_OPTIONS = [
   { value: 'dark', hint: 'darkHint', icon: 'moon' },
 ] as const;
 
-type Section = 'name' | 'budget' | 'store' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
+type Section = 'name' | 'budget' | 'region' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
 
 /**
  * Edits one profile setting. Changes are saved as they are made (to the local
@@ -45,7 +55,7 @@ export default function ProfileEditScreen() {
     useShallow((s) => ({
       name: s.name,
       weeklyBudgetCents: s.weeklyBudgetCents,
-      chainCode: s.chainCode,
+      priceRegion: s.priceRegion,
       themePreference: s.themePreference,
       allergens: s.allergens,
       diets: s.diets,
@@ -59,7 +69,19 @@ export default function ProfileEditScreen() {
       togglePantry: s.togglePantry,
     })),
   );
+  const region = usePriceRegion();
+  const deviceRegion = priceRegionFor(useDeviceLocale().regionCode);
+  // Budget inputs work in whole currency units (euros, kronor).
+  const bounds = budgetBounds(region);
   const [budgetText, setBudgetText] = useState(String(Math.round(profile.weeklyBudgetCents / 100)));
+
+  /** null = follow the phone. The root layout converts saved budgets to the new region. */
+  const chooseRegion = (code: PriceRegionCode | null) => {
+    if (code === profile.priceRegion) return;
+    profile.update({ priceRegion: code });
+    const next = code ?? deviceRegion;
+    if (next !== region) showToast(format(t.regionChanged, { country: strings.priceRegions.names[next] }));
+  };
 
   const screens: Record<Section, { title: string; body?: string; node: ReactNode }> = {
     name: {
@@ -87,40 +109,60 @@ export default function ProfileEditScreen() {
             large
             value={budgetText}
             keyboardType="number-pad"
-            maxLength={3}
+            maxLength={String(bounds.max / 100).length}
             accessibilityLabel={strings.plan.budget.inputA11y}
             onChangeText={(text) => {
               const digits = text.replace(/\D/g, '');
               setBudgetText(digits);
-              const eur = Number(digits);
-              if (eur >= 10) profile.update({ weeklyBudgetCents: Math.min(300, eur) * 100 });
+              const amount = Number(digits) * 100;
+              if (amount >= bounds.min) profile.update({ weeklyBudgetCents: Math.min(bounds.max, amount) });
             }}
             onBlur={() => setBudgetText(String(Math.round(profile.weeklyBudgetCents / 100)))}
             trailing={
               <Text variant="title" color="textMuted">
-                {strings.common.euroSign}
+                {currencySymbol(region)}
               </Text>
             }
           />
           <Slider
             value={Math.round(profile.weeklyBudgetCents / 100)}
-            min={10}
-            max={300}
-            step={1}
-            onChange={(eur) => {
-              setBudgetText(String(eur));
-              profile.update({ weeklyBudgetCents: eur * 100 });
+            min={bounds.min / 100}
+            max={bounds.max / 100}
+            step={bounds.step / 100}
+            onChange={(units) => {
+              setBudgetText(String(units));
+              profile.update({ weeklyBudgetCents: units * 100 });
             }}
             accessibilityLabel={strings.plan.budget.sliderA11y}
-            accessibilityValueText={formatCents(profile.weeklyBudgetCents)}
+            accessibilityValueText={formatMoney(profile.weeklyBudgetCents)}
           />
         </Card>
       ),
     },
-    store: {
-      title: t.storeTitle,
-      body: t.storeBody,
-      node: <ChainPicker value={profile.chainCode} onChange={(chainCode) => profile.update({ chainCode })} />,
+    region: {
+      title: t.regionTitle,
+      body: t.regionBody,
+      node: (
+        <View style={styles.gap} accessibilityRole="radiogroup">
+          <OptionRow
+            icon="phone"
+            title={t.regionAuto}
+            hint={format(t.regionAutoHint, { country: strings.priceRegions.names[deviceRegion] })}
+            selected={profile.priceRegion === null}
+            onPress={() => chooseRegion(null)}
+          />
+          {PRICE_REGION_CODES.map((code) => (
+            <OptionRow
+              key={code}
+              icon="globe"
+              title={strings.priceRegions.names[code]}
+              hint={`${PRICE_REGIONS[code].currency} · ${isRoughEstimate(code) ? t.regionRough : t.regionMeasured}`}
+              selected={profile.priceRegion === code}
+              onPress={() => chooseRegion(code)}
+            />
+          ))}
+        </View>
+      ),
     },
     reminders: {
       title: strings.reminders.title,

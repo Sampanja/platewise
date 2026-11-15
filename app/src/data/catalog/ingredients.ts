@@ -10,7 +10,8 @@ import { FINELI } from './fineli.generated';
  * not have (lime, spice mixes, bulgur…) link to the closest Fineli food;
  * `proxy` says which and why. Allergens and diet tags are set here by hand
  * and cross-checked against Fineli's special-diet flags in tests.
- * Prices are plausible Finnish base prices (Prisma level), euros per kg.
+ * Prices are plausible Finnish average prices, euros per kg; other price
+ * regions are derived from them (domain/priceRegion.ts).
  */
 
 type Options = {

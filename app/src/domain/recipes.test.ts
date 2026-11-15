@@ -154,7 +154,7 @@ describe('keywordAllergens', () => {
 });
 
 describe('recipeCostCents', () => {
-  it('scales with servings and the chain multiplier and skips pantry items', () => {
+  it('scales with servings and the region price factor and skips pantry items', () => {
     const dish = recipe([['chicken-breast', 100], ['oil', 10]]);
     const pantry = new Set(['oil']);
     const one = recipeCostCents(dish, index, pantry, 1);

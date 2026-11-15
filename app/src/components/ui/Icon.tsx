@@ -84,6 +84,9 @@ import {
   Bot,
   ChartLine,
   CalendarCheck,
+  Globe,
+  Languages,
+  Ruler,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -181,6 +184,9 @@ const ICONS = {
   bot: Bot,
   lineChart: ChartLine,
   calendarCheck: CalendarCheck,
+  globe: Globe,
+  language: Languages,
+  ruler: Ruler,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { DEFAULT_GOALS, MIN_KCAL_GOAL, normalizeChainCode } from '../catalog/reference';
+import { DEFAULT_GOALS, MIN_KCAL_GOAL } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
-import { dropHouseholdSize } from '../migrations';
+import { dropHouseholdSize, profileWithoutStore } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import {
   DEFAULT_CYCLING,
@@ -15,10 +15,11 @@ import {
   type Sex,
   type Workout,
 } from '@/domain/energy';
+import { convertBudget, DEFAULT_PRICE_REGION, type PriceRegionCode } from '@/domain/priceRegion';
 import { DEFAULT_CHARACTER, isCharacterId, type CharacterId } from '@/theme/characters';
 import type { ThemePreference } from '@/theme/colors';
 
-import type { AllergenCode, ChainCode, DietCode, NutritionGoals } from '../types';
+import type { AllergenCode, DietCode, NutritionGoals } from '../types';
 
 /**
  * Local profile repository (`profiles`, `profile_allergens`, `profile_diets`,
@@ -90,12 +91,19 @@ export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
 
 export type Profile = {
   name: string;
+  /** In minor units of `budgetRegion`'s currency. */
   weeklyBudgetCents: number;
   allergens: AllergenCode[];
   diets: DietCode[];
   /** Ingredient ids the user always has at home. */
   pantry: string[];
-  chainCode: ChainCode;
+  /**
+   * Price region chosen in Profile, or null to follow the phone's region
+   * (data/hooks.ts `usePriceRegion`).
+   */
+  priceRegion: PriceRegionCode | null;
+  /** The region whose currency the saved budgets are in; budgets are converted when the region changes. */
+  budgetRegion: PriceRegionCode;
   goals: NutritionGoals;
   /** Calorie goal chosen in onboarding or profile; diary works without it too. */
   hasCalorieGoal: boolean;
@@ -123,7 +131,8 @@ export const DEFAULT_PROFILE: Profile = {
   allergens: [],
   diets: [],
   pantry: [...DEFAULT_PANTRY],
-  chainCode: 's_group',
+  priceRegion: null,
+  budgetRegion: DEFAULT_PRICE_REGION,
   goals: { ...DEFAULT_GOALS },
   hasCalorieGoal: false,
   body: { ...DEFAULT_BODY },
@@ -144,6 +153,8 @@ type ProfileState = Profile & {
   toggleAllergen: (code: AllergenCode) => void;
   toggleDiet: (code: DietCode) => void;
   togglePantry: (ingredientId: string) => void;
+  /** Converts the weekly budget to another region's currency and price level. */
+  alignBudgetTo: (region: PriceRegionCode) => void;
   reset: () => void;
 };
 
@@ -167,6 +178,12 @@ export const useProfileStore = create<ProfileState>()(
       toggleAllergen: (code) => set((state) => ({ allergens: toggle(state.allergens, code) })),
       toggleDiet: (code) => set((state) => ({ diets: toggle(state.diets, code) })),
       togglePantry: (id) => set((state) => ({ pantry: toggle(state.pantry, id) })),
+      alignBudgetTo: (region) =>
+        set((state) =>
+          state.budgetRegion === region
+            ? state
+            : { weeklyBudgetCents: convertBudget(state.weeklyBudgetCents, state.budgetRegion, region), budgetRegion: region },
+        ),
       reset: () =>
         set({
           ...DEFAULT_PROFILE,
@@ -178,16 +195,16 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 6,
+      version: 7,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
       // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
-      migrate: (persisted) => {
-        const saved = dropHouseholdSize((persisted ?? {}) as Partial<Profile>);
+      // v7: stores removed; earlier users keep the Finnish price region their budget is in.
+      migrate: (persisted, version) => {
+        const saved = profileWithoutStore(dropHouseholdSize((persisted ?? {}) as Partial<Profile>), version);
         return {
           ...DEFAULT_PROFILE,
           ...saved,
-          chainCode: normalizeChainCode(saved.chainCode),
           characterId: isCharacterId(saved.characterId) ? saved.characterId : DEFAULT_CHARACTER,
           // People who already finished onboarding are not sent back to the picker.
           characterChosen: saved.characterChosen ?? saved.onboardingCompleted ?? false,

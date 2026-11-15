@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Card, Icon, ProgressMeter, Text } from '@/components/ui';
 import type { MealPlan } from '@/data/types';
 import { budgetHeadroomCents } from '@/domain/plan';
-import { format, formatCents, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
 import { spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -18,8 +18,8 @@ type Props = {
 export function BudgetCard({ plan, shoppingDone, shoppingTotal }: Props) {
   const t = strings.home;
   const headroom = budgetHeadroomCents(plan);
-  const used = formatCents(plan.estimatedTotalCents);
-  const total = formatCents(plan.budgetCents);
+  const used = formatMoney(plan.estimatedTotalCents, plan.priceRegion);
+  const total = formatMoney(plan.budgetCents, plan.priceRegion);
 
   return (
     <Card style={styles.card}>
@@ -36,8 +36,8 @@ export function BudgetCard({ plan, shoppingDone, shoppingTotal }: Props) {
       {/* Going over budget is shown plainly, not as an alarm: the user chose it. */}
       <Text variant="bodyStrong" color={headroom >= 0 ? 'success' : 'accentText'}>
         {headroom >= 0
-          ? format(t.budgetLeft, { amount: formatCents(headroom) })
-          : format(t.budgetOver, { amount: formatCents(-headroom) })}
+          ? format(t.budgetLeft, { amount: formatMoney(headroom, plan.priceRegion) })
+          : format(t.budgetOver, { amount: formatMoney(-headroom, plan.priceRegion) })}
       </Text>
       <Text variant="caption" color="textSubtle">
         {strings.budget.explainer}

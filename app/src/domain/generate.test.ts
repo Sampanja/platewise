@@ -30,7 +30,7 @@ function answers(overrides: Partial<PlanAnswers> = {}): PlanAnswers {
     extraAllergens: [],
     extraDiets: [],
     cravings: [],
-    chainCode: 's_group',
+    priceRegion: 'FI',
     ...overrides,
   };
 }

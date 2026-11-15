@@ -20,11 +20,13 @@ import {
   ProgressMeter,
   Text,
 } from '@/components/ui';
-import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
+import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
 import { useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
-import type { ChainCode, PlanAnswers, Proposal, ProposalMeal } from '@/data/types';
-import { assessProposal, compareChains, dropMeal, type Assessment, type ChainTotal } from '@/domain/feasibility';
+import type { PlanAnswers, Proposal, ProposalMeal } from '@/data/types';
+import { assessProposal, dropMeal, type Assessment } from '@/domain/feasibility';
+import { priceFactor } from '@/domain/priceRegion';
+import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import {
   acceptProposal,
   dinnerServings,
@@ -33,7 +35,7 @@ import {
   swapMeal,
 } from '@/domain/generate';
 import { recipeCostCents } from '@/domain/recipes';
-import { format, formatCents, formatInteger, formatWholeEuros, strings } from '@/i18n';
+import { format, formatMoney, formatInteger, formatWholeMoney, strings } from '@/i18n';
 import { addDays, relativeDayLabel } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -51,7 +53,6 @@ export default function ProposalScreen() {
     if (!proposal) return null;
     const ids = proposal.meals.map((meal) => meal.recipeId);
     const list = proposalShoppingList(ids, RECIPES_BY_ID, proposal.answers, INGREDIENTS_BY_ID, rules.pantry);
-    const chains = compareChains(ids, RECIPES_BY_ID, proposal.answers, INGREDIENTS_BY_ID, rules.pantry);
     const assessment = assessProposal({
       meals: proposal.meals,
       answers: proposal.answers,
@@ -64,7 +65,6 @@ export default function ProposalScreen() {
     const avg = (pick: (r: (typeof recipes)[number]) => number) =>
       recipes.reduce((sum, r) => sum + pick(r), 0) / Math.max(1, recipes.length);
     return {
-      chains,
       assessment,
       totalCents: list.totalCents,
       kcal: avg((r) => r.perServing.kcal),
@@ -97,16 +97,10 @@ export default function ProposalScreen() {
     setProposal({ ...proposal, answers: next, meals });
     usePlansStore.getState().setLastAnswers(next);
   };
-  const setChain = (chainCode: ChainCode) => {
-    if (chainCode === answers.chainCode) return;
-    haptics.select();
-    updateAnswers({ chainCode });
-    showToast(format(t.chainSwitched, { chain: CHAINS_BY_CODE[chainCode].name }));
-  };
   const raiseBudget = (budgetCents: number) => {
     haptics.tap();
     updateAnswers({ budgetCents });
-    showToast(format(t.budgetRaised, { amount: formatWholeEuros(budgetCents) }));
+    showToast(format(t.budgetRaised, { amount: formatWholeMoney(budgetCents) }));
   };
   const removeMeal = (dayOffset: number) => {
     haptics.tap();
@@ -174,22 +168,22 @@ export default function ProposalScreen() {
               variant="displayLarge"
               color="accentText"
               value={totals.totalCents}
-              format={(v) => formatCents(Math.round(v))}
+              format={(v) => formatMoney(Math.round(v))}
             />
             <Text variant="heading" color="textMuted">
-              {format(t.ofBudget, { budget: formatCents(answers.budgetCents) })}
+              {format(t.ofBudget, { budget: formatMoney(answers.budgetCents) })}
             </Text>
           </View>
           <ProgressMeter
             value={totals.totalCents / answers.budgetCents}
-            accessibilityLabel={`${t.total} ${formatCents(totals.totalCents)} ${format(t.ofBudget, {
-              budget: formatCents(answers.budgetCents),
+            accessibilityLabel={`${t.total} ${formatMoney(totals.totalCents)} ${format(t.ofBudget, {
+              budget: formatMoney(answers.budgetCents),
             })}`}
           />
           <Text variant="bodyStrong" color={headroom >= 0 ? 'success' : 'accentText'}>
             {headroom >= 0
-              ? format(t.under, { amount: formatCents(headroom) })
-              : format(t.over, { amount: formatCents(-headroom) })}
+              ? format(t.under, { amount: formatMoney(headroom) })
+              : format(t.over, { amount: formatMoney(-headroom) })}
           </Text>
           <View style={styles.divider} />
           <Text variant="overline" color="textSubtle">
@@ -206,7 +200,7 @@ export default function ProposalScreen() {
           </Text>
         </Card>
 
-        <IssueCard assessment={totals.assessment} onRaise={raiseBudget} onDrop={removeMeal} onChain={setChain} />
+        <IssueCard assessment={totals.assessment} onRaise={raiseBudget} onDrop={removeMeal} />
 
         {proposal.meals.map((meal, i) => (
           <FadeInView key={meal.dayOffset} delay={i * 50}>
@@ -223,7 +217,7 @@ export default function ProposalScreen() {
           disabled={unlockedCount === 0}
         />
 
-        <ChainComparison chains={totals.chains} selected={answers.chainCode} onSelect={setChain} />
+        <PriceRegionNote region={answers.priceRegion} />
       </ScrollView>
       <View style={styles.footer}>
         <Button label={t.accept} onPress={accept} haptic="none" />
@@ -237,29 +231,24 @@ function IssueCard({
   assessment,
   onRaise,
   onDrop,
-  onChain,
 }: {
   assessment: Assessment;
   onRaise: (budgetCents: number) => void;
   onDrop: (dayOffset: number) => void;
-  onChain: (chainCode: ChainCode) => void;
 }) {
   const { overBudgetCents, unmetWishes, fixes } = assessment;
   if (overBudgetCents === 0 && unmetWishes.length === 0) return null;
   const fixLabel = (fix: Assessment['fixes'][number]) => {
     switch (fix.kind) {
       case 'raiseBudget':
-        return format(t.fixRaise, { amount: formatWholeEuros(fix.byCents) });
+        return format(t.fixRaise, { amount: formatWholeMoney(fix.byCents) });
       case 'fewerMeals':
-        return format(t.fixFewer, { total: formatCents(fix.totalCents) });
-      case 'cheaperChain':
-        return format(t.fixChain, { chain: CHAINS_BY_CODE[fix.chainCode].name, total: formatCents(fix.totalCents) });
+        return format(t.fixFewer, { total: formatMoney(fix.totalCents) });
     }
   };
   const apply = (fix: Assessment['fixes'][number]) => {
     if (fix.kind === 'raiseBudget') onRaise(fix.budgetCents);
-    else if (fix.kind === 'fewerMeals') onDrop(fix.dayOffset);
-    else onChain(fix.chainCode);
+    else onDrop(fix.dayOffset);
   };
   return (
     <FadeInView>
@@ -269,7 +258,7 @@ function IssueCard({
             <View style={styles.issueHead}>
               <Icon name="info" size={20} color="accentText" />
               <Text variant="heading" style={styles.flex}>
-                {format(t.overTitle, { amount: formatCents(overBudgetCents) })}
+                {format(t.overTitle, { amount: formatMoney(overBudgetCents) })}
               </Text>
             </View>
             <Text variant="body" color="textMuted">
@@ -307,52 +296,6 @@ function IssueCard({
   );
 }
 
-/** "Sama lista muissa kaupoissa": the list priced in every chain; a tap switches the store. */
-function ChainComparison({
-  chains,
-  selected,
-  onSelect,
-}: {
-  chains: readonly ChainTotal[];
-  selected: ChainCode;
-  onSelect: (chainCode: ChainCode) => void;
-}) {
-  return (
-    <Card style={styles.compare}>
-      <Text variant="overline" color="textSubtle">
-        {t.compareTitle}
-      </Text>
-      {chains.map((chain, i) => {
-        const isSelected = chain.chainCode === selected;
-        const name = CHAINS_BY_CODE[chain.chainCode].name;
-        const label = format(t.compareA11y, { chain: name, total: formatCents(chain.totalCents) });
-        return (
-          <PressableScale
-            key={chain.chainCode}
-            onPress={() => onSelect(chain.chainCode)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: isSelected }}
-            accessibilityLabel={
-              isSelected ? `${label}, ${t.compareSelected}` : `${label}. ${format(t.compareSwitchA11y, { chain: name })}`
-            }
-            style={[styles.compareRow, i < chains.length - 1 && styles.compareDivider]}
-          >
-            <Icon name="store" size={18} color={isSelected ? 'accentText' : 'textSubtle'} />
-            <Text variant={isSelected ? 'bodyStrong' : 'body'} style={styles.flex} numberOfLines={2}>
-              {name}
-            </Text>
-            {isSelected ? <Chip tone="accent" label={t.compareSelected} /> : null}
-            <Text variant="number">{formatCents(chain.totalCents)}</Text>
-          </PressableScale>
-        );
-      })}
-      <Text variant="caption" color="textSubtle">
-        {t.compareHint}
-      </Text>
-    </Card>
-  );
-}
-
 function Macro({ label, unit, value }: { label: string; unit: string; value: number }) {
   return (
     <View style={styles.macro}>
@@ -387,7 +330,7 @@ function MealCard({
   const day = relativeDayLabel(addDays(proposal.startDate, meal.dayOffset));
   const servings = dinnerServings(answers);
   const perServing =
-    recipeCostCents(recipe, INGREDIENTS_BY_ID, pantry, CHAINS_BY_CODE[answers.chainCode].priceMultiplier);
+    recipeCostCents(recipe, INGREDIENTS_BY_ID, pantry, priceFactor(answers.priceRegion));
   const inPlan = new Set(proposal.meals.map((m) => m.recipeId));
   const canSwap = !meal.locked && meal.alternatives.some((id) => !inPlan.has(id));
 
@@ -410,7 +353,7 @@ function MealCard({
               {recipe.title}
             </Text>
             <Text variant="caption" color="textSubtle">
-              {formatCents(perServing)} {strings.common.perServing} · {formatInteger(recipe.perServing.kcal)} kcal ·{' '}
+              {formatMoney(perServing)} {strings.common.perServing} · {formatInteger(recipe.perServing.kcal)} kcal ·{' '}
               {format(strings.common.minutes, { count: recipe.totalTimeMin })}
             </Text>
             {answers.cookDouble ? (
@@ -502,20 +445,6 @@ const styles = themedStyles(() =>
     fixes: {
       gap: spacing.sm,
       alignItems: 'flex-start',
-    },
-    compare: {
-      gap: spacing.xs,
-    },
-    compareRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      minHeight: 48,
-      paddingVertical: spacing.xs,
-    },
-    compareDivider: {
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
     },
     lockedCard: {
       borderColor: colors.accent,

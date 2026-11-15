@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { normalizeChainCode } from '../catalog/reference';
-import { planWithEaters } from '../migrations';
+import { convertBudget, type PriceRegionCode } from '@/domain/priceRegion';
+
+import { planWithEaters, withPriceRegion } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import type { MealPlan, PlanAnswers, Proposal, ProposalMeal } from '../types';
 
@@ -35,6 +36,8 @@ type PlansState = {
   setProposal: (proposal: Proposal | null) => void;
   setProposalMeals: (meals: ProposalMeal[]) => void;
   setLastAnswers: (answers: PlanAnswers) => void;
+  /** Moves the remembered and pending budgets to another price region (same purchasing power). Accepted plans keep theirs. */
+  alignAnswersTo: (region: PriceRegionCode) => void;
   savePlan: (plan: MealPlan) => void;
   pinRecipe: (recipeId: string) => void;
   clearPinned: () => void;
@@ -66,6 +69,17 @@ export const usePlansStore = create<PlansState>()(
       setProposalMeals: (meals) =>
         set((state) => (state.proposal ? { proposal: { ...state.proposal, meals } } : state)),
       setLastAnswers: (answers) => set({ lastAnswers: answers }),
+      alignAnswersTo: (region) =>
+        set((state) => {
+          const move = (answers: PlanAnswers): PlanAnswers =>
+            answers.priceRegion === region
+              ? answers
+              : { ...answers, budgetCents: convertBudget(answers.budgetCents, answers.priceRegion, region), priceRegion: region };
+          const lastAnswers = state.lastAnswers ? move(state.lastAnswers) : null;
+          const proposal = state.proposal ? { ...state.proposal, answers: move(state.proposal.answers) } : null;
+          if (lastAnswers === state.lastAnswers && proposal?.answers === state.proposal?.answers) return state;
+          return { lastAnswers, proposal };
+        }),
       savePlan: (plan) =>
         set((state) => ({
           plans: [...state.plans.filter((p) => p.id !== plan.id), plan],
@@ -110,24 +124,24 @@ export const usePlansStore = create<PlansState>()(
     {
       name: `${STORAGE_PREFIX}plans`,
       storage: deviceStorage,
-      version: 3,
-      // v2: chains were grouped (Prisma/S-market, K-Citymarket/K-Market).
+      version: 4,
       // v3: a plan's eaters are `eaters` (was `householdSize`).
+      // v4: stores removed; plans, the proposal and the last answers carry a price region.
       migrate: (persisted) => {
         const saved = (persisted ?? {}) as Partial<PlansState>;
         return {
           ...saved,
           plans: (saved.plans ?? []).map((plan) =>
-            planWithEaters({ ...plan, chainCode: normalizeChainCode(plan.chainCode) }),
+            planWithEaters(withPriceRegion(plan)),
           ),
           proposal: saved.proposal
             ? {
                 ...saved.proposal,
-                answers: { ...saved.proposal.answers, chainCode: normalizeChainCode(saved.proposal.answers.chainCode) },
+                answers: withPriceRegion(saved.proposal.answers),
               }
             : null,
           lastAnswers: saved.lastAnswers
-            ? { ...saved.lastAnswers, chainCode: normalizeChainCode(saved.lastAnswers.chainCode) }
+            ? withPriceRegion(saved.lastAnswers)
             : null,
         } as PlansState;
       },

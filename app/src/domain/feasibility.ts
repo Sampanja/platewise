@@ -1,7 +1,7 @@
-import { CHAINS } from '@/data/catalog/reference';
-import type { ChainCode, CravingCode, PlanAnswers, ProposalMeal, Recipe } from '@/data/types';
+import type { CravingCode, PlanAnswers, ProposalMeal, Recipe } from '@/data/types';
 
 import { eligibleRecipes, matchesCraving, planRules, proposalShoppingList, type UserRules } from './generate';
+import { ceilToWholeUnit } from './priceRegion';
 import type { IngredientIndex } from './recipes';
 
 /**
@@ -11,23 +11,6 @@ import type { IngredientIndex } from './recipes';
  * proposal screen and the backend can share them.
  */
 
-export type ChainTotal = { chainCode: ChainCode; totalCents: number };
-
-/** The same shopping list priced in every chain, cheapest first. */
-export function compareChains(
-  recipeIds: readonly string[],
-  recipesById: Readonly<Record<string, Recipe>>,
-  answers: PlanAnswers,
-  index: IngredientIndex,
-  pantry: ReadonlySet<string>,
-): ChainTotal[] {
-  return CHAINS.map((chain) => ({
-    chainCode: chain.code,
-    totalCents: proposalShoppingList(recipeIds, recipesById, { ...answers, chainCode: chain.code }, index, pantry)
-      .totalCents,
-  })).sort((a, b) => a.totalCents - b.totalCents);
-}
-
 export type UnmetWish = {
   craving: CravingCode;
   /** `rules`: no recipe matching the wish passes the allergies and diets. `budget`: it did not fit. */
@@ -35,12 +18,10 @@ export type UnmetWish = {
 };
 
 export type PlanFix =
-  /** Raise the budget to this (whole euros, enough for the current list). */
+  /** Raise the budget to this (whole currency units, enough for the current list). */
   | { kind: 'raiseBudget'; budgetCents: number; byCents: number }
   /** Drop the most expensive free meal; the rest then fits the budget. */
-  | { kind: 'fewerMeals'; dayOffset: number; mealCount: number; totalCents: number }
-  /** The same list fits the budget in a cheaper chain. */
-  | { kind: 'cheaperChain'; chainCode: ChainCode; totalCents: number };
+  | { kind: 'fewerMeals'; dayOffset: number; mealCount: number; totalCents: number };
 
 export type Assessment = {
   totalCents: number;
@@ -51,11 +32,6 @@ export type Assessment = {
 };
 
 const MIN_MEALS = 2;
-
-/** Rounds cents up to whole euros. */
-export function ceilToEuro(cents: number): number {
-  return Math.ceil(cents / 100) * 100;
-}
 
 export function assessProposal(input: {
   meals: readonly ProposalMeal[];
@@ -80,7 +56,7 @@ export function assessProposal(input: {
 
   const fixes: PlanFix[] = [];
   if (overBudgetCents > 0) {
-    const budgetCents = ceilToEuro(totalCents);
+    const budgetCents = ceilToWholeUnit(totalCents);
     fixes.push({ kind: 'raiseBudget', budgetCents, byCents: budgetCents - answers.budgetCents });
 
     if (meals.length > MIN_MEALS) {
@@ -96,11 +72,6 @@ export function assessProposal(input: {
       }
       if (best) fixes.push({ kind: 'fewerMeals', mealCount: meals.length - 1, ...best });
     }
-
-    const cheaper = compareChains(ids, recipesById, answers, index, user.pantry).find(
-      (chain) => chain.chainCode !== answers.chainCode && chain.totalCents <= answers.budgetCents,
-    );
-    if (cheaper) fixes.push({ kind: 'cheaperChain', ...cheaper });
   }
 
   return { totalCents, overBudgetCents, unmetWishes, fixes };
@@ -121,7 +92,7 @@ export function tightBudgetFixes(
   answers: PlanAnswers,
   minimumFor: (mealCount: number) => number,
 ): { raiseToCents: number; fewerMeals: number | null } {
-  const raiseToCents = ceilToEuro(minimumFor(answers.mealCount));
+  const raiseToCents = ceilToWholeUnit(minimumFor(answers.mealCount));
   const fewer = answers.mealCount - 1;
   const fewerMeals = fewer >= MIN_MEALS && minimumFor(fewer) <= answers.budgetCents ? fewer : null;
   return { raiseToCents, fewerMeals };

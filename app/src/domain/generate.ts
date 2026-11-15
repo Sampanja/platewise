@@ -1,4 +1,4 @@
-import { CHAINS_BY_CODE, DIET_EXCLUDED_TAGS, QUICK_MAX_MIN } from '@/data/catalog/reference';
+import { DIET_EXCLUDED_TAGS, QUICK_MAX_MIN } from '@/data/catalog/reference';
 import type {
   AllergenCode,
   CravingCode,
@@ -11,6 +11,7 @@ import type {
   Recipe,
 } from '@/data/types';
 
+import { priceFactor } from './priceRegion';
 import { isRecipeAllowed, recipeCostCents, type IngredientIndex } from './recipes';
 import { buildShoppingList, type ShoppingList } from './shoppingList';
 
@@ -112,7 +113,7 @@ export function proposalShoppingList(
     recipeIds.map((id) => ({ recipe: recipesById[id], servings })),
     index,
     pantry,
-    CHAINS_BY_CODE[answers.chainCode].priceMultiplier,
+    priceFactor(answers.priceRegion),
   );
 }
 
@@ -129,10 +130,10 @@ export function generateMeals(input: GenerateInput): ProposalMeal[] {
   if (pool.length === 0) throw new NoRecipesError('No recipe passes the rules');
 
   const byId = Object.fromEntries(pool.map((recipe) => [recipe.id, recipe]));
-  const multiplier = CHAINS_BY_CODE[answers.chainCode].priceMultiplier;
+  const factor = priceFactor(answers.priceRegion);
   const servings = dinnerServings(answers);
   const cost = (recipe: Recipe) =>
-    recipeCostCents(recipe, index, user.pantry, multiplier, servings);
+    recipeCostCents(recipe, index, user.pantry, factor, servings);
   const targetPerMeal = answers.budgetCents / answers.mealCount;
 
   const score = new Map<string, number>();
@@ -252,13 +253,13 @@ export function minimumBudgetCents(
 ): number {
   const pool = eligibleRecipes(recipes, index, planRules(user, answers));
   if (pool.length === 0) return 0;
-  const multiplier = CHAINS_BY_CODE[answers.chainCode].priceMultiplier;
+  const factor = priceFactor(answers.priceRegion);
   const servings = dinnerServings(answers);
   const cheapest = [...pool]
     .sort(
       (a, b) =>
-        recipeCostCents(a, index, user.pantry, multiplier, servings) -
-        recipeCostCents(b, index, user.pantry, multiplier, servings),
+        recipeCostCents(a, index, user.pantry, factor, servings) -
+        recipeCostCents(b, index, user.pantry, factor, servings),
     )
     .slice(0, answers.mealCount);
   const byId = Object.fromEntries(cheapest.map((recipe) => [recipe.id, recipe]));
@@ -275,7 +276,7 @@ export function acceptProposal(
   acceptedAt: Date,
 ): MealPlan {
   const { answers } = proposal;
-  const multiplier = CHAINS_BY_CODE[answers.chainCode].priceMultiplier;
+  const factor = priceFactor(answers.priceRegion);
   const servings = dinnerServings(answers);
   const meals: PlanMeal[] = [];
   for (const meal of proposal.meals) {
@@ -285,7 +286,7 @@ export function acceptProposal(
       slot: 'dinner',
       recipeId: meal.recipeId,
       servings,
-      costCents: recipeCostCents(recipe, index, pantry, multiplier, servings),
+      costCents: recipeCostCents(recipe, index, pantry, factor, servings),
       cookDouble: answers.cookDouble,
     });
     if (answers.cookDouble) {
@@ -314,7 +315,7 @@ export function acceptProposal(
     mealCount: answers.mealCount,
     eaters: answers.eaters,
     budgetCents: answers.budgetCents,
-    chainCode: answers.chainCode,
+    priceRegion: answers.priceRegion,
     estimatedTotalCents: list.totalCents,
     status: 'accepted',
     acceptedAt: acceptedAt.toISOString(),
@@ -338,7 +339,7 @@ export function replacePlanDinner(
   index: IngredientIndex,
   pantry: ReadonlySet<string>,
 ): MealPlan {
-  const multiplier = CHAINS_BY_CODE[plan.chainCode].priceMultiplier;
+  const factor = priceFactor(plan.priceRegion);
   const recipe = recipesById[recipeId];
   const target = plan.meals.find((meal) => meal.slot === 'dinner' && meal.dayOffset === dayOffset);
   if (!recipe || !target) return plan;
@@ -348,7 +349,7 @@ export function replacePlanDinner(
       return {
         ...meal,
         recipeId,
-        costCents: recipeCostCents(recipe, index, pantry, multiplier, meal.servings),
+        costCents: recipeCostCents(recipe, index, pantry, factor, meal.servings),
       };
     }
     if (target.cookDouble && meal.slot === 'lunch' && meal.dayOffset === dayOffset + 1) {
@@ -362,7 +363,7 @@ export function replacePlanDinner(
       .map((meal) => ({ recipe: recipesById[meal.recipeId], servings: meal.servings })),
     index,
     pantry,
-    multiplier,
+    factor,
   );
   return { ...plan, meals, estimatedTotalCents: list.totalCents };
 }
@@ -388,12 +389,12 @@ export function replacementDinner(
   };
   const inPlan = new Set(plan.meals.map((m) => m.recipeId));
   const current = recipes.find((recipe) => recipe.id === meal.recipeId);
-  const multiplier = CHAINS_BY_CODE[plan.chainCode].priceMultiplier;
+  const factor = priceFactor(plan.priceRegion);
   const pool = eligibleRecipes(recipes, index, rules)
     .filter((recipe) => !inPlan.has(recipe.id))
     .sort(
       (a, b) =>
-        recipeCostCents(a, index, user.pantry, multiplier) - recipeCostCents(b, index, user.pantry, multiplier),
+        recipeCostCents(a, index, user.pantry, factor) - recipeCostCents(b, index, user.pantry, factor),
     );
   return pool.find((recipe) => recipe.mainProtein === current?.mainProtein) ?? pool[0] ?? null;
 }

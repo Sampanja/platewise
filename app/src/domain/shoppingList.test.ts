@@ -54,11 +54,11 @@ describe('buildShoppingList', () => {
     expect(list.totalCents).toBe(list.items[0].costCents);
   });
 
-  it('applies the chain multiplier to package prices', () => {
+  it('applies the region price factor to package prices', () => {
     const entries = [{ recipe: dish('a', [['penne', 100]]), servings: 2 }];
-    const prisma = buildShoppingList(entries, index, new Set(), 1).totalCents;
-    const lidl = buildShoppingList(entries, index, new Set(), 0.85).totalCents;
-    expect(lidl).toBe(Math.round(prisma * 0.85));
+    const finland = buildShoppingList(entries, index, new Set(), 1).totalCents;
+    const cheaper = buildShoppingList(entries, index, new Set(), 0.85).totalCents;
+    expect(cheaper).toBe(Math.round(finland * 0.85));
   });
 
   it('sorts items in store walking order', () => {

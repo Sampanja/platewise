@@ -20,18 +20,17 @@ import {
 import { MIN_KCAL_GOAL } from '@/data/catalog';
 import { useProfileStore, type Profile } from '@/data/stores/profile';
 import type { AllergenCode, DietCode } from '@/data/types';
-import { ChainPicker } from '@/features/shared/ChainPicker';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatInteger, strings } from '@/i18n';
 import { activeTheme, colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.onboarding;
-const STEPS = ['welcome', 'diet', 'store', 'goal'] as const;
+const STEPS = ['welcome', 'diet', 'goal'] as const;
 type Step = (typeof STEPS)[number];
 
 type Draft = Pick<
   Profile,
-  'name' | 'allergens' | 'diets' | 'chainCode' | 'goals' | 'hasCalorieGoal'
+  'name' | 'allergens' | 'diets' | 'goals' | 'hasCalorieGoal'
 >;
 
 /**
@@ -66,7 +65,6 @@ function Setup() {
     name: profile.name,
     allergens: profile.allergens,
     diets: profile.diets,
-    chainCode: profile.chainCode,
     goals: profile.goals,
     hasCalorieGoal: profile.hasCalorieGoal,
   });
@@ -140,11 +138,6 @@ function Setup() {
           </View>
         </View>
       ),
-    },
-    store: {
-      title: t.storeTitle,
-      body: t.storeBody,
-      node: <ChainPicker value={draft.chainCode} onChange={(chainCode) => patch({ chainCode })} />,
     },
     goal: {
       title: t.goalTitle,

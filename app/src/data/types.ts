@@ -1,3 +1,4 @@
+import type { PriceRegionCode } from '@/domain/priceRegion';
 import type { LocalDate } from '@/lib/dates';
 
 /**
@@ -123,9 +124,6 @@ export type IngredientTag =
   | 'lactose'
   | 'honey';
 
-/** Store chains with their own price level. S and K groups share a level across store sizes. */
-export type ChainCode = 'lidl' | 's_group' | 'k_group' | 'tokmanni';
-
 /** Store sections, in the order a typical Finnish grocery store is walked. */
 export type AisleCode =
   | 'produce'
@@ -167,13 +165,6 @@ export type Macros = {
 export const MICRO_KEYS = ['fiberG', 'sugarG', 'saltG'] as const;
 export type MicroKey = (typeof MICRO_KEYS)[number];
 
-export type StoreChain = {
-  code: ChainCode;
-  name: string;
-  /** Price level relative to the base price table (1.0). */
-  priceMultiplier: number;
-};
-
 /** How an ingredient amount is shown to people. Amounts are always stored in grams. */
 export type AmountDisplay =
   | { kind: 'weight' }
@@ -188,7 +179,7 @@ export type Ingredient = {
   fineli: { id: number; name: string; diets: readonly string[]; proxy?: string };
   /** Nutrients per 100 g, always from the linked Fineli food. */
   per100g: Macros;
-  /** Base price (multiplier 1.0), cents per kg. */
+  /** Average price in Finland, euro cents per kg (domain/priceRegion.ts converts it). */
   pricePerKgCents: number;
   /** Smallest package sold, in grams. Shopping lists round up to whole packages. */
   packageG: number;
@@ -245,7 +236,7 @@ export type Recipe = RecipeSource & {
   perServing: Macros;
   allergens: readonly AllergenCode[];
   tags: readonly IngredientTag[];
-  /** Base price per serving (multiplier 1.0) without pantry staples, in cents. */
+  /** Finnish average price per serving without pantry staples, in euro cents. */
   baseCostPerServingCents: number;
 };
 
@@ -291,7 +282,7 @@ export type PlanMeal = {
   slot: MealSlot;
   recipeId: string;
   servings: number;
-  /** Dinner: chain-adjusted cost of its servings incl. doubling. Lunch: always 0. */
+  /** Dinner: cost of its servings incl. doubling in the plan's price region. Lunch: always 0. */
   costCents: number;
   cookDouble: boolean;
 };
@@ -306,7 +297,8 @@ export type MealPlan = {
   /** People eating in this plan (chosen in the questionnaire). */
   eaters: number;
   budgetCents: number;
-  chainCode: ChainCode;
+  /** Price region the plan was priced in: its amounts are in that currency. */
+  priceRegion: PriceRegionCode;
   /** Shopping list total in whole packages: the number compared with the budget. */
   estimatedTotalCents: number;
   status: PlanStatus;
@@ -326,7 +318,7 @@ export type PlanAnswers = {
   extraAllergens: AllergenCode[];
   extraDiets: DietCode[];
   cravings: CravingCode[];
-  chainCode: ChainCode;
+  priceRegion: PriceRegionCode;
 };
 
 export type ProposalMeal = {

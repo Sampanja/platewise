@@ -1,6 +1,6 @@
 # Platewise – suunnitelma
 
-Maksullinen mobiilisovellus (iOS + Android), yksilösovellus: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Suunnitelman voi tehdä 1–6 syöjälle (oletus 1), ja määrä valitaan vain kyselyssä. Käyttäjä syöttää budjetin, lähikauppansa, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
+Maksullinen mobiilisovellus (iOS + Android), yksilösovellus: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Suunnitelman voi tehdä 1–6 syöjälle (oletus 1), ja määrä valitaan vain kyselyssä. Käyttäjä syöttää budjetin, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
 
 Suunnittelussa on yksi moottori: **N päivällistä + budjetti → yksi ostoslista**. Käyttäjä käy sen läpi yhdellä kyselyllä (Suunnittele-välilehti, kohta 4.3). Kyselyn ateriamäärä ratkaisee tilan:
 
@@ -11,7 +11,7 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän kaikkia ruo
 
 ## 1. Kolme asiaa, jotka kannattaa ratkaista ennen koodia
 
-1. **Kauppojen hinnat.** K-Ruoalla, S-kaupoilla tai Lidlillä ei ole avointa hinta-APIa. Hintojen raapiminen niiden sivuilta rikkoo käyttöehtoja ja hajoaa helposti. MVP:ssä hinta lasketaan omasta hintataulukosta, jossa on noin 300–500 yleisintä ainesosaa ja jokaiselle ketjukohtainen hintataso (esim. Lidl 0,85×, Prisma 1,0×, K-Market 1,15×). Sovelluksessa luvun nimi on "hinta-arvio", ei tarkka hinta. Myöhemmin voi neuvotella kumppanuuksista tai käyttää kuittien skannausta.
+1. **Hinnat.** Ruokakaupoilla ei ole avointa hinta-APIa, ja hintojen raapiminen rikkoo käyttöehtoja ja hajoaa helposti. Siksi sovellus ei ole kauppakohtainen: hinta lasketaan omasta hintataulukosta, jossa on noin 300–500 yleisintä ainesosaa Suomen keskihintoina. Hinta-alue (maa → valuutta ja hintataso) valitaan puhelimen alueasetuksesta, ja sen voi vaihtaa Profiilissa. Suomi on oikeaa hintatietoa; muille tuetuille maille hinta lasketaan karkealla hintatasokertoimella, ja se merkitään käyttöliittymässä selvästi arvioksi. Sovelluksessa luvun nimi on aina "hinta-arvio". Myöhemmin maakohtaista hintatietoa voi lisätä (`ingredient_region_prices`) tai käyttää kuittien skannausta.
 2. **Makroja ei anneta tekoälyn laskea.** Kielimallit arvioivat ravintoarvot epätarkasti. Tekoäly tuottaa ainesosat ja grammamäärät, ja backend laskee makrot **Fineli-tietokannasta** (THL:n avoin elintarvikkeiden koostumustietokanta). Sama pätee päiväkirjan kuvantunnistukseen: tekoäly tunnistaa ruoat ja arvioi grammat, makrot tulevat Finelistä.
 3. **Allergiat ovat turvallisuuskysymys.** Tekoälyn tuottama resepti tarkistetaan aina erikseen säännöillä: jokainen ainesosa verrataan allergeenilistaan ja kielletyt sanat (esim. pähkinä, maapähkinä, cashew) estetään. Jos resepti ei läpäise tarkistusta, se generoidaan uudelleen. Sovellukseen tarvitaan lisäksi selkeä vastuuvapauslauseke. GDPR:n kannalta allergia- ja ruokavaliotiedot, kaloritavoitteet, kehon tiedot (pituus, ikä, paino), painotavoite ja -kirjaukset sekä ruokapäiväkirja voivat olla terveystietoja, joten niiden tallennus ja suostumus on suunniteltava huolella.
 
@@ -51,7 +51,7 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän kaikkia ruo
 │  │ - recipes      │   │  2. Claude → JSON-resepti   │ │
 │  │ - ingredients  │   │  3. allergiatarkistus       │ │
 │  │ - fineli_foods │   │  4. makrot Finelistä        │ │
-│  │ - store_prices │   │  5. hinta hintataulukosta   │ │
+│  │ - price_regions│   │  5. hinta hintataulukosta   │ │
 │  │ - diary_entries│   │  6. budjetin tarkistus      │ │
 │  └────────────────┘   │  7. kuva jonoon             │ │
 │  ┌────────────────┐   │ list-recipes (kirjasto)     │ │
@@ -115,13 +115,12 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 3. **Ruokakertojen määrä** – 2–6 tai "Koko viikko (7)". Koko viikko esitäyttää budjetiksi profiilin viikkobudjetin, jos käyttäjä ei ole muuttanut budjettia.
 4. **Allergiat ja ruokavalio** – esitäytetty profiilista, käyttäjä vahvistaa. Tässä voi **lisätä** allergioita tai ruokavalion vain tälle suunnitelmalle (esim. vieras), mutta profiilin allergioita ei voi poistaa tässä: poisto tehdään profiilissa. Näin turvallisuusasetus ei katoa vahingossa.
 5. **Mitä tekee mieli** – valintasirut, useampi sallittu, voi ohittaa: kana, kala, jauheliha, kasvis, pasta, keitto, aasialainen, meksikolainen, nopea, uunissa.
-6. **Kauppa** – Lidl, Prisma / S-market, K-Citymarket / K-Market ja Tokmanni Ruoka hintatasoineen, oletuksena profiilin oletuskauppa. Saman ryhmän myymäläkoot ovat yksi valinta, koska hintataso on lähes sama.
-7. **Generointianimaatio** – rauhallinen, toistuva animaatio ja vaihtuvat tilaviestit ("Etsitään sopivia reseptejä…", "Lasketaan hinta-arviota…"). Virhetilassa selitys ja "Yritä uudelleen".
-8. **Ehdotukset** – ateriakortit (kuva, nimi, hinta-arvio, kcal/annos, aika). Jokaisessa kortissa "Vaihda". Yläreunassa yhteishinta suhteessa budjettiin ja keskimääräiset makrot annosta kohden; ne päivittyvät heti vaihdon jälkeen (numeroiden animoitu siirtymä). "Tee tuplana → huomisen lounas" -valinta sopiville aterioille. Pääkehotus "Hyväksy".
-   - **Kriteerit:** ehdotuksen pitää täyttää budjetti, allergiat, ruokavalio ja toiveet. Allergioista ja ruokavaliosta ei jousteta koskaan. Jos budjetti ylittyy, näkymä kertoo paljonko ja tarjoaa yhden napautuksen ratkaisut: "Nosta budjettia 6 €", "Vähennä yksi ruokakerta – 38 €" (vain jos loput mahtuvat budjettiin, lukittuja aterioita ei poisteta) ja "Vaihda kauppaan Lidl – 41 €" (jos sama lista mahtuu siellä). Täyttymätön toive selitetään: joko se ei sovi allergioihin tai ruokavalioon, tai sopivaa ruokaa ei löytynyt budjettiin. Sävy on neutraali, ei punaista.
-   - **Kauppavertailu:** "Sama lista muissa kaupoissa" näyttää saman ostoslistan hinta-arvion jokaisessa ketjussa halvimmasta kalleimpaan. Rivin napautus vaihtaa kaupan.
+6. **Generointianimaatio** – rauhallinen, toistuva animaatio ja vaihtuvat tilaviestit ("Etsitään sopivia reseptejä…", "Lasketaan hinta-arviota…"). Virhetilassa selitys ja "Yritä uudelleen".
+7. **Ehdotukset** – ateriakortit (kuva, nimi, hinta-arvio, kcal/annos, aika). Jokaisessa kortissa "Vaihda". Yläreunassa yhteishinta suhteessa budjettiin ja keskimääräiset makrot annosta kohden; ne päivittyvät heti vaihdon jälkeen (numeroiden animoitu siirtymä). "Tee tuplana → huomisen lounas" -valinta sopiville aterioille. Pääkehotus "Hyväksy".
+   - **Kriteerit:** ehdotuksen pitää täyttää budjetti, allergiat, ruokavalio ja toiveet. Allergioista ja ruokavaliosta ei jousteta koskaan. Jos budjetti ylittyy, näkymä kertoo paljonko ja tarjoaa yhden napautuksen ratkaisut: "Nosta budjettia 6 €" ja "Vähennä yksi ruokakerta – 38 €" (vain jos loput mahtuvat budjettiin, lukittuja aterioita ei poisteta). Täyttymätön toive selitetään: joko se ei sovi allergioihin tai ruokavalioon, tai sopivaa ruokaa ei löytynyt budjettiin. Sävy on neutraali, ei punaista.
+   - **Hinta-alue:** ehdotuksen alla kerrotaan, minkä maan hintatasolla arvio on laskettu; muualla kuin Suomessa lisäksi "karkea arvio". Napautus avaa hinta-alueen valinnan.
    - Jo kyselyn yhteenvedossa liian pieni budjetti näyttää halvimman realistisen listan hinnan ja napit "Nosta budjetiksi X €" ja (jos riittää) "Vähennä yksi ruokakerta".
-9. **Ostoslista** – kaupan osastojen mukaan ryhmiteltynä ja rastittavana. Perusvarat eivät näy listalla. Summan alla budjetin selitys.
+8. **Ostoslista** – kaupan osastojen mukaan ryhmiteltynä ja rastittavana. Perusvarat eivät näy listalla. Summan alla budjetin selitys.
 
 ### 4.4 Reseptit
 
@@ -164,7 +163,7 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 - Profiilin tiedot (nimi, viikkobudjetti). Platewise on yksilösovellus: syöjien määrä valitaan vain kyselyssä suunnitelmakohtaisesti.
 - Allergiat ja ruokavalio (terveystietosuostumus)
 - Perusvarat
-- Oletuskauppa
+- Hinta-alue (oletuksena puhelimen alue; Suomi oikeaa hintatietoa, muut maat karkea arvio)
 - Kalorilaskin ja painotavoite (kohta 4.7), painonseuranta
 - Kaloritavoitteet (kcal, proteiini, hiilihydraatit, rasva) ja "Piilota kalorit"
 - Edistyminen, Kysy Nupulta ja pelillistämisen kytkin
@@ -224,8 +223,8 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 
 1. Projektipohja: Expo, Supabase (EU), CI ja EAS Build.
 2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen. Tehty: yksilösovellus (ei kotitalouden kokoa), 8 hahmoa teemoineen, alapalkki, Fineli-ainesosataulu (235 ainesosaa), 319 validoitua reseptiä, tiukka allergia- ja ruokavaliosuodatus, kuvantunnistuksen testitila ja vesitavoite.
-3. Fineli-tuonti tauluihin: sovelluksen ainesosataulu on jo rakennettu Finelin avoimesta datasta (`scripts/fineli`); backendissä sama aineisto ja ketjukohtaiset hintakertoimet tauluihin. Finelin annoskoot päiväkirjaa varten.
-4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (allergiat, ruokavalio, kauppa).
+3. Fineli-tuonti tauluihin: sovelluksen ainesosataulu on jo rakennettu Finelin avoimesta datasta (`scripts/fineli`); backendissä sama aineisto ja hinta-alueet (`price_regions`) tauluihin. Finelin annoskoot päiväkirjaa varten.
+4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (kieli, hahmo, allergiat, ruokavalio).
 5. `generate-plan`-funktio: Claude, allergiatarkistus, makrot, hinta ja budjettisilmukka. Ehdotus → hyväksyntä → ostoslista.
 6. Reseptikirjaston siirto tauluihin (319 testireseptiä pohjana, täydennys generoinnilla ja ihmistarkistuksella) ja `list-recipes`-funktio.
 7. Kuvageneraatio asynkronisesti ja välimuistiin. Odotellessa näytetään paikkamerkki.
@@ -244,7 +243,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 
 ### Vaihe 3: Laajennukset
 - Ruokahävikin minimointi: "mitä jääkaapissa on" -syöte.
-- Tarkemmat hinnat: kuittiskannaus (OCR) tai kumppanuudet kauppaketjujen kanssa.
+- Tarkemmat hinnat: maakohtainen hintatieto (`ingredient_region_prices`) ja kuittiskannaus (OCR).
 - Ostoslistan jakaminen toiselle sovelluksen käyttäjälle.
 - Ruotsin ja englannin kieli, myöhemmin muut Pohjoismaat.
 - Ilmoitukset ("huomenna on kanapastaa, ota kana sulamaan").

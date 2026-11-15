@@ -6,7 +6,7 @@ Postgres-tietomalli (Supabase) MVP:lle. Pohjana [PLAN.md](PLAN.md) ja [CLAUDE.md
 
 | Asia | Linjaus |
 |---|---|
-| Tunnisteet | Käyttäjä- ja transaktiodata: `uuid` (`gen_random_uuid()`). Pienet viitetaulut (allergeenit, ruokavaliot, ketjut): `text`-koodi pääavaimena, esim. `'milk'`, `'vegan'`, `'lidl'`. |
+| Tunnisteet | Käyttäjä- ja transaktiodata: `uuid` (`gen_random_uuid()`). Pienet viitetaulut (allergeenit, ruokavaliot, hinta-alueet): `text`-koodi pääavaimena, esim. `'milk'`, `'vegan'`, `'FI'`. |
 | Raha | Kokonaislukuina sentteinä (`integer`, pääte `_cents`). Ei liukulukuja. |
 | Määrät | Grammoina `numeric(8,2)` (pääte `_g`). Nesteet muunnetaan grammoiksi ainesosan tiheydellä tuonnissa. |
 | Aika | `timestamptz`, aina UTC. Suunnitelman ateriapäivät ovat `start_date + day_offset` (ei sidottu kalenteriviikkoon). Päiväkirjan päivä on käyttäjän paikallinen päivämäärä (`date`), jonka sovellus antaa. |
@@ -34,13 +34,13 @@ erDiagram
     fineli_foods ||--o{ diary_entries : ""
     recipes ||--o{ diary_entries : ""
     fineli_foods ||--o{ fineli_food_units : ""
-    store_chains ||--o{ profiles : "oletuskauppa"
-    store_chains ||--o{ ingredient_chain_prices : ""
+    price_regions ||--o{ profiles : "hinta-alue"
+    price_regions ||--o{ ingredient_region_prices : ""
 
     fineli_foods ||--o{ ingredients : ""
     ingredients ||--o{ ingredient_allergens : ""
     ingredients ||--o{ ingredient_tags : ""
-    ingredients ||--o{ ingredient_chain_prices : ""
+    ingredients ||--o{ ingredient_region_prices : ""
     ingredients ||--o{ recipe_ingredients : ""
     allergens ||--o{ ingredient_allergens : ""
     allergens ||--o{ allergen_keywords : ""
@@ -59,7 +59,7 @@ erDiagram
 
 Taulut jakautuvat viiteen ryhmään:
 
-1. **Viitedata** (jaettu, vain luku): kaupat, Fineli ja annoskoot, ainesosat, allergeenit, ruokavaliot
+1. **Viitedata** (jaettu, vain luku): hinta-alueet, Fineli ja annoskoot, ainesosat, allergeenit, ruokavaliot
 2. **Käyttäjädata** (oma, osin terveystietoa): profiili, allergiat, ruokavaliot, perusvarat, ravintotavoitteet, kehon tiedot ja painotavoite, tilaus
 3. **Reseptit** (jaettu, uudelleenkäytettävä): reseptit, ainesosat, kuvat. Muodostavat myös reseptikirjaston.
 4. **Suunnitelmat ja seuranta** (oma / backend): ateriasuunnitelmat (viikko tai kauppareissu), vaihtoehdot, ostoslistat, palaute, generointiajot, asetukset
@@ -70,19 +70,6 @@ Taulut jakautuvat viiteen ryhmään:
 
 ## 1. Viitedata
 
-### `store_chains`
-Kauppaketjut ja niiden hintatasokerroin.
-
-| Kenttä | Tyyppi | Huom. |
-|---|---|---|
-| `code` | `text` PK | `'lidl'`, `'s_group'` (Prisma / S-market), `'k_group'` (K-Citymarket / K-Market), `'tokmanni'` (Tokmanni Ruoka) |
-| `name` | `text` NOT NULL | Näytettävä nimi |
-| `price_multiplier` | `numeric(4,3)` NOT NULL | Testidatassa Lidl `0.850`, Tokmanni `0.930`, S-ryhmä `1.000`, K-ryhmä `1.080`; CHECK > 0 |
-
-Saman ryhmän myymäläkoot (Prisma ja S-market, K-Citymarket ja K-Market) ovat yksi rivi, koska ketjujen hinnoittelu on ryhmän sisällä lähes sama ja käyttäjälle riittää yksi valinta. Vanhat koodit (`prisma`, `s_market`, `alepa`, `k_citymarket`, `k_market`) muunnetaan ryhmäkoodeiksi tallennetussa datassa (sovelluksessa `normalizeChainCode`).
-| `logo_path` | `text` | Polku Storageen |
-| `sort_order` | `smallint` | Onboardingin järjestys |
-| `is_active` | `boolean` NOT NULL DEFAULT true | |
 
 ### `fineli_foods`
 Fineli-tuonti. Arvot per 100 g syötävää osaa.
@@ -130,24 +117,40 @@ Finelin annos- ja yksikkökoot päiväkirjan määrävalintaan (esim. "1 keskiko
 | `shop_section` | enum `shop_section` NOT NULL | Ostoslistan ryhmittely: `produce`, `meat_fish`, `dairy_eggs`, `bakery`, `dry_goods`, `canned`, `frozen`, `spices_oils`, `other` |
 | `display_unit` | enum `display_unit` NOT NULL | `g`, `ml`, `pcs`, `tbsp`, `tsp` – miten määrä näytetään |
 | `grams_per_unit` | `numeric(8,2)` | Pakollinen, jos `display_unit` ≠ `g` (esim. 1 sipuli = 80 g) |
-| `base_price_per_kg_cents` | `integer` NOT NULL | Perushinta kertoimella 1,0; CHECK > 0 |
+| `base_price_per_kg_cents` | `integer` NOT NULL | Suomen keskihinta euroina (sentteinä), muiden alueiden pohja; CHECK > 0 |
 | `package_size_g` | `numeric(8,2)` NOT NULL | Tyypillinen pakkauskoko ostoslistaa varten |
 | `pantry_eligible` | `boolean` NOT NULL DEFAULT false | Voiko käyttäjä lisätä ainesosan perusvaroihinsa (säilyvät kuivatuotteet, öljyt, mausteet) |
 | `is_default_pantry` | `boolean` NOT NULL DEFAULT false | Kuuluu oletusperusvaroihin: öljy, suola, pippuri, sokeri, vehnäjauho, peruskuivamausteet. CHECK: `NOT is_default_pantry OR pantry_eligible` |
 | `price_reviewed_at` | `date` NOT NULL | Milloin hinta tarkistettu viimeksi |
 | `is_active` | `boolean` NOT NULL DEFAULT true | Passivointi, ei poistoa (resepteillä viittauksia) |
 
-### `ingredient_chain_prices`
-Valinnainen ketjukohtainen ylikirjoitus, kun pelkkä kerroin ei riitä (esim. Lidlin oma merkki selvästi halvempi).
+### `price_regions`
+Hinta-alueet: maa, jonka hintatasolla ja valuutassa hinta-arviot näytetään. Kauppoja tai ketjuja ei ole: hinta on ainesosan keskihinta alueella.
 
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
-| `ingredient_id` | `uuid` FK → `ingredients` | PK (`ingredient_id`, `chain_code`) |
-| `chain_code` | `text` FK → `store_chains` | |
-| `price_per_kg_cents` | `integer` NOT NULL | CHECK > 0 |
+| `code` | `text` PK | ISO 3166 -maakoodi: `FI`, `SE`, `NO`, `DK`, `EE`, `DE`, `NL`, `FR`, `IE`, `GB`, `US` |
+| `currency` | `text` NOT NULL | ISO 4217, esim. `EUR`, `SEK` |
+| `price_level` | `numeric(4,3)` NOT NULL | Ruoan hintataso suhteessa Suomeen (Suomi = 1). Lähde: Eurostatin vertailuhintatasot (ruoka ja alkoholittomat juomat), Iso-Britannia ja Yhdysvallat arvioina. CHECK > 0 |
+| `per_euro` | `numeric(8,4)` NOT NULL | Valuuttakurssi (yksikköä / €), pyöristetty |
+| `budget_step_minor` | `integer` NOT NULL | Budjettisyötteen askel pienimpinä yksikköinä (1 € = 100, 10 kr = 1000) |
+| `data_source` | `text` NOT NULL | `measured` (oma hintatieto, nyt vain Suomi) tai `estimated` (karkea arvio Suomen hinnoista). UI merkitsee arviot selvästi. |
+| `reviewed_at` | `date` NOT NULL | Milloin hintataso ja kurssi tarkistettu |
+| `is_active` | `boolean` NOT NULL DEFAULT true | |
+
+Sovelluksessa sama data on `domain/priceRegion.ts` (testattu). Rahasummat tallennetaan aina alueen valuutan pienimpinä yksikköinä (`_cents`-pääte tarkoittaa senttejä, äyrejä jne.).
+
+### `ingredient_region_prices`
+Valinnainen maakohtainen ainesosahinta, kun alueelle saadaan oikeaa hintatietoa. Ilman riviä hinta lasketaan Suomen hinnasta kertoimella.
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `ingredient_id` | `uuid` FK → `ingredients` | PK (`ingredient_id`, `region_code`) |
+| `region_code` | `text` FK → `price_regions` | |
+| `price_per_kg_minor` | `integer` NOT NULL | Alueen valuutassa. CHECK > 0 |
 | `reviewed_at` | `date` NOT NULL | |
 
-**Hintakaava:** `hinta/kg = coalesce(ingredient_chain_prices.price_per_kg_cents, round(base_price_per_kg_cents × price_multiplier))`. Laskenta tehdään backendissä yhdessä paikassa (yksikkötestattu funktio).
+**Hintakaava:** `hinta/kg = coalesce(ingredient_region_prices.price_per_kg_minor, round(base_price_per_kg_cents × price_level × per_euro))`. Laskenta tehdään backendissä yhdessä paikassa (yksikkötestattu funktio, sama kuin sovelluksen `priceFactor`).
 
 ### `allergens`
 EU:n 14 pakollista allergeeniryhmää (+ tarvittaessa lisäyksiä).
@@ -216,7 +219,8 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 | `id` | `uuid` PK, FK → `auth.users` ON DELETE CASCADE | |
 | `display_name` | `text` | Valinnainen, näytetään profiilissa ja Kodin tervehdyksessä. CHECK pituus ≤ 40 |
 | `weekly_budget_cents` | `integer` | Viikkosuunnitelman (7 päivällistä) budjetti. CHECK BETWEEN 1000 AND 50000; NULL ennen onboardingia |
-| `chain_code` | `text` FK → `store_chains` | Oletuskauppa. NULL ennen onboardingia |
+| `price_region` | `text` FK → `price_regions` | Profiilissa valittu hinta-alue. NULL = puhelimen alueasetus (tuettu maa, muuten Suomi) |
+| `budget_region` | `text` NOT NULL FK → `price_regions` DEFAULT `'FI'` | Minkä alueen valuutassa tallennetut budjetit ovat; kun alue vaihtuu, budjetit muunnetaan samalle ostovoimalle |
 | `last_meal_count` | `smallint` | Edellisen kyselyn ateriamäärä esitäyttöä varten. CHECK BETWEEN 2 AND 7 |
 | `last_budget_cents` | `integer` | Edellisen kyselyn budjetti esitäyttöä varten |
 | `last_eaters` | `smallint` | Edellisen kyselyn syöjien määrä. CHECK BETWEEN 1 AND 6 |
@@ -368,7 +372,7 @@ Webhookien raakaloki idempotenssia ja vianselvitystä varten.
 
 Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uudelleen kaikille yhteensopiville profiileille (periaate 6). Määrät tallennetaan **yhdelle annokselle** ja skaalataan suunnitelman syöjien määrällä.
 
-**Reseptikirjasto** (Reseptit-välilehti) näyttää `active`-reseptit, jotka läpäisevät käyttäjän allergia- ja ruokavaliotarkistuksen. Kirjasto haetaan Edge Functionilla `list-recipes`, joka suodattaa (ateria, hinta, aika, ruokavalio, kalorit, hakusana), ajaa saman `isRecipeAllowed`-tarkistuksen jokaiselle palautettavalle reseptille ja laskee hinta-arvion käyttäjän ketjulle. RLS pysyy suppeana (vain omien suunnitelmien reseptit), joten koko kantaa ei voi ladata suoraan.
+**Reseptikirjasto** (Reseptit-välilehti) näyttää `active`-reseptit, jotka läpäisevät käyttäjän allergia- ja ruokavaliotarkistuksen. Kirjasto haetaan Edge Functionilla `list-recipes`, joka suodattaa (ateria, hinta, aika, ruokavalio, kalorit, hakusana), ajaa saman `isRecipeAllowed`-tarkistuksen jokaiselle palautettavalle reseptille ja laskee hinta-arvion käyttäjän hinta-alueelle. RLS pysyy suppeana (vain omien suunnitelmien reseptit), joten koko kantaa ei voi ladata suoraan.
 
 **Tiukka suodatus.** `isRecipeAllowed(recipe, rules)` (`domain/recipes.ts`) on ainoa portti reseptin näyttämiseen tai ehdottamiseen: kirjasto, haku, Kodin suositukset, Suunnittele-ehdotukset ja vaihtovaihtoehdot, päiväkirjan reseptilistat, reseptisivu (myös suora linkki) ja chatin ehdotukset. Sopimattomia ei näytetä missään, piilotettujen määrää ei kerrota eikä "näytä kaikki" -valintaa ole. Jos säännöt muuttuvat, keskeneräinen ehdotus korjataan heti (`repairProposal`), ja hyväksytyn listan sopimaton päivällinen näytetään vain "Ei enää sovi ruokavalioosi – vaihda sopivaan" -rivinä (`replacementDinner`).
 
@@ -401,7 +405,7 @@ Reseptit eivät kuulu kenellekään käyttäjälle. Sama resepti käytetään uu
 | `allergen_codes` | `text[]` NOT NULL | Johdettu `ingredient_allergens`ista (vain varmat). Uudelleenkäytön nopeaan suodatukseen. |
 | `may_contain_codes` | `text[]` NOT NULL | Johdettu "saattaa sisältää" -allergeeneista |
 | `ingredient_tags` | `ingredient_tag[]` NOT NULL | Johdettu `ingredient_tags`ista |
-| `base_cost_per_serving_cents` | `integer` NOT NULL | Hinta kertoimella 1,0, uudelleenkäytön esisuodatukseen. Lopullinen hinta lasketaan ketjulle. |
+| `base_cost_per_serving_cents` | `integer` NOT NULL | Suomen hinnoin (euroina), uudelleenkäytön esisuodatukseen. Lopullinen hinta lasketaan käyttäjän hinta-alueelle. |
 | `image_id` | `uuid` FK → `recipe_images` ON DELETE SET NULL | NULL kunnes kuva valmis. Sillä välin sovellus piirtää kategoriakohtaisen kuvituskortin teeman väreissä (`FoodIllustration`) |
 | `status` | enum `recipe_status` NOT NULL DEFAULT `'active'` | `active`, `retired` (esim. ainesosa passivoitu tai huono palaute) |
 | `source_generation_id` | `uuid` FK → `generation_runs` ON DELETE SET NULL | Mistä ajosta syntyi |
@@ -479,7 +483,7 @@ Budjetti kattaa vain sovelluksen ehdottamat ateriat, ei käyttäjän muita ruoka
 | `meal_count` | `smallint` NOT NULL | N päivällistä. CHECK BETWEEN 2 AND 7 |
 | `eaters` | `smallint` NOT NULL DEFAULT 1 | Syöjien määrä tässä suunnitelmassa (kyselyn vaihe 2, oletus 1). CHECK BETWEEN 1 AND 6 |
 | `budget_cents` | `integer` NOT NULL | Snapshot |
-| `chain_code` | `text` NOT NULL FK → `store_chains` | Snapshot (kyselyn vaihe 6) |
+| `price_region` | `text` NOT NULL FK → `price_regions` | Snapshot: alue, jonka valuutassa suunnitelman summat ovat |
 | `craving_codes` | `text[]` NOT NULL DEFAULT `'{}'` | "Mitä tekee mieli" -toiveet. Arvot tarkistetaan koodissa tunnettua listaa vasten. |
 | `extra_allergen_codes` | `text[]` NOT NULL DEFAULT `'{}'` | *(terveystieto)* Vain tälle suunnitelmalle lisätyt allergeenit (esim. vieras). Profiilin allergiat tulevat aina mukaan, joten tähän tallennetaan vain lisäykset. Käsitellään aina `strict`-tilassa. |
 | `extra_diet_codes` | `text[]` NOT NULL DEFAULT `'{}'` | *(terveystieto)* Vain tälle suunnitelmalle lisätyt ruokavaliot |
@@ -744,9 +748,9 @@ Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `aut
 
 | Taulu | authenticated | Ehto | anon |
 |---|---|---|---|
-| `store_chains`, `allergens`, `diets` | R | `is_active` (kun kenttä on) | R (onboarding voi alkaa ennen kirjautumista) |
+| `price_regions`, `allergens`, `diets` | R | `is_active` (kun kenttä on) | R (onboarding voi alkaa ennen kirjautumista) |
 | `fineli_foods`, `fineli_food_units` | R | Päiväkirjan ruokahaku (avointa dataa) | – |
-| `ingredient_chain_prices`, `ingredient_tags`, `diet_excluded_tags`, `allergen_keywords` | – | Vain backend | – |
+| `ingredient_region_prices`, `ingredient_tags`, `diet_excluded_tags`, `allergen_keywords` | – | Vain backend | – |
 | `ingredients` | R | `is_active` (tarvitaan "en pidä tästä"- ja perusvaravalintoihin sekä ostoslistan nimiin) | – |
 | `ingredient_allergens` | R | Reseptinäkymän allergeenikorostusta varten | – |
 | `profiles` | R, U | `id = auth.uid()` | – |
@@ -771,7 +775,7 @@ Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `aut
 Huomioita:
 
 - **`profiles.insert`** tehdään `auth.users`-triggerillä (`security definer`), ei sovelluksesta.
-- **`profiles.update`**: sovellus ei saa muuttaa `id`:tä. Toteutetaan sarakekohtaisella `GRANT UPDATE (display_name, weekly_budget_cents, chain_code, last_meal_count, last_budget_cents, last_eaters, last_craving_codes, health_data_consent_at, onboarding_completed_at, locale)`.
+- **`profiles.update`**: sovellus ei saa muuttaa `id`:tä. Toteutetaan sarakekohtaisella `GRANT UPDATE (display_name, weekly_budget_cents, price_region, budget_region, last_meal_count, last_budget_cents, last_eaters, last_craving_codes, health_data_consent_at, onboarding_completed_at, locale)`.
 - **Suostumuksen peruminen** (`health_data_consent_at` → NULL) poistaa `profile_allergens`-, `profile_diets`-, `profile_nutrition_goals`-, `profile_body`-, `profile_weight_goals`-, `profile_workouts`-, `weight_entries`-, `diary_entries`-, `user_foods`-, `saved_meals`- ja `user_recipes`-rivit triggerillä. Sovellus kertoo tämän ennen vahvistusta.
 - **Suunnitelman hyväksyntä ja vaihdot** tehdään Edge Functioneilla (`accept-plan`, `swap-meal`, `recalculate-plan`); sovellus ei kirjoita `meal_plans`-tauluun.
 - **Maksumuuria ei toteuteta RLS:llä.** Edge Functionit tarkistavat `subscriptions`-tilan ennen generointia. Vanhentuneen tilauksen käyttäjä näkee yhä aiemmat listansa (lukuoikeus säilyy), mutta ei saa uusia.
@@ -804,11 +808,11 @@ Huomioita:
 ## Generoinnin tietovirta tauluihin
 
 1. Lue kyselyn vastaukset sekä `profiles`, `profile_allergens`, `profile_diets`, `profile_excluded_ingredients`, `profile_pantry_items`, `subscriptions`. Säännöt = profiilin allergiat ja ruokavaliot ∪ kyselyssä lisätyt.
-2. Tarkista rajat (`app_config`, `generation_runs`) ja luo `meal_plans`-rivi tilassa `generating` (`kind`, `meal_count`, `eaters`, `budget_cents`, `chain_code`, `craving_codes`, `extra_*`). Päivitä profiilin `last_*`-esitäyttökentät.
+2. Tarkista rajat (`app_config`, `generation_runs`) ja luo `meal_plans`-rivi tilassa `generating` (`kind`, `meal_count`, `eaters`, `budget_cents`, `price_region`, `craving_codes`, `extra_*`). Päivitä profiilin `last_*`-esitäyttökentät.
 3. **Uudelleenkäyttö:** hae `active`-reseptit, jotka läpäisevät esisuodattimen (allergeenit, tagit, poissuljetut ainesosat, hinta). Täytä niillä osa päivistä.
 4. **Generointi:** anna tekoälylle aktiivisten ainesosien `slug`-lista (jo valmiiksi suodatettuna käyttäjälle sopiviin) ja pyydä puuttuvat päivät. Validoi Zodilla.
 5. **Tarkistus** (koodissa, jokaiselle reseptille, myös uudelleenkäytetyille): tuntemattomat slugit → hylkäys; `ingredient_allergens` + `allergen_keywords` vapaasta tekstistä → hylkäys; `diet_excluded_tags` → hylkäys.
-6. Laske makrot (`fineli_foods`) ja hinnat (`ingredients` + `ingredient_chain_prices` + `store_chains`), tallenna uudet `recipes` + `recipe_ingredients`.
+6. Laske makrot (`fineli_foods`) ja hinnat (`ingredients` + `ingredient_region_prices` + `price_regions`), tallenna uudet `recipes` + `recipe_ingredients`.
 7. Muodosta `shopping_list_items` (tuplaukset mukaan, perusvarat pois), vertaa summaa budjettiin; ylityksessä vaihda kalleimpia (palaa kohtaan 3/4). Tarkempi kulku: [GENERATION.md](GENERATION.md).
 8. Tallenna `meal_plan_items` ja `meal_plan_alternatives`, aseta `meal_plans.status = 'proposed'`, kirjaa `generation_runs`.
 9. Lisää puuttuvat kuvat `recipe_images`-jonoon (tai liitä olemassa oleva `dish_signature`-osuman perusteella).
@@ -816,7 +820,7 @@ Huomioita:
 
 ## Päätökset
 
-1. **Yksi moottori, kaksi tilaa, yksi kysely:** "N päivällistä + budjetti → yksi ostoslista". Kysely kulkee budjetti → syöjät (1–6) → ateriamäärä → allergiat ja ruokavalio → toiveet → kauppa. "Koko viikko" (N = 7) on viikkosuunnitelma, N = 2–6 kauppareissu. Budjetti kattaa vain sovelluksen ehdottamat ateriat. Suunnitelma on ensin ehdotus (`proposed`) ja hyväksytään erikseen (`accepted`).
+1. **Yksi moottori, kaksi tilaa, yksi kysely:** "N päivällistä + budjetti → yksi ostoslista". Kysely kulkee budjetti → syöjät (1–6) → ateriamäärä → allergiat ja ruokavalio → toiveet. "Koko viikko" (N = 7) on viikkosuunnitelma, N = 2–6 kauppareissu. Budjetti kattaa vain sovelluksen ehdottamat ateriat. Suunnitelma on ensin ehdotus (`proposed`) ja hyväksytään erikseen (`accepted`).
 2. **Ateriat:** MVP:ssä vain päivälliset. "Tee tuplana → huomisen lounas" tuplaa annokset ja lisää lounasrivin seuraavalle päivälle (`cook_double`, `leftover_from_item_id`). Tuplaus on mahdollinen kaikille päivällisille, myös viimeiselle.
 3. **Perusvarat:** käyttäjäkohtainen `profile_pantry_items`, oletuksena öljy, suola, pippuri, sokeri, vehnäjauho ja peruskuivamausteet. Ne eivät tule ostoslistaan eivätkä budjettiin, ja reseptissä ne merkitään "kotoa". Muut mausteet lasketaan kokonaisina pakkauksina.
 4. **Ruokavaliot:** `vegan`, `vegetarian`, `pescatarian`, `lactose_free`, `pork_free`, `alcohol_free`. Halal ja kosher eivät ole MVP:ssä.
@@ -826,8 +830,8 @@ Huomioita:
 8. **Päiväkirja** viittaa Fineliin tai reseptiin; makrot laskee triggeri. Ruokakuvaa ei tallenneta. Päiväkirja ja ravintotavoitteet ovat terveystietoa samalla suostumuksella kuin allergiat.
 9. **Reseptikirjasto** haetaan Edge Functionilla, joka ajaa allergiatarkistuksen jokaiselle reseptille; RLS ei avaa koko reseptikantaa. Sovelluksessa ainoa portti on `isRecipeAllowed`; sopimattomia reseptejä ei näytetä missään eikä niiden määrää kerrota.
 10. **Kalorilaskin ja painotavoite:** kehon tiedot (`profile_body`), tavoite (`profile_weight_goals`) ja painokirjaukset (`weight_entries`) ovat terveystietoa samalla suostumuksella kuin allergiat: ei lokeihin, analytiikkaan eikä Sentryyn. Turvarajat ovat koodissa, eivät promptissa eikä pelkässä UI:ssa.
-11. **Kauppavertailu:** sama ostoslista hinnoitellaan kaikilla aktiivisilla ketjuilla (`store_chains.price_multiplier`) ja näytetään ehdotusnäkymässä ("Sama lista muissa kaupoissa"). Vertailua ei tallenneta: se lasketaan `shopping_list_items`-riveistä pyydettäessä.
-12. **Kriteerien täyttyminen:** jos ehdotus ylittää budjetin tai toive jää täyttymättä, backend palauttaa syyn ja ratkaisuehdotukset (nosta budjettia X €, vähennä yksi ruokakerta, halvempi kauppa) samalla puhtaalla funktiolla kuin sovellus (`domain/feasibility.ts`). Allergioista ja ruokavaliosta ei jousteta koskaan.
+11. **Ei kauppoja:** hinnat ovat maakohtaisia keskihinta-arvioita (`price_regions`). Suomi on oikeaa hintatietoa; muut maat lasketaan Suomen hinnoista hintatasokertoimella ja merkitään käyttöliittymässä karkeaksi arvioksi. Alue valitaan puhelimen alueasetuksesta, ja sen voi vaihtaa Profiilissa.
+12. **Kriteerien täyttyminen:** jos ehdotus ylittää budjetin tai toive jää täyttymättä, backend palauttaa syyn ja ratkaisuehdotukset (nosta budjettia X €, vähennä yksi ruokakerta) samalla puhtaalla funktiolla kuin sovellus (`domain/feasibility.ts`). Allergioista ja ruokavaliosta ei jousteta koskaan.
 13. **"Piilota kalorit"** on profiilin asetus (`hide_calories`); se piilottaa luvut näkymistä, mutta tietoja kirjataan normaalisti.
 14. **Omat ruoat ja viivakoodit** (`user_foods`): Open Food Facts on ainoa ulkoinen tietolähde, joka toimii jo käyttöliittymävaiheessa. Lähde näytetään aina; kuvantunnistus pysyy suljetussa Fineli-listassa.
 15. **Kuitu, sokerit ja suola** lasketaan kuten makrot; puuttuva tieto on NULL eikä nolla, ja UI kertoo, jos osa merkinnöistä on ilman tietoa.
@@ -842,5 +846,5 @@ Huomioita:
 ## Avoimet kysymykset
 
 1. **Suunnitelman jakaminen toiselle** (vaihe 3): Platewise on yksilösovellus, mutta valmiin ostoslistan voi jakaa tekstinä. Varsinainen jaettu suunnitelma vaatisi oman taulun, eikä sitä suunnitella nyt.
-2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, ketju, havaittu hinta).
+2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, hinta-alue, havaittu hinta).
 3. **Viivakoodituotteiden jakaminen käyttäjien kesken:** nyt jokaisella on oma välimuistinsa (`user_foods`). Yhteinen, tarkistettu tuotetaulu vähentäisi hakuja ja virheitä, mutta vaatii moderoinnin.

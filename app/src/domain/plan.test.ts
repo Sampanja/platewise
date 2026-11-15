@@ -16,7 +16,7 @@ function plan(meals: PlanMeal[], overrides: Partial<MealPlan> = {}): MealPlan {
     mealCount: meals.length,
     eaters: 2,
     budgetCents: 5000,
-    chainCode: 'lidl',
+    priceRegion: 'FI',
     estimatedTotalCents: 4200,
     status: 'accepted',
     acceptedAt: null,

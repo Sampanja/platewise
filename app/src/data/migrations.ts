@@ -4,6 +4,8 @@
  * version, possibly partial) and returns a value safe for the current one.
  */
 
+import { PRICE_REGION_CODES } from '@/domain/priceRegion';
+
 type Loose = Record<string, unknown>;
 
 function isObject(value: unknown): value is Loose {
@@ -49,4 +51,32 @@ export function waterToEntries(persisted: unknown): {
   const goal = typeof old.goalMl === 'number' && old.goalMl >= 1000 && old.goalMl <= 4000 ? old.goalMl : null;
   const manual = goal !== null && goal !== 1500;
   return { entries, goalMode: manual ? 'manual' : 'auto', manualGoalMl: manual ? goal : 2000 };
+}
+
+/**
+ * Stores were removed (v4 plans, v7 profile): prices are average prices in a
+ * price region. Everything saved before that was priced in Finland in euros,
+ * so the old `chainCode` becomes the Finnish price region. A valid saved
+ * region is kept; anything else falls back to Finland.
+ */
+export function withPriceRegion<T>(value: T): T {
+  if (!isObject(value)) return value;
+  const { chainCode: _removed, ...rest } = value;
+  const region = rest.priceRegion;
+  const valid = typeof region === 'string' && (PRICE_REGION_CODES as readonly string[]).includes(region);
+  return { ...rest, priceRegion: valid ? region : 'FI' } as T;
+}
+
+/**
+ * Profile v7: no default store. `priceRegion` null means "follow the phone";
+ * people who used the app before keep the Finnish region their euro budget
+ * was set in.
+ */
+export function profileWithoutStore<T>(profile: T, fromVersion: number): T {
+  if (!isObject(profile)) return profile;
+  const { chainCode: _removed, ...rest } = profile;
+  if (fromVersion < 7) return { ...rest, priceRegion: 'FI' } as T;
+  const region = rest.priceRegion;
+  const valid = typeof region === 'string' && (PRICE_REGION_CODES as readonly string[]).includes(region);
+  return { ...rest, priceRegion: valid ? region : null } as T;
 }

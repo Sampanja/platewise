@@ -5,7 +5,7 @@ import { RecipeImage } from '@/components/RecipeImage';
 import { Card, Chip, Icon, PressableScale, Text } from '@/components/ui';
 import type { Recipe } from '@/data/types';
 import type { DatedMeal } from '@/domain/plan';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, formatInteger, strings } from '@/i18n';
 import { relativeDayLabel, today } from '@/lib/dates';
 import { radii, spacing, themedStyles } from '@/theme';
 
@@ -56,7 +56,7 @@ export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
               {strings.common.priceEstimate}
             </Text>
             <Text variant="number" color="accentText">
-              {formatCents(pricePerServing)}{' '}
+              {formatMoney(pricePerServing)}{' '}
               <Text variant="caption" color="textSubtle">
                 {strings.common.perServing}
               </Text>

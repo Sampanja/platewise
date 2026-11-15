@@ -34,7 +34,8 @@ export function buildShoppingList(
   entries: readonly ListEntry[],
   index: IngredientIndex,
   pantry: ReadonlySet<string>,
-  priceMultiplier: number,
+  /** Region price factor (domain/priceRegion.ts `priceFactor`). */
+  priceFactor: number,
 ): ShoppingList {
   const gramsById = new Map<string, number>();
   for (const { recipe, servings } of entries) {
@@ -56,7 +57,7 @@ export function buildShoppingList(
     // Tiny floating-point overshoots must not cost an extra package.
     const packages = Math.max(1, Math.ceil(grams / ingredient.packageG - 1e-9));
     const costCents = Math.round(
-      ((packages * ingredient.packageG) / 1000) * ingredient.pricePerKgCents * priceMultiplier,
+      ((packages * ingredient.packageG) / 1000) * ingredient.pricePerKgCents * priceFactor,
     );
     items.push({ ingredientId, grams, packages, costCents, fromPantry: false });
   }

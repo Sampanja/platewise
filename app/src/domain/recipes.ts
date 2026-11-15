@@ -245,12 +245,12 @@ export function isRecipeAllowed(recipe: RecipeSource, rules: DietRules, index: I
   return checkRecipe(recipe, index, rules).ok;
 }
 
-/** Chain-adjusted cost of `servings` servings, leaving out the user's pantry staples. */
+/** Cost of `servings` servings in a price region (domain/priceRegion.ts `priceFactor`), leaving out the user's pantry staples. */
 export function recipeCostCents(
   recipe: RecipeSource,
   index: IngredientIndex,
   pantry: ReadonlySet<string>,
-  priceMultiplier: number,
+  priceFactor: number,
   servings = 1,
 ): number {
   let cost = 0;
@@ -259,5 +259,5 @@ export function recipeCostCents(
     const ingredient = ingredientOf(index, ingredientId, recipe.id);
     cost += (grams / 1000) * ingredient.pricePerKgCents;
   }
-  return Math.round(cost * priceMultiplier * servings);
+  return Math.round(cost * priceFactor * servings);
 }

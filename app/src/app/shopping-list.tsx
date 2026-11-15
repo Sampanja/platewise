@@ -16,11 +16,13 @@ import {
   ProgressMeter,
   Text,
 } from '@/components/ui';
-import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
+import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
 import { useCurrentShoppingList } from '@/data/hooks';
+import type { PriceRegionCode } from '@/domain/priceRegion';
+import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { usePlansStore } from '@/data/stores/plans';
 import { groupByAisle, type ShoppingItem } from '@/domain/shoppingList';
-import { format, formatCents, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
 import { formatAmount, formatPackage } from '@/lib/amounts';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -34,7 +36,7 @@ function itemDetail(item: ShoppingItem): string {
 }
 
 /** Plain-text list for sharing: aisle headings and one line per item. */
-function listAsText(groups: ReturnType<typeof groupByAisle>, totalCents: number): string {
+function listAsText(groups: ReturnType<typeof groupByAisle>, totalCents: number, region: PriceRegionCode): string {
   const lines = [t.shareTitle, ''];
   for (const group of groups) {
     lines.push(strings.aisles[group.aisle].toUpperCase());
@@ -44,12 +46,12 @@ function listAsText(groups: ReturnType<typeof groupByAisle>, totalCents: number)
     }
     lines.push('');
   }
-  lines.push(`${t.total}: ${formatCents(totalCents)} (${strings.common.priceEstimate})`);
+  lines.push(`${t.total}: ${formatMoney(totalCents, region)} (${strings.common.priceEstimate})`);
   return lines.join('\n');
 }
 
 export default function ShoppingListScreen() {
-  const { listId, plan, state, list } = useCurrentShoppingList();
+  const { listId, plan, state, list, region } = useCurrentShoppingList();
   const toggleChecked = usePlansStore((s) => s.toggleChecked);
   const clearChecked = usePlansStore((s) => s.clearChecked);
   const removeExtra = usePlansStore((s) => s.removeExtra);
@@ -64,13 +66,13 @@ export default function ShoppingListScreen() {
 
   const share = async () => {
     try {
-      await Share.share({ message: listAsText(groups, list.totalCents), title: t.shareTitle });
+      await Share.share({ message: listAsText(groups, list.totalCents, region), title: t.shareTitle });
     } catch {
       // The share sheet was dismissed or is unavailable; nothing to do.
     }
   };
   const copy = async () => {
-    await Clipboard.setStringAsync(listAsText(groups, list.totalCents));
+    await Clipboard.setStringAsync(listAsText(groups, list.totalCents, region));
     haptics.success();
     showToast(t.copied);
   };
@@ -105,12 +107,12 @@ export default function ShoppingListScreen() {
                 {t.total}
               </Text>
               <Text variant="display" color="accentText" style={styles.tabular}>
-                {formatCents(list.totalCents)}
+                {formatMoney(list.totalCents, region)}
               </Text>
               {plan ? (
                 <Text variant="caption" color="textSubtle">
-                  {format(t.budgetLine, { budget: formatCents(plan.budgetCents) })} ·{' '}
-                  {CHAINS_BY_CODE[plan.chainCode].name}
+                  {format(t.budgetLine, { budget: formatMoney(plan.budgetCents, region) })} ·{' '}
+                  {strings.priceRegions.names[region]}
                 </Text>
               ) : null}
             </View>
@@ -130,7 +132,7 @@ export default function ShoppingListScreen() {
             </Text>
           ) : (
             <Text variant="caption" color="textSubtle">
-              {`${formatCents(remainingCents)} · ${strings.budget.explainer}`}
+              {`${formatMoney(remainingCents, region)} · ${strings.budget.explainer}`}
             </Text>
           )}
           <View style={styles.actions}>
@@ -153,6 +155,8 @@ export default function ShoppingListScreen() {
           </View>
         </Card>
 
+        <PriceRegionNote region={region} />
+
         {groups.map((group) => (
           <View key={group.aisle} style={styles.group}>
             <Text variant="overline" color="accentText" accessibilityRole="header">
@@ -170,7 +174,7 @@ export default function ShoppingListScreen() {
                     />
                   </View>
                   <Text variant="label" color="textMuted" style={styles.tabular}>
-                    {formatCents(item.costCents)}
+                    {formatMoney(item.costCents, region)}
                   </Text>
                 </View>
               ))}

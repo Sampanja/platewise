@@ -15,32 +15,30 @@ import {
   Text,
   TextField,
 } from '@/components/ui';
-import { CHAINS_BY_CODE, CRAVINGS, INGREDIENTS_BY_ID, RECIPES } from '@/data/catalog';
-import { useUserRules } from '@/data/hooks';
+import { CRAVINGS, INGREDIENTS_BY_ID, RECIPES } from '@/data/catalog';
+import { usePriceRegion, useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
 import type { AllergenCode, CravingCode, DietCode, PlanAnswers } from '@/data/types';
 import { tightBudgetFixes } from '@/domain/feasibility';
 import { dinnerServings, minimumBudgetCents } from '@/domain/generate';
-import { ChainPicker } from '@/features/shared/ChainPicker';
+import { budgetBounds, roundToBudgetStep, type PriceRegionCode } from '@/domain/priceRegion';
 import { DietPicker } from '@/features/shared/DietPicker';
-import { format, formatCents, formatWholeEuros, strings } from '@/i18n';
+import { currencySymbol, format, formatMoney, formatWholeMoney, strings } from '@/i18n';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan;
-const STEPS = ['budget', 'eaters', 'meals', 'double', 'diet', 'cravings', 'store', 'summary'] as const;
+const STEPS = ['budget', 'eaters', 'meals', 'double', 'diet', 'cravings', 'summary'] as const;
 type Step = (typeof STEPS)[number];
 
-const BUDGET_MIN_EUR = 10;
-const BUDGET_MAX_EUR = 300;
 
 function toggle<T>(list: readonly T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
 /** Suggested budget when the user has not set one: the weekly budget scaled to the meal count. */
-function suggestedBudget(weeklyCents: number, meals: number): number {
-  return Math.round((weeklyCents * meals) / 7 / 100) * 100;
+function suggestedBudget(weekly: number, meals: number, region: PriceRegionCode): number {
+  return roundToBudgetStep((weekly * meals) / 7, region);
 }
 
 /** Suunnittele: one question per screen, prefilled from the last run or the profile. */
@@ -50,6 +48,11 @@ export default function QuestionnaireScreen() {
   const pinnedCount = usePlansStore((s) => s.pinnedRecipeIds.length);
   const setLastAnswers = usePlansStore((s) => s.setLastAnswers);
   const rules = useUserRules();
+  const region = usePriceRegion();
+  // Budget inputs work in whole currency units (euros, kronor).
+  const bounds = budgetBounds(region);
+  const minUnits = bounds.min / 100;
+  const maxUnits = bounds.max / 100;
 
   const [answers, setAnswers] = useState<PlanAnswers>(() => ({
     budgetCents: lastAnswers?.budgetCents ?? profile.weeklyBudgetCents,
@@ -60,7 +63,7 @@ export default function QuestionnaireScreen() {
     extraAllergens: [],
     extraDiets: [],
     cravings: lastAnswers?.cravings ?? [],
-    chainCode: lastAnswers?.chainCode ?? profile.chainCode,
+    priceRegion: region,
   }));
   const [budgetTouched, setBudgetTouched] = useState(lastAnswers !== null);
   const [budgetText, setBudgetText] = useState(String(Math.round(answers.budgetCents / 100)));
@@ -69,14 +72,14 @@ export default function QuestionnaireScreen() {
   const step: Step = STEPS[index];
 
   const patch = (value: Partial<PlanAnswers>) => setAnswers((a) => ({ ...a, ...value }));
-  const setBudgetEur = (eur: number) => {
+  const setBudgetUnits = (units: number) => {
     setBudgetTouched(true);
-    setBudgetText(String(eur));
-    patch({ budgetCents: eur * 100 });
+    setBudgetText(String(units));
+    patch({ budgetCents: units * 100 });
   };
   const setMeals = (mealCount: number) => {
     if (budgetTouched) return patch({ mealCount });
-    const budgetCents = suggestedBudget(profile.weeklyBudgetCents, mealCount);
+    const budgetCents = suggestedBudget(profile.weeklyBudgetCents, mealCount, region);
     setBudgetText(String(Math.round(budgetCents / 100)));
     patch({ mealCount, budgetCents });
   };
@@ -134,34 +137,34 @@ export default function QuestionnaireScreen() {
             value={budgetText}
             keyboardType="number-pad"
             accessibilityLabel={t.budget.inputA11y}
-            maxLength={3}
+            maxLength={String(maxUnits).length}
             onChangeText={(text) => {
               const digits = text.replace(/\D/g, '');
               setBudgetText(digits);
-              const eur = Number(digits);
-              if (eur > 0) {
+              const units = Number(digits);
+              if (units > 0) {
                 setBudgetTouched(true);
-                patch({ budgetCents: Math.min(BUDGET_MAX_EUR, eur) * 100 });
+                patch({ budgetCents: Math.min(maxUnits, units) * 100 });
               }
             }}
             onBlur={() => setBudgetText(String(Math.round(answers.budgetCents / 100)))}
             trailing={
               <Text variant="title" color="textMuted">
-                {strings.common.euroSign}
+                {currencySymbol(region)}
               </Text>
             }
           />
           <Slider
             value={Math.round(answers.budgetCents / 100)}
-            min={BUDGET_MIN_EUR}
-            max={BUDGET_MAX_EUR}
-            step={1}
-            onChange={setBudgetEur}
+            min={minUnits}
+            max={maxUnits}
+            step={bounds.step / 100}
+            onChange={setBudgetUnits}
             accessibilityLabel={t.budget.sliderA11y}
-            accessibilityValueText={formatCents(answers.budgetCents)}
+            accessibilityValueText={formatMoney(answers.budgetCents)}
           />
           <Text variant="label" color="textMuted" style={styles.center}>
-            {format(t.budget.perMeal, { amount: formatCents(perMeal) })}
+            {format(t.budget.perMeal, { amount: formatMoney(perMeal) })}
           </Text>
         </Card>
       ),
@@ -270,11 +273,6 @@ export default function QuestionnaireScreen() {
         </View>
       ),
     },
-    store: {
-      title: t.store.title,
-      body: t.store.body,
-      node: <ChainPicker value={answers.chainCode} onChange={(chainCode) => patch({ chainCode })} />,
-    },
     summary: {
       title: t.summary.title,
       body: t.summary.body,
@@ -284,15 +282,15 @@ export default function QuestionnaireScreen() {
             <Card style={styles.warning}>
               <Text variant="heading">{t.budget.tooLowTitle}</Text>
               <Text variant="body" color="textMuted">
-                {format(t.budget.tooLowBody, { amount: formatCents(minimumCents) })}
+                {format(t.budget.tooLowBody, { amount: formatMoney(minimumCents) })}
               </Text>
               {fixes ? (
                 <View style={styles.fixes}>
                   <Button
-                    label={format(t.budget.raiseTo, { amount: formatWholeEuros(fixes.raiseToCents) })}
+                    label={format(t.budget.raiseTo, { amount: formatWholeMoney(fixes.raiseToCents) })}
                     size="compact"
                     variant="secondary"
-                    onPress={() => setBudgetEur(Math.round(fixes.raiseToCents / 100))}
+                    onPress={() => setBudgetUnits(Math.round(fixes.raiseToCents / 100))}
                   />
                   {fixes.fewerMeals !== null ? (
                     <Button
@@ -307,7 +305,7 @@ export default function QuestionnaireScreen() {
             </Card>
           ) : null}
           <Card padding="flush">
-            <SummaryRow label={t.summary.budget} value={formatCents(answers.budgetCents)} onEdit={() => goTo(0)} />
+            <SummaryRow label={t.summary.budget} value={formatMoney(answers.budgetCents)} onEdit={() => goTo(0)} />
             <SummaryRow label={t.summary.eaters} value={eatersLabel(answers.eaters)} onEdit={() => goTo(1)} />
             <SummaryRow
               label={t.summary.meals}
@@ -340,9 +338,9 @@ export default function QuestionnaireScreen() {
               onEdit={() => goTo(5)}
             />
             <SummaryRow
-              label={t.summary.store}
-              value={CHAINS_BY_CODE[answers.chainCode].name}
-              onEdit={() => goTo(6)}
+              label={t.summary.priceRegion}
+              value={strings.priceRegions.names[answers.priceRegion]}
+              onEdit={() => router.push({ pathname: '/profile-edit/[section]', params: { section: 'region' } })}
               last
             />
           </Card>

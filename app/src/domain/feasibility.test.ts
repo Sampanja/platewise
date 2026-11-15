@@ -1,11 +1,12 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { CHAINS, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
+import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
 import { DEFAULT_PANTRY } from '@/data/catalog/ingredients';
 import type { PlanAnswers, ProposalMeal } from '@/data/types';
 
-import { assessProposal, ceilToEuro, compareChains, dropMeal, tightBudgetFixes } from './feasibility';
+import { assessProposal, dropMeal, tightBudgetFixes } from './feasibility';
 import { generateMeals, proposalShoppingList } from './generate';
+import { ceilToWholeUnit, priceFactor } from './priceRegion';
 
 const index = INGREDIENTS_BY_ID;
 const user = { allergens: [], diets: [], pantry: new Set(DEFAULT_PANTRY) };
@@ -19,7 +20,7 @@ function answers(overrides: Partial<PlanAnswers> = {}): PlanAnswers {
     extraAllergens: [],
     extraDiets: [],
     cravings: [],
-    chainCode: 's_group',
+    priceRegion: 'FI',
     ...overrides,
   };
 }
@@ -32,17 +33,13 @@ function assess(a: PlanAnswers, m: ProposalMeal[]) {
   return assessProposal({ meals: m, answers: a, recipes: RECIPES, recipesById: RECIPES_BY_ID, index, user });
 }
 
-describe('compareChains', () => {
-  it('prices the same list in every chain, cheapest first, matching the chain multipliers', () => {
+describe('price regions', () => {
+  it('prices the same list in another region with its price factor, never by store', () => {
     const a = answers();
     const ids = meals(a).map((m) => m.recipeId);
-    const result = compareChains(ids, RECIPES_BY_ID, a, index, user.pantry);
-    expect(result.map((r) => r.chainCode).sort()).toEqual(CHAINS.map((c) => c.code).sort());
-    for (let i = 1; i < result.length; i++) expect(result[i].totalCents).toBeGreaterThanOrEqual(result[i - 1].totalCents);
-    // Lidl has the lowest multiplier, so it is cheapest.
-    expect(result[0].chainCode).toBe('lidl');
-    const own = result.find((r) => r.chainCode === a.chainCode);
-    expect(own?.totalCents).toBe(proposalShoppingList(ids, RECIPES_BY_ID, a, index, user.pantry).totalCents);
+    const fi = proposalShoppingList(ids, RECIPES_BY_ID, a, index, user.pantry).totalCents;
+    const se = proposalShoppingList(ids, RECIPES_BY_ID, { ...a, priceRegion: 'SE' }, index, user.pantry).totalCents;
+    expect(se / fi).toBeCloseTo(priceFactor('SE'), 1);
   });
 });
 
@@ -61,7 +58,7 @@ describe('assessProposal', () => {
     const result = assess(a, m);
     expect(result.overBudgetCents).toBe(result.totalCents - 500);
     const raise = result.fixes.find((f) => f.kind === 'raiseBudget');
-    expect(raise).toEqual({ kind: 'raiseBudget', budgetCents: ceilToEuro(result.totalCents), byCents: ceilToEuro(result.totalCents) - 500 });
+    expect(raise).toEqual({ kind: 'raiseBudget', budgetCents: ceilToWholeUnit(result.totalCents), byCents: ceilToWholeUnit(result.totalCents) - 500 });
   });
 
   it('suggests dropping a meal only when the rest fits the budget', () => {
@@ -87,14 +84,10 @@ describe('assessProposal', () => {
     expect(assess(a, m).fixes.some((f) => f.kind === 'fewerMeals')).toBe(false);
   });
 
-  it('suggests a cheaper chain when the same list fits there', () => {
-    const base = answers({ budgetCents: 100000, chainCode: 'k_group' });
-    const m = meals(base);
-    const ids = m.map((x) => x.recipeId);
-    const lidl = compareChains(ids, RECIPES_BY_ID, base, index, user.pantry).find((c) => c.chainCode === 'lidl');
-    const a = { ...base, budgetCents: lidl!.totalCents };
-    const fix = assess(a, m).fixes.find((f) => f.kind === 'cheaperChain');
-    expect(fix).toEqual({ kind: 'cheaperChain', chainCode: 'lidl', totalCents: lidl!.totalCents });
+  it('never suggests switching stores: only a higher budget or fewer meals', () => {
+    const a = answers({ budgetCents: 500 });
+    const kinds = assess(a, meals(a)).fixes.map((f) => f.kind);
+    expect(kinds.every((kind) => kind === 'raiseBudget' || kind === 'fewerMeals')).toBe(true);
   });
 
   it('explains an unmet wish: blocked by the rules vs. did not fit', () => {

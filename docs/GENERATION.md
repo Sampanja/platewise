@@ -4,7 +4,7 @@ Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system pro
 
 ## 1. Periaatteet
 
-1. **Yksi moottori: N päivällistä + budjetti → yksi ostoslista.** Suunnittele-kysely (budjetti → syöjät 1–6 → ateriamäärä → allergiat ja ruokavalio → toiveet → kauppa) tuottaa putken syötteen. Viikkosuunnitelma (N = 7) ja kauppareissu (N = 2–6) ovat saman putken esiasetuksia. Putki ei tiedä tilasta muuta kuin N:n, syöjät, budjetin, toiveet ja kaupan.
+1. **Yksi moottori: N päivällistä + budjetti → yksi ostoslista.** Suunnittele-kysely (budjetti → syöjät 1–6 → ateriamäärä → allergiat ja ruokavalio → toiveet) tuottaa putken syötteen. Viikkosuunnitelma (N = 7) ja kauppareissu (N = 2–6) ovat saman putken esiasetuksia. Putki ei tiedä tilasta muuta kuin N:n, syöjät, budjetin, toiveet ja hinta-alueen.
 2. **Malli suunnittelee, koodi päättää.** Claude valitsee ruoat, ainesosat ja grammamäärät. Kaikki, mikä voi olla väärin vaarallisella tai harhaanjohtavalla tavalla (allergeenit, ruokavalio, makrot, hinta, budjetti), lasketaan ja tarkistetaan deterministisesti koodissa.
 3. **Suljettu ainesosalista kahdessa kerroksessa.** Skeema sallii vain katalogin slugit (`enum`), ja käyttäjälle kielletyt slugit suodatetaan jo ennen mallia. Koodi tarkistaa silti jokaisen reseptin.
 4. **Terveystiedot eivät lähde backendistä.** Mallille ei kerrota käyttäjän allergioita eikä ruokavaliota. Se saa vain listan slugeista, joita ei saa käyttää, ilman syytä.
@@ -15,7 +15,7 @@ Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system pro
 
 ```
 Sovellus: Suunnittele-kysely valmis
-   │  POST /generate-plan { meal_count, eaters, budget_cents, chain_code,
+   │  POST /generate-plan { meal_count, eaters, budget_cents, price_region,
    │                        craving_codes, extra_allergen_codes, extra_diet_codes, start_date }
    │  → palauttaa heti plan_id (status = generating)
    ▼
@@ -88,7 +88,7 @@ Muuttuu joka pyynnöllä, eikä siksi ole välimuistissa:
 - syöjien määrä (1–6)
 - aterioiden kokonaismäärä N ja generoitavien aterioiden indeksit
 - jo valitut ateriat (uudelleenkäytetyt tai vaihdossa säilyvät): nimi ja ainesosat grammoina, jotta malli voi hyödyntää samoja pakkauksia
-- budjettitavoite **perushinnoissa**: `budjetti / ketjun kerroin`, jolloin katalogin hinnat pätevät suoraan
+- budjettitavoite **Suomen hinnoissa**: `budjetti / alueen hintakerroin` (`price_level × per_euro`), jolloin katalogin hinnat pätevät suoraan
 - kotoa löytyvät slugit (käyttäjän perusvarat)
 - **"Älä käytä" -slugit**: allergeenit (myös "saattaa sisältää", jos `strict`; kyselyssä lisätyt aina `strict`), ruokavalion kieltämät tagit ja inhokit yhdessä listassa, ilman syytä
 - **toiveet** suomenkielisinä sanoina ("kana, nopea"), jos käyttäjä valitsi niitä. Toiveet eivät ole terveystietoa.
@@ -275,7 +275,7 @@ Avainsanahaun (6) yksityiskohdat:
 Budjetti kattaa **vain sovelluksen ehdottamat ateriat**: suunnitelman päivälliset ja niiden tuplaukset, perusvaroja lukuun ottamatta. Se ei ole käyttäjän koko ruokabudjetti. Käyttöliittymä sanoo tämän budjettisyötteen vieressä ja ostoslistan summan alla: *"Budjetti kattaa vain sovelluksen ehdottamat ateriat – ei muita ruokaostoksiasi."*
 
 ### 8.2 Laskenta (koodissa)
-1. **Ainesosan kg-hinta ketjulle**: `coalesce(ketjukohtainen hinta, round(perushinta × kerroin))`.
+1. **Ainesosan kg-hinta hinta-alueella**: `coalesce(alueen oma hinta, round(Suomen hinta × hintataso × valuuttakurssi))` ([DATA_MODEL.md](DATA_MODEL.md), `price_regions`).
 2. **Ostoslista**: kaikkien suunnitelman päivällisten ainesosat summattuna (`grams_per_serving × servings`, tuplatut kahdesti), **perusvarat pois**. Pakkaukset: `ceil(total_g / package_size_g)`.
 3. **Suunnitelman hinta-arvio** = Σ `pakkaukset × pakkauskoko × kg-hinta`. Tätä verrataan budjettiin.
 4. **Aterian osuus** (kortissa näytettävä hinta ja korjauksen kohdistus): jokaisen ostettavan ainesosan pakkauskustannus jaetaan aterioille käytettyjen grammojen suhteessa. Aterioiden summa on siis sama kuin ostoslistan summa.
@@ -514,7 +514,7 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 ## 14. Laadunvarmistus
 
 - **Yksikkötestit**: `checkRecipe`, `buildUserRules`, hinta- ja pakkauslaskenta, aterioiden osuuksien jako, tuplauksen ja perusvarojen vaikutus ostoslistaan, budjettisilmukan päätöslogiikka (mallin vastaukset mockattuina), rajojen laskenta.
-- **Testiaineisto** ennen julkaisua: noin 30 testiprofiilia, joissa vaihtelevat syöjät (1, 2, 4 ja 6), tila ja N (viikko N = 7, kauppareissu N = 2, 4 ja 5), toiveet (ei toiveita, yksi, useita), budjetit, ketjut ja allergiayhdistelmät (myös vegaani + useampi allergia sekä tiukka budjetti). Jokaisesta mitataan:
+- **Testiaineisto** ennen julkaisua: noin 30 testiprofiilia, joissa vaihtelevat syöjät (1, 2, 4 ja 6), tila ja N (viikko N = 7, kauppareissu N = 2, 4 ja 5), toiveet (ei toiveita, yksi, useita), budjetit, hinta-alueet ja allergiayhdistelmät (myös vegaani + useampi allergia sekä tiukka budjetti). Jokaisesta mitataan:
   - hyväksyttyjen reseptien osuus ensimmäisellä kierroksella
   - korjauskierrosten määrä
   - budjetissa pysyminen ja ylijäämägrammat

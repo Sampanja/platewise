@@ -19,12 +19,14 @@ import {
   Text,
 } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
-import { useRecipeAllowed, useServingPrice, useUserRules } from '@/data/hooks';
+import { usePriceRegion, useRecipeAllowed, useServingPrice, useUserRules } from '@/data/hooks';
+import { isRoughEstimate } from '@/domain/priceRegion';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS, mealForHour } from '@/domain/diary';
 import { MacroBars } from '@/features/recipe/MacroBars';
+import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
-import { format, formatCents, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, formatInteger, strings } from '@/i18n';
 import { formatAmount } from '@/lib/amounts';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -37,6 +39,7 @@ export default function RecipeScreen() {
   const { width } = useWindowDimensions();
   const rules = useUserRules();
   const servingPrice = useServingPrice();
+  const priceRegion = usePriceRegion();
   const allowed = useRecipeAllowed();
   const actions = useRecipeActions(recipe);
 
@@ -161,10 +164,10 @@ export default function RecipeScreen() {
                   {strings.common.priceEstimate}
                 </Text>
                 <Text variant="display" color="accentText" style={styles.tabular}>
-                  {formatCents(total)}
+                  {formatMoney(total)}
                 </Text>
                 <Text variant="caption" color="textSubtle">
-                  {format(t.pricePerServing, { price: formatCents(perServing) })}
+                  {format(t.pricePerServing, { price: formatMoney(perServing) })}
                 </Text>
               </View>
               <View style={styles.servings}>
@@ -181,6 +184,7 @@ export default function RecipeScreen() {
                 />
               </View>
             </View>
+            {isRoughEstimate(priceRegion) ? <PriceRegionNote region={priceRegion} /> : null}
             <View style={styles.actionRow}>
               {isDinner ? (
                 <Button

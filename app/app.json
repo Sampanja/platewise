@@ -56,7 +56,8 @@
         {
           "color": "#C9461A"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "scheme": "platewise",
     "experiments": {

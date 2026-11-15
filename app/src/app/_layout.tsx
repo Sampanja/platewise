@@ -16,8 +16,10 @@ import { useColorScheme, View } from 'react-native';
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { setHapticsEnabled } from '@/components/ui';
-import { useHydrated, useKeepProposalSuitable } from '@/data/hooks';
+import { useHydrated, useKeepProposalSuitable, usePriceRegion } from '@/data/hooks';
+import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
+import { activePriceRegion, setActivePriceRegion } from '@/i18n/locale';
 import { colors, DEFAULT_CHARACTER, isCharacterId, resolveTheme, setActiveTheme, themeKey } from '@/theme';
 
 
@@ -48,8 +50,19 @@ export default function RootLayout() {
   const savedCharacter = useProfileStore((s) => s.characterId);
   const character = isCharacterId(savedCharacter) ? savedCharacter : DEFAULT_CHARACTER;
   // The theme is the character's palette in light or dark mode.
-  const theme = `${character}-${mode}`;
-  if (themeKey() !== theme) setActiveTheme(mode, character);
+  const themeName = `${character}-${mode}`;
+  if (themeKey() !== themeName) setActiveTheme(mode, character);
+  // Prices and currency follow the price region; like the theme it is read at
+  // render time, so a change remounts the screens the same way.
+  const priceRegion = usePriceRegion();
+  if (activePriceRegion() !== priceRegion) setActivePriceRegion(priceRegion);
+  const theme = `${themeName}|${priceRegion}`;
+  // Saved budgets are amounts in a currency: move them to a new region with the same purchasing power.
+  useEffect(() => {
+    if (!hydrated) return;
+    useProfileStore.getState().alignBudgetTo(priceRegion);
+    usePlansStore.getState().alignAnswersTo(priceRegion);
+  }, [priceRegion, hydrated]);
   const [mountedTheme, setMountedTheme] = useState(theme);
   const navigation = useNavigationContainerRef();
   const savedNavigation = useRef<ReturnType<typeof navigation.getRootState> | null>(null);

@@ -7,7 +7,7 @@ import { openRecipe } from '@/components/RecipeCard';
 import { RecipeImage } from '@/components/RecipeImage';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Button, Card, FadeInView, Icon, PressableScale, Text } from '@/components/ui';
-import { CHAINS_BY_CODE, INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
+import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
 import { useActivePlan, useUserRules } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
 import type { MealPlan } from '@/data/types';
@@ -16,7 +16,7 @@ import { lastDinnerDate, mealDate } from '@/domain/plan';
 import { isRecipeAllowed } from '@/domain/recipes';
 import { showToast } from '@/lib/toast';
 import { ProposalCard } from '@/features/home/ProposalCard';
-import { format, formatCents, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
 import { relativeDayLabel, shortDate, today } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -105,8 +105,8 @@ function PlanScreen() {
                     })}
                   </Text>
                   <Text variant="caption" color="textSubtle">
-                    {`${formatCents(plan.estimatedTotalCents)} / ${formatCents(plan.budgetCents)} · ${
-                      CHAINS_BY_CODE[plan.chainCode].name
+                    {`${formatMoney(plan.estimatedTotalCents, plan.priceRegion)} / ${formatMoney(plan.budgetCents, plan.priceRegion)} · ${
+                      strings.priceRegions.names[plan.priceRegion]
                     }`}
                   </Text>
                 </View>
