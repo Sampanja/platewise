@@ -1,12 +1,13 @@
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 
+import { activeLanguage } from '@/i18n/locale';
 import { hyphenateFi } from '@/lib/hyphenate';
 import { colors, typography, type ColorToken, type TypographyVariant } from '@/theme';
 
 export type TextProps = RNTextProps & {
   variant?: TypographyVariant;
   color?: ColorToken;
-  /** Adds Finnish syllable break points to long words (titles in narrow cards). */
+  /** Adds Finnish syllable break points to long words (titles in narrow cards); other languages use the platform's hyphenation. */
   hyphenate?: boolean;
 };
 
@@ -21,7 +22,7 @@ export function Text({ variant = 'body', color = 'text', style, hyphenate, child
       {...rest}
       style={[typography[variant], { color: colors[color] }, style]}
     >
-      {hyphenate && typeof children === 'string' ? hyphenateFi(children) : children}
+      {hyphenate && typeof children === 'string' && activeLanguage() === 'fi' ? hyphenateFi(children) : children}
     </RNText>
   );
 }

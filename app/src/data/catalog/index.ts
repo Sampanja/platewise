@@ -16,6 +16,7 @@ import { RECIPES_10 } from './recipes10';
 import { RECIPES_11 } from './recipes11';
 import { RECIPES_12 } from './recipes12';
 import { RECIPES_13 } from './recipes13';
+import { withRecipeText } from './text';
 
 /** Every recipe batch, in the order they were written. */
 const SOURCES: readonly RecipeSource[] = [...RECIPES_1, ...RECIPES_2, ...RECIPES_3, ...RECIPES_4, ...RECIPES_5, ...RECIPES_6, ...RECIPES_7, ...RECIPES_8, ...RECIPES_9, ...RECIPES_10, ...RECIPES_11, ...RECIPES_12, ...RECIPES_13];
@@ -23,8 +24,10 @@ const SOURCES: readonly RecipeSource[] = [...RECIPES_1, ...RECIPES_2, ...RECIPES
 /**
  * Local recipe library. Recipes are derived the way the backend will derive
  * them: macros, allergens, diet tags and base cost from ingredient data.
+ * deriveRecipe copies plain fields, so the display text getters (title,
+ * steps…) are attached again: they follow the UI language.
  */
-export const RECIPES: readonly Recipe[] = SOURCES.map((source) => deriveRecipe(source, INGREDIENTS_BY_ID));
+export const RECIPES: readonly Recipe[] = SOURCES.map((source) => withRecipeText(deriveRecipe(source, INGREDIENTS_BY_ID)));
 
 export const RECIPES_BY_ID: Readonly<Record<string, Recipe>> = Object.fromEntries(
   RECIPES.map((recipe) => [recipe.id, recipe]),

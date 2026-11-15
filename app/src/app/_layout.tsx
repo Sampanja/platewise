@@ -16,10 +16,21 @@ import { useColorScheme, View } from 'react-native';
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { setHapticsEnabled } from '@/components/ui';
-import { useHydrated, useKeepProposalSuitable, usePriceRegion } from '@/data/hooks';
+import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
-import { activePriceRegion, setActivePriceRegion } from '@/i18n/locale';
+import {
+  activeFirstWeekday,
+  activeLanguage,
+  activePriceRegion,
+  activeUnitSystem,
+  setActiveLanguage,
+  setActivePriceRegion,
+  setActiveUnitSystem,
+  setFirstWeekday,
+} from '@/i18n/locale';
+import { useDeviceLocale } from '@/lib/deviceLocale';
+import { rescheduleReminders } from '@/services/reminders';
 import { colors, DEFAULT_CHARACTER, isCharacterId, resolveTheme, setActiveTheme, themeKey } from '@/theme';
 
 
@@ -56,7 +67,21 @@ export default function RootLayout() {
   // render time, so a change remounts the screens the same way.
   const priceRegion = usePriceRegion();
   if (activePriceRegion() !== priceRegion) setActivePriceRegion(priceRegion);
-  const theme = `${themeName}|${priceRegion}`;
+  // Language, units and the first weekday work the same way: strings and
+  // formatting read them at render time, and a change remounts the screens.
+  const language = useLanguage();
+  if (activeLanguage() !== language) setActiveLanguage(language);
+  const unitSystem = useUnitSystem();
+  if (activeUnitSystem() !== unitSystem) setActiveUnitSystem(unitSystem);
+  setFirstWeekday(useDeviceLocale().firstWeekday, priceRegion);
+  const theme = `${themeName}|${priceRegion}|${language}|${unitSystem}|${activeFirstWeekday()}`;
+  // Scheduled reminders keep the words they were made with: re-create them in the new language.
+  const scheduledLanguage = useRef(language);
+  useEffect(() => {
+    if (!hydrated || scheduledLanguage.current === language) return;
+    scheduledLanguage.current = language;
+    rescheduleReminders();
+  }, [language, hydrated]);
   // Saved budgets are amounts in a currency: move them to a new region with the same purchasing power.
   useEffect(() => {
     if (!hydrated) return;

@@ -1,13 +1,11 @@
 import { router } from 'expo-router';
 
 import { useProfileStore } from '@/data/stores/profile';
-import { useRemindersStore } from '@/data/stores/reminders';
 import { CharacterPicker } from '@/features/characters/CharacterPicker';
 import { characterVoice } from '@/features/mascot/useCharacter';
 import { format, strings } from '@/i18n';
 import { showToast } from '@/lib/toast';
-import { useWaterStore } from '@/data/stores/water';
-import { scheduleMealReminders, scheduleWaterReminders } from '@/services/reminders';
+import { rescheduleReminders } from '@/services/reminders';
 import { activeTheme } from '@/theme';
 
 /**
@@ -27,10 +25,7 @@ export default function ChooseCharacterScreen() {
         update({ characterId: id, characterChosen: true });
         showToast(format(strings.characters.changed, { name: characterVoice(id).name }));
         // Reminders speak in the character's voice: reschedule them with the new texts.
-        const reminders = useRemindersStore.getState();
-        if (reminders.enabled) void scheduleMealReminders(true, reminders.times);
-        const water = useWaterStore.getState().reminders;
-        if (water.on) void scheduleWaterReminders(water);
+        rescheduleReminders();
       }}
     />
   );

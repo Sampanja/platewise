@@ -44,8 +44,11 @@ import {
   type Workout,
   type WorkoutType,
 } from '@/domain/energy';
-import { format, formatInteger, strings } from '@/i18n';
-import { today } from '@/lib/dates';
+import { CM_PER_INCH, KG_PER_POUND } from '@/domain/units';
+import { format, formatDecimal, formatInteger, strings } from '@/i18n';
+import { activeUnitSystem } from '@/i18n/locale';
+import { formatBodyWeight, formatHeight } from '@/lib/amounts';
+import { numericDate, today, weekdayOrder } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -56,12 +59,7 @@ type Step = (typeof STEPS)[number];
 const GOALS: readonly GoalType[] = ['lose', 'maintain', 'gain', 'recomp'];
 const WORKOUT_TYPES: readonly WorkoutType[] = ['walk', 'run', 'cycle', 'gym', 'swim', 'ball', 'yoga', 'other'];
 
-const decimal = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: 2 });
-const kg = (value: number) => format(t.weightValue, { value: decimal.format(value) });
-
-function finnishDate(date: Date): string {
-  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
-}
+const kg = (value: number) => formatBodyWeight(value);
 
 /**
  * Calorie need and goal. BMR from Mifflin–St Jeor (or Katch–McArdle with a
@@ -197,7 +195,7 @@ export default function CalculatorScreen() {
   };
 
   const adjustmentText = (code: Adjustment) =>
-    format(t.adjustments[code], { min: decimal.format(minTarget), floor: formatInteger(floor) });
+    format(t.adjustments[code], { min: kg(minTarget), floor: formatInteger(floor) });
 
   const rateOptions: readonly number[] = goalType === 'gain' ? GAIN_RATE_OPTIONS : RATE_OPTIONS;
 
@@ -236,12 +234,21 @@ export default function CalculatorScreen() {
                 min={120}
                 max={220}
                 onChange={setHeight}
-                format={(v) => format(t.heightValue, { value: v })}
+                step={activeUnitSystem() === 'imperial' ? CM_PER_INCH : 1}
+                format={(v) => formatHeight(v)}
                 accessibilityLabel={t.height}
               />
             </NumberRow>
             <NumberRow label={t.weight}>
-              <Stepper value={weight} min={35} max={250} step={0.5} onChange={setWeight} format={kg} accessibilityLabel={t.weight} />
+              <Stepper
+                value={weight}
+                min={35}
+                max={250}
+                step={activeUnitSystem() === 'imperial' ? KG_PER_POUND : 0.5}
+                onChange={setWeight}
+                format={kg}
+                accessibilityLabel={t.weight}
+              />
             </NumberRow>
           </Card>
           <Card style={styles.gapSm}>
@@ -415,7 +422,7 @@ export default function CalculatorScreen() {
               <Text variant="body" color="textMuted">
                 {g.everyday}
               </Text>
-              <Text variant="bodyStrong">{format(g.everydayValue, { factor: decimal.format(spend.everydayFactor) })}</Text>
+              <Text variant="bodyStrong">{format(g.everydayValue, { factor: formatDecimal(spend.everydayFactor, 2) })}</Text>
             </View>
             <View style={styles.spread}>
               <Text variant="body" color="textMuted">
@@ -432,7 +439,7 @@ export default function CalculatorScreen() {
               {format(t.kcalPerDay, { value: formatInteger(spend.tdee) })}
             </Text>
             <Text variant="body" color="textMuted">
-              {format(t.tdeeExplain, { factor: decimal.format(spend.tdee / spend.bmr) })}
+              {format(t.tdeeExplain, { factor: formatDecimal(spend.tdee / spend.bmr, 2) })}
             </Text>
           </Card>
         </View>
@@ -486,7 +493,7 @@ export default function CalculatorScreen() {
                     <SelectChip
                       key={option}
                       role="radio"
-                      label={format(t.rateValue, { value: decimal.format(option) })}
+                      label={format(t.rateValue, { value: formatBodyWeight(option, undefined, 2) })}
                       selected={rate === option}
                       onPress={() => setRate(option)}
                     />
@@ -513,7 +520,7 @@ export default function CalculatorScreen() {
                 ? g.recompNote
                 : plan.goal === 'maintain' || plan.weeksToGoal === null
                   ? t.maintainNote
-                  : format(t.eta, { date: finnishDate(goalDate(now, plan.weeksToGoal)), weeks: plan.weeksToGoal })}
+                  : format(t.eta, { date: numericDate(goalDate(now, plan.weeksToGoal)), weeks: plan.weeksToGoal })}
             </Text>
           </Card>
 
@@ -617,7 +624,8 @@ export default function CalculatorScreen() {
                   {g.cyclingDays}
                 </Text>
                 <View style={styles.chips}>
-                  {g.weekdaysShort.map((label, day) => {
+                  {weekdayOrder().map((day) => {
+                    const label = g.weekdaysShort[day];
                     const selected = cycling.highDays.includes(day as Weekday);
                     return (
                       <SelectChip
@@ -656,7 +664,8 @@ export default function CalculatorScreen() {
               </Card>
               <Card style={styles.gapSm}>
                 <View style={styles.weekRow}>
-                  {week.perDay.map((kcal, day) => {
+                  {weekdayOrder().map((day) => {
+                    const kcal = week.perDay[day];
                     const high = cycling.highDays.includes(day as Weekday);
                     return (
                       <View key={day} style={styles.weekDay} accessible accessibilityLabel={`${g.weekdaysShort[day]} ${kcal} kcal`}>

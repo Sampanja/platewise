@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, PressableScale, Text } from '@/components/ui';
 import { format, formatInteger, strings } from '@/i18n';
-import { parseLocalDate, type LocalDate } from '@/lib/dates';
+import { weekdayShort, type LocalDate } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -28,7 +28,7 @@ export function WeekChart({ days, selected, goal, onSelect }: Props) {
         {goal ? <View style={[styles.goalLine, { bottom: (goal / max) * CHART_HEIGHT }]} /> : null}
         {days.map((day) => {
           const isSelected = day.date === selected;
-          const weekday = strings.dates.weekdaysShort[parseLocalDate(day.date).getDay()];
+          const weekday = weekdayShort(day.date);
           return (
             <PressableScale
               key={day.date}

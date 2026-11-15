@@ -126,9 +126,9 @@ export const fiFun = {
     preview: {
       today: 'Tänään',
       streak: '5 pv putki',
-      progress: '1 240 / 1 900 kcal',
+      progress: '{eaten} / {goal} kcal',
       recipe: 'Lohikeitto',
-      recipeMeta: '30 min · hinta-arvio 3,40 €',
+      recipeMeta: '30 min · hinta-arvio {price}',
       cta: 'Suunnittele viikko',
     },
   },

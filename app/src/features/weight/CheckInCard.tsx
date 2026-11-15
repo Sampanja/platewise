@@ -14,7 +14,8 @@ import {
   tdee,
   type BodyInfo,
 } from '@/domain/energy';
-import { format, formatDecimal, formatInteger, strings } from '@/i18n';
+import { format, formatInteger, strings } from '@/i18n';
+import { formatWeightChange } from '@/lib/amounts';
 import { addDays, today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
@@ -136,7 +137,7 @@ export function CheckInCard() {
       </Text>
       <Text variant="body" color="textMuted">
         {format(t.trend, {
-          value: `${estimate.weeklyChangeKg > 0 ? '+' : ''}${formatDecimal(estimate.weeklyChangeKg, 2)}`,
+          value: formatWeightChange(estimate.weeklyChangeKg, undefined, 2),
           intake: formatInteger(estimate.avgIntake),
         })}
       </Text>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID } from '@/data/catalog/ingredients';
-import { dish } from '@/data/catalog/recipeHelpers';
+import { plainDish } from '@/data/catalog/recipeHelpers';
 import type { RecipeSource } from '@/data/types';
 
 import { checkRecipe, deriveRecipe, keywordAllergens, recipeCostCents } from './recipes';
@@ -10,18 +10,10 @@ const index = INGREDIENTS_BY_ID;
 
 function recipe(ingredients: [string, number][], extra: Partial<RecipeSource> = {}): RecipeSource {
   return {
-    ...dish({
-      id: 'test',
-      title: 'Testiruoka',
-      desc: '',
-      cat: 'other',
-      cuisine: 'other',
-      protein: 'none',
-      time: [20, 20],
-      ing: '',
-      steps: ['Sekoita.'],
-      tips: [],
-    }),
+    ...plainDish(
+      { id: 'test', cat: 'other', cuisine: 'other', protein: 'none', time: [20, 20], ing: '' },
+      { title: 'Testiruoka', steps: ['Sekoita.'] },
+    ),
     ingredients: ingredients.map(([ingredientId, grams]) => ({ ingredientId, grams })),
     ...extra,
   };

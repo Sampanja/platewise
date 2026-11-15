@@ -91,7 +91,7 @@ export const fiGoals = {
     explain: 'Vertasimme syömääsi energiaa painosi suuntaan. Jos paino pysyy samana, syöt kulutuksesi verran; jos se laskee, kulutat enemmän kuin syöt. Tästä saadaan arvio, joka on usein kaavaa tarkempi.',
     estimate: 'Todellinen kulutuksesi noin {value} kcal / vrk',
     formula: 'Kaavan arvio {value} kcal',
-    trend: 'Paino on muuttunut keskimäärin {value} kg viikossa, ja söit keskimäärin {intake} kcal kirjattuina päivinä.',
+    trend: 'Paino on muuttunut keskimäärin {value} viikossa, ja söit keskimäärin {intake} kcal kirjattuina päivinä.',
     suggest: 'Päivitetäänkö tavoite tällä? Uusi päivätavoite olisi {value} kcal.',
     apply: 'Päivitä tavoite',
     applied: 'Tavoite päivitetty omien lukujesi mukaan',
@@ -102,7 +102,7 @@ export const fiGoals = {
   },
   progress2: {
     milestones: 'Välitavoitteet',
-    milestone: '{share} % · {value} kg',
+    milestone: '{share} % · {value}',
     forecastTitle: 'Ennuste',
     forecast: 'Nykyisellä tahdilla tavoite noin {date}',
     planned: 'Suunnitelman mukaan {date}',

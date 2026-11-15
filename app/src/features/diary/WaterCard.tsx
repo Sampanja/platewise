@@ -4,15 +4,18 @@ import { StyleSheet, View } from 'react-native';
 import { Card, haptics, Icon, IconButton, PressableScale, ProgressMeter, Text } from '@/components/ui';
 import { useWaterGoal } from '@/data/hooks';
 import { useWaterStore } from '@/data/stores/water';
-import { format, formatDecimal, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatDrink, formatWater } from '@/lib/amounts';
 import type { LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.water;
 
-export const litres = (ml: number) => formatDecimal(ml / 1000, 2);
-export const decilitres = (ml: number) => format(t.dl, { value: formatDecimal(ml / 100, ml % 100 === 0 ? 0 : 1) });
+/** A day's water with its unit ("1,5 l" or "51 fl oz"). */
+export const litres = (ml: number) => formatWater(ml);
+/** One drink with its unit ("2 dl" or "7 fl oz"). */
+export const decilitres = (ml: number) => formatDrink(ml);
 
 /**
  * Drinks for the day in the diary: progress against the personal goal, a

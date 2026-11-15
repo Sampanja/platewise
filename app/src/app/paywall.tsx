@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FoodIllustration } from '@/components/FoodIllustration';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Chip, Icon, OptionRow, Text } from '@/components/ui';
-import { strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -45,13 +45,13 @@ export default function PaywallScreen() {
         </View>
         <View style={styles.plans} accessibilityRole="radiogroup">
           <OptionRow
-            title={`${t.yearly} · ${t.yearlyPrice}`}
+            title={`${t.yearly} · ${format(t.yearlyPrice, { price: formatMoney(3499, 'FI') })}`}
             hint={`${t.yearlySave} · ${t.trial}`}
             selected={plan === 'yearly'}
             onPress={() => setPlan('yearly')}
           />
           <OptionRow
-            title={`${t.monthly} · ${t.monthlyPrice}`}
+            title={`${t.monthly} · ${format(t.monthlyPrice, { price: formatMoney(499, 'FI') })}`}
             hint={t.trial}
             selected={plan === 'monthly'}
             onPress={() => setPlan('monthly')}

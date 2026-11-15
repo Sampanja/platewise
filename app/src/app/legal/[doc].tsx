@@ -9,16 +9,18 @@ import { colors, spacing, themedStyles } from '@/theme';
 
 type Doc = 'privacy' | 'terms' | 'sources';
 
-const DOCS: Record<Doc, { title: string; body: string; placeholder: boolean }> = {
+/** Read at render time so the text follows the active language. */
+const docs = (): Record<Doc, { title: string; body: string; placeholder: boolean }> => ({
   privacy: { title: strings.legal.privacyTitle, body: strings.legal.privacyBody, placeholder: true },
   terms: { title: strings.legal.termsTitle, body: strings.legal.termsBody, placeholder: true },
   sources: { title: strings.legal.sourcesTitle, body: strings.legal.sourcesBody, placeholder: false },
-};
+});
 
 /** Privacy policy, terms and sources. The first two are placeholders until launch. */
 export default function LegalScreen() {
   const { doc } = useLocalSearchParams<{ doc: Doc }>();
-  const content = DOCS[doc] ?? DOCS.sources;
+  const all = docs();
+  const content = all[doc] ?? all.sources;
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScreenHeader title={content.title} />

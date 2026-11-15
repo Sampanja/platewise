@@ -13,7 +13,8 @@ import { DIARY_MEALS } from '@/domain/diary';
 import { dayReport, REFERENCE, weekReport } from '@/domain/report';
 import { BarChart } from '@/features/diary/BarChart';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
-import { diaryDayLabel, parseLocalDate, today, type LocalDate } from '@/lib/dates';
+import { formatWater } from '@/lib/amounts';
+import { diaryDayLabel, today, weekdayShort, type LocalDate } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles, type ColorToken } from '@/theme';
 
 const t = strings.report;
@@ -33,7 +34,7 @@ export default function ReportScreen() {
 
   const day = useMemo(() => dayReport(entries, date), [entries, date]);
   const week = useMemo(() => weekReport(entries, date, hasGoal ? goals : null, water), [entries, date, hasGoal, goals, water]);
-  const weekday = (d: LocalDate) => strings.dates.weekdaysShort[parseLocalDate(d).getDay()];
+  const weekday = (d: LocalDate) => weekdayShort(d);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -132,8 +133,8 @@ export default function ReportScreen() {
               <View style={styles.rowBetween}>
                 <Text variant="body" color="textMuted">
                   {format(strings.water.amount, {
-                    value: formatDecimal((water[date] ?? 0) / 1000, 2),
-                    goal: formatDecimal(waterGoal / 1000, 2),
+                    value: formatWater(water[date] ?? 0),
+                    goal: formatWater(waterGoal),
                   })}
                 </Text>
               </View>
@@ -157,7 +158,7 @@ export default function ReportScreen() {
                   {hasGoal && !hideCalories ? (
                     <Tile label={t.onTarget} value={format(t.onTargetValue, { count: week.onTargetDays })} />
                   ) : null}
-                  <Tile label={t.avgWater} value={`${formatDecimal(week.avgWaterMl / 1000, 2)} l`} />
+                  <Tile label={t.avgWater} value={formatWater(week.avgWaterMl)} />
                 </View>
                 {hideCalories ? null : (
                   <Card style={styles.gap}>

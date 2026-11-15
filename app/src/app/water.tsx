@@ -38,13 +38,13 @@ import { decilitres, litres } from '@/features/diary/WaterCard';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { format, formatDecimal, strings } from '@/i18n';
-import { addDays, diaryDayLabel, parseLocalDate, today, type LocalDate } from '@/lib/dates';
+import { formatWaterBare } from '@/lib/amounts';
+import { addDays, diaryDayLabel, today, weekdayShort, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { ensurePermission, scheduleWaterReminders } from '@/services/reminders';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.water;
-const WEEKDAY = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la'];
 
 /**
  * Drinks: the day's progress, quick adding by drink and size, the day's log,
@@ -89,7 +89,7 @@ export default function WaterScreen() {
         const dayGoal = goalFor(day).totalMl;
         return {
           key: day,
-          label: WEEKDAY[parseLocalDate(day).getDay()],
+          label: weekdayShort(day),
           value,
           muted: day > today(),
           a11y: format(t.historyA11y, { day: diaryDayLabel(day), value: litres(value), goal: litres(dayGoal) }),
@@ -144,10 +144,10 @@ export default function WaterScreen() {
               style={styles.tabular}
               accessibilityLabel={format(t.a11y, { value: litres(ml), goal: litres(goal.totalMl) })}
             >
-              {`${litres(ml)} l`}
+              {litres(ml)}
             </Text>
             <Text variant="label" color="textMuted">
-              {`/ ${litres(goal.totalMl)} l`}
+              {`/ ${litres(goal.totalMl)}`}
             </Text>
             <Text variant="caption" color={ml >= goal.totalMl ? 'success' : 'textSubtle'}>
               {ml >= goal.totalMl ? t.reached : format(t.left, { value: litres(goal.totalMl - ml) })}
@@ -324,7 +324,7 @@ export default function WaterScreen() {
                   max={MAX_GOAL_ML}
                   step={100}
                   onChange={(value) => store().setManualGoal(value)}
-                  format={(v) => `${formatDecimal(v / 1000, 1)} l`}
+                  format={(v) => litres(v)}
                   accessibilityLabel={t.goalManualLabel}
                 />
               </View>
@@ -347,7 +347,7 @@ export default function WaterScreen() {
                     ) : null}
                   </View>
                   <Text variant="bodyStrong" style={styles.tabular}>
-                    {part.key === 'base' ? `${litres(part.ml)} l` : `+ ${decilitres(part.ml)}`}
+                    {part.key === 'base' ? litres(part.ml) : `+ ${decilitres(part.ml)}`}
                   </Text>
                 </View>
               ))}
@@ -356,7 +356,7 @@ export default function WaterScreen() {
                   {t.goalTotal}
                 </Text>
                 <Text variant="bodyStrong" color="water" style={styles.tabular}>
-                  {`${litres(goal.totalMl)} l`}
+                  {litres(goal.totalMl)}
                 </Text>
               </View>
             </View>
@@ -379,7 +379,7 @@ export default function WaterScreen() {
               reference={goal.totalMl}
               tone="water"
               height={110}
-              format={(v) => formatDecimal(v / 1000, 1)}
+              format={(v) => formatWaterBare(v)}
             />
             <View style={styles.row}>
               <Icon name="flame" size={18} color={streak > 0 ? 'accentText' : 'textSubtle'} />

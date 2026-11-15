@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Card, haptics, Icon, PressableScale, SwitchRow, Text, type IconName } from '@/components/ui';
-import { usePriceRegion, useWaterGoal } from '@/data/hooks';
+import { useLanguage, usePriceRegion, useUnitSystem, useWaterGoal } from '@/data/hooks';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
@@ -16,7 +16,8 @@ import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
-import { format, formatMoney, formatDecimal, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, formatInteger, LANGUAGE_NAMES, strings } from '@/i18n';
+import { formatBodyWeight, formatWater } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
@@ -30,6 +31,8 @@ function edit(section: string): Href {
 function ProfileScreen() {
   const waterGoal = useWaterGoal(today());
   const priceRegion = usePriceRegion();
+  const language = useLanguage();
+  const unitSystem = useUnitSystem();
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore(
     useShallow((s) => ({
@@ -145,13 +148,13 @@ function ProfileScreen() {
           <Row
             icon="chart"
             label={t.weight}
-            value={latestWeight !== undefined ? format(strings.calculator.weightValue, { value: formatDecimal(latestWeight) }) : t.weightNone}
+            value={latestWeight !== undefined ? formatBodyWeight(latestWeight) : t.weightNone}
             href="/weight"
           />
           <Row
             icon="water"
             label={strings.water.goalTitle}
-            value={`${formatDecimal(waterGoal.totalMl / 1000, 1)} l`}
+            value={formatWater(waterGoal.totalMl)}
             href="/water"
           />
           <View style={[styles.switchRow, styles.lastSwitch]}>
@@ -194,6 +197,8 @@ function ProfileScreen() {
           />
           <Row icon="sparkles" label={strings.characters.profileRow} value={voice.name} href="/choose-character" />
           <Row icon="sun" label={strings.characters.modeTitle} value={strings.themes[profile.themePreference]} href={edit('theme')} />
+          <Row icon="language" label={strings.language.profileRow} value={LANGUAGE_NAMES[language]} href={edit('language')} />
+          <Row icon="ruler" label={strings.unitSystems.profileRow} value={strings.unitSystems[unitSystem]} href={edit('units')} />
           <Row icon="crown" label={t.subscription} value={t.subscriptionValue} href="/paywall" />
           <Row icon="shield" label={t.privacy} href={{ pathname: '/legal/[doc]', params: { doc: 'privacy' } }} />
           <Row icon="file" label={t.terms} href={{ pathname: '/legal/[doc]', params: { doc: 'terms' } }} />

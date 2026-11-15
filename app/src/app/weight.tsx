@@ -19,14 +19,18 @@ import { useWeightStore } from '@/data/stores/weight';
 import { forecastDate, goalDate, goalProgress, milestones, movingAverage, shouldSuggestRecalculation } from '@/domain/energy';
 import { CheckInCard } from '@/features/weight/CheckInCard';
 import { WeightChart } from '@/features/weight/WeightChart';
-import { format, strings } from '@/i18n';
-import { diaryDayLabel, today } from '@/lib/dates';
+import { displayWeight, weightStep, weightToKg } from '@/domain/units';
+import { format, formatFixed, strings } from '@/i18n';
+import { activeUnitSystem } from '@/i18n/locale';
+import { formatBodyWeight, formatWeightChange } from '@/lib/amounts';
+import { diaryDayLabel, numericDate, today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.weight;
-const decimal = new Intl.NumberFormat('fi-FI', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const kg = (value: number) => format(strings.calculator.weightValue, { value: decimal.format(value) });
+const kg = (value: number) => formatBodyWeight(value);
+/** A weight in the user's unit without the unit, e.g. "72,5" or "159.8". */
+const bare = (value: number) => formatFixed(displayWeight(value, activeUnitSystem()), 1);
 
 /** Weight log: today's weigh-in, trend chart with a moving average and progress to the goal. */
 export default function WeightScreen() {
@@ -47,9 +51,13 @@ export default function WeightScreen() {
     target !== null && goal.setAt && goal.startWeightKg !== null && goal.rateKgPerWeek > 0
       ? goalDate(new Date(goal.setAt), Math.ceil(Math.abs(target - goal.startWeightKg) / goal.rateKgPerWeek))
       : null;
-  const fiDate = (date: Date) => `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
   const suggest = body.weightKg !== null && shouldSuggestRecalculation(entries, body.weightKg);
-  const change = (delta: number) => setValue((v) => Math.round((v + delta) * 10) / 10);
+  // Steps are in the user's unit (0.1 kg or 0.2 lb); the value is kept in kilograms.
+  const system = activeUnitSystem();
+  const step = weightStep(system);
+  const change = (delta: number) =>
+    setValue((v) => weightToKg(Math.round((displayWeight(v, system) + delta) * 10) / 10, system));
+  const unitLabel = system === 'imperial' ? 'lb' : strings.common.kgUnit;
 
   const save = () => {
     log(today(), value);
@@ -69,7 +77,7 @@ export default function WeightScreen() {
           <Card style={[styles.gap, styles.suggest]}>
             <Text variant="heading">{t.suggestTitle}</Text>
             <Text variant="body" color="textMuted">
-              {format(t.suggestBody, { diff: decimal.format(Math.abs(trend - body.weightKg)) })}
+              {format(t.suggestBody, { diff: formatBodyWeight(Math.abs(trend - body.weightKg)) })}
             </Text>
             <Button label={t.suggestCta} size="compact" onPress={() => router.push('/calculator')} />
           </Card>
@@ -82,16 +90,16 @@ export default function WeightScreen() {
             {t.log}
           </Text>
           <View style={styles.logRow}>
-            <IconButton icon="minus" size={52} haptic="select" accessibilityLabel={t.minus} onPress={() => change(-0.1)} />
+            <IconButton icon="minus" size={52} haptic="select" accessibilityLabel={format(t.minus, { step: formatWeightChange(-step).replace('−', '') })} onPress={() => change(-step)} />
             <View style={styles.valueBox} accessible accessibilityLabel={kg(value)}>
               <Text variant="displayLarge" style={styles.tabular}>
-                {decimal.format(value)}
+                {bare(value)}
               </Text>
               <Text variant="label" color="textSubtle">
-                {strings.common.kgUnit}
+                {unitLabel}
               </Text>
             </View>
-            <IconButton icon="plus" size={52} haptic="select" accessibilityLabel={t.plus} onPress={() => change(0.1)} />
+            <IconButton icon="plus" size={52} haptic="select" accessibilityLabel={format(t.plus, { step: formatWeightChange(step).replace('+', '') })} onPress={() => change(step)} />
           </View>
           <View style={styles.quick}>
             {[-1, -0.5, 0.5, 1].map((delta) => (
@@ -99,8 +107,8 @@ export default function WeightScreen() {
                 key={delta}
                 size="compact"
                 variant="secondary"
-                label={`${delta > 0 ? '+' : '−'}${decimal.format(Math.abs(delta))}`}
-                accessibilityLabel={`${delta > 0 ? t.plus : t.minus} (${decimal.format(Math.abs(delta))} kg)`}
+                label={`${delta > 0 ? '+' : '−'}${formatFixed(Math.abs(delta), 1)}`}
+                accessibilityLabel={format(delta > 0 ? t.plus : t.minus, { step: `${formatFixed(Math.abs(delta), 1)} ${unitLabel}` })}
                 onPress={() => change(delta)}
                 haptic="select"
                 style={styles.flex}
@@ -161,14 +169,14 @@ export default function WeightScreen() {
                         accessible
                         accessibilityLabel={`${format(strings.progress2.milestone, {
                           share: Math.round(m.share * 100),
-                          value: decimal.format(m.kg),
+                          value: kg(m.kg),
                         })}${m.reached ? `, ${strings.progress2.reached}` : ''}`}
                       >
                         <Icon name={m.reached ? 'checkCircle' : 'flag'} size={18} color={m.reached ? 'success' : 'textSubtle'} />
                         <Text variant="caption" color={m.reached ? 'success' : 'textMuted'}>
                           {`${Math.round(m.share * 100)} %`}
                         </Text>
-                        <Text variant="label">{decimal.format(m.kg)}</Text>
+                        <Text variant="label">{bare(m.kg)}</Text>
                       </View>
                     ))}
                   </View>
@@ -176,11 +184,11 @@ export default function WeightScreen() {
                     {strings.progress2.forecastTitle}
                   </Text>
                   <Text variant="body" color="textMuted">
-                    {forecast ? format(strings.progress2.forecast, { date: fiDate(forecast) }) : strings.progress2.noForecast}
+                    {forecast ? format(strings.progress2.forecast, { date: numericDate(forecast) }) : strings.progress2.noForecast}
                   </Text>
                   {planned ? (
                     <Text variant="caption" color="textSubtle">
-                      {format(strings.progress2.planned, { date: fiDate(planned) })}
+                      {format(strings.progress2.planned, { date: numericDate(planned) })}
                     </Text>
                   ) : null}
                 </>

@@ -11,6 +11,8 @@ import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/s
 import { parseLocalDate, today, type LocalDate } from '@/lib/dates';
 
 import { priceFactor, priceRegionFor, type PriceRegionCode } from '@/domain/priceRegion';
+import { defaultUnitSystem, type UnitSystem } from '@/domain/units';
+import { languageFor, type Language } from '@/i18n/languages';
 import { useDeviceLocale } from '@/lib/deviceLocale';
 
 import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
@@ -147,6 +149,20 @@ export function usePriceRegion(): PriceRegionCode {
   const chosen = useProfileStore((s) => s.priceRegion);
   const device = useDeviceLocale().regionCode;
   return chosen ?? priceRegionFor(device);
+}
+
+/** The UI language: the chosen one, or the phone's language if supported, else English. */
+export function useLanguage(): Language {
+  const chosen = useProfileStore((s) => s.language);
+  const device = useDeviceLocale().languageCode;
+  return chosen ?? languageFor(device);
+}
+
+/** Metric or imperial: the chosen system, or the phone's measurement system / region. */
+export function useUnitSystem(): UnitSystem {
+  const chosen = useProfileStore((s) => s.unitSystem);
+  const { measurementSystem, regionCode } = useDeviceLocale();
+  return chosen ?? defaultUnitSystem(measurementSystem, regionCode);
 }
 
 /** Price estimate per serving in the user's price region, without their pantry staples. */

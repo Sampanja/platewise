@@ -17,7 +17,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { MIN_KCAL_GOAL, PANTRY_ELIGIBLE } from '@/data/catalog';
-import { usePriceRegion } from '@/data/hooks';
+import { useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
 import {
   budgetBounds,
@@ -27,7 +27,10 @@ import {
   priceRegionFor,
   type PriceRegionCode,
 } from '@/domain/priceRegion';
+import { defaultUnitSystem, UNIT_SYSTEMS, type UnitSystem } from '@/domain/units';
 import { RemindersEditor } from '@/features/profile/RemindersEditor';
+import { LanguageOptions } from '@/features/settings/LanguageOptions';
+import { STRING_TABLES } from '@/i18n/registry';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { currencySymbol, format, formatMoney, formatInteger, strings } from '@/i18n';
 import { useDeviceLocale } from '@/lib/deviceLocale';
@@ -42,7 +45,7 @@ const THEME_OPTIONS = [
   { value: 'dark', hint: 'darkHint', icon: 'moon' },
 ] as const;
 
-type Section = 'name' | 'budget' | 'region' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
+type Section = 'name' | 'budget' | 'region' | 'language' | 'units' | 'allergies' | 'diet' | 'pantry' | 'goals' | 'theme' | 'reminders';
 
 /**
  * Edits one profile setting. Changes are saved as they are made (to the local
@@ -56,6 +59,7 @@ export default function ProfileEditScreen() {
       name: s.name,
       weeklyBudgetCents: s.weeklyBudgetCents,
       priceRegion: s.priceRegion,
+      unitSystem: s.unitSystem,
       themePreference: s.themePreference,
       allergens: s.allergens,
       diets: s.diets,
@@ -70,7 +74,11 @@ export default function ProfileEditScreen() {
     })),
   );
   const region = usePriceRegion();
-  const deviceRegion = priceRegionFor(useDeviceLocale().regionCode);
+  const language = useLanguage();
+  const unitSystem = useUnitSystem();
+  const device = useDeviceLocale();
+  const deviceRegion = priceRegionFor(device.regionCode);
+  const deviceUnits = defaultUnitSystem(device.measurementSystem, device.regionCode);
   // Budget inputs work in whole currency units (euros, kronor).
   const bounds = budgetBounds(region);
   const [budgetText, setBudgetText] = useState(String(Math.round(profile.weeklyBudgetCents / 100)));
@@ -161,6 +169,49 @@ export default function ProfileEditScreen() {
               onPress={() => chooseRegion(code)}
             />
           ))}
+        </View>
+      ),
+    },
+    language: {
+      title: strings.language.title,
+      body: strings.language.body,
+      node: (
+        <LanguageOptions
+          value={language}
+          onChange={(next) => {
+            if (next === language) return;
+            profile.update({ language: next, languageChosen: true });
+            // Said in the new language: the strings switch on the next render, after this toast is made.
+            showToast(STRING_TABLES[next].language.changed);
+          }}
+        />
+      ),
+    },
+    units: {
+      title: strings.unitSystems.title,
+      body: strings.unitSystems.body,
+      node: (
+        <View style={styles.gap} accessibilityRole="radiogroup">
+          <OptionRow
+            icon="phone"
+            title={strings.unitSystems.auto}
+            hint={format(strings.unitSystems.autoHint, { system: strings.unitSystems[deviceUnits] })}
+            selected={profile.unitSystem === null}
+            onPress={() => profile.update({ unitSystem: null })}
+          />
+          {UNIT_SYSTEMS.map((system: UnitSystem) => (
+            <OptionRow
+              key={system}
+              icon="ruler"
+              title={strings.unitSystems[system]}
+              hint={strings.unitSystems[system === 'metric' ? 'metricHint' : 'imperialHint']}
+              selected={profile.unitSystem === system}
+              onPress={() => profile.update({ unitSystem: system })}
+            />
+          ))}
+          <Text variant="caption" color="textSubtle">
+            {format(strings.unitSystems.autoHint, { system: strings.unitSystems[unitSystem] })}
+          </Text>
         </View>
       ),
     },

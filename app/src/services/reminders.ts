@@ -4,6 +4,8 @@ import { Platform } from 'react-native';
 
 import type { ReminderTime } from '@/data/stores/reminders';
 import type { DiaryMeal } from '@/data/types';
+import { useRemindersStore } from '@/data/stores/reminders';
+import { useWaterStore } from '@/data/stores/water';
 import { currentCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
 import { reminderHours } from '@/domain/hydration';
@@ -101,4 +103,16 @@ export async function scheduleWaterReminders(settings: {
     });
   }
   return hours.length;
+}
+
+/**
+ * Reschedules every enabled reminder with the current texts. Scheduled
+ * notifications keep the words they were created with, so this runs when
+ * the character or the language changes.
+ */
+export function rescheduleReminders(): void {
+  const meals = useRemindersStore.getState();
+  if (meals.enabled) void scheduleMealReminders(true, meals.times);
+  const water = useWaterStore.getState().reminders;
+  if (water.on) void scheduleWaterReminders(water);
 }

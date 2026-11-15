@@ -1,4 +1,6 @@
 import { DIET_EXCLUDED_TAGS } from '@/data/catalog/reference';
+import { ALLERGEN_KEYWORDS } from '@/data/catalog/text/allergenKeywords';
+import type { Language } from '@/i18n/languages';
 import type {
   AllergenCode,
   DietCode,
@@ -112,72 +114,54 @@ export type RecipeCheck = {
 };
 
 /**
- * Free-text keywords per allergen (`allergen_keywords`). A word matches when it
- * starts with the keyword, so "katkaravut" matches "katkara". Kept narrow on
- * purpose: ingredient data is the primary source and catches compound words.
+ * Allergens whose keywords appear in free text. Catalog recipes are scanned in
+ * their Finnish source text; the other languages' lists check translations
+ * (data/catalog/text/allergenKeywords.ts).
  */
-export const ALLERGEN_KEYWORDS: Readonly<Partial<Record<AllergenCode, readonly string[]>>> = {
-  gluten: ['vehnä', 'ruis', 'ohra', 'spelt', 'seitan', 'korppujauho'],
-  milk: ['maito', 'kerma', 'juusto', 'jogurtti', 'rahka', 'parmesaani', 'feta', 'mozzarella', 'halloumi'],
-  egg: ['kananmun', 'muna'],
-  fish: ['kala', 'lohi', 'seiti', 'tonnikala', 'turska', 'silakka', 'muikku', 'anjovis'],
-  crustaceans: ['katkara', 'rapu', 'hummeri'],
-  molluscs: ['simpuk', 'mustekala', 'kalmari', 'osteri'],
-  peanut: ['maapähkinä'],
-  nuts: ['pähkinä', 'manteli', 'cashew', 'hasselpähkinä', 'saksanpähkinä', 'pistaasi', 'pekaani'],
-  soy: ['soija', 'tofu', 'edamame'],
-  sesame: ['seesam', 'tahini'],
-  mustard: ['sinappi'],
-  celery: ['selleri'],
-  lupin: ['lupiini'],
-};
-
-/** Word beginnings that start with a keyword but are not the allergen (any inflection). */
-const KEYWORD_EXCEPTIONS: readonly string[] = ['juustokumin', 'kookosmai', 'munakois'];
-
-/** "soijaton", "pähkinätön", "munattomat": the word says the food is free from it. */
-const FREE_FROM_SUFFIX = /^(ton|tön|ttom|ttöm)/;
-
-function words(text: string): string[] {
-  return text.toLowerCase().match(/[a-zåäöé]+/g) ?? [];
-}
-
-/** "gluteeniton korppujauho", "gluteenittomat jauhot": the gluten keyword is negated. */
-function negatesGluten(previous: string | undefined): boolean {
-  return previous !== undefined && previous.startsWith('gluteenit');
-}
-
-/** Allergens whose keywords appear in the recipe's free text. */
-export function keywordAllergens(texts: readonly string[]): Set<AllergenCode> {
+export function keywordAllergens(texts: readonly string[], language: Language = 'fi'): Set<AllergenCode> {
+  const set = ALLERGEN_KEYWORDS[language];
+  const byStart = keywordsByStart(language);
   const found = new Set<AllergenCode>();
   for (const text of texts) {
     const list = words(text);
     for (let i = 0; i < list.length; i++) {
       const word = list[i];
-      if (KEYWORD_EXCEPTIONS.some((prefix) => word.startsWith(prefix))) continue;
-      const candidates = KEYWORDS_BY_START.get(word.slice(0, 2));
+      const candidates = byStart.get(word.slice(0, 2));
       if (!candidates) continue;
       for (const [code, keyword] of candidates) {
-        if (found.has(code)) continue;
-        if (code === 'gluten' && negatesGluten(list[i - 1])) continue;
-        if (word.startsWith(keyword) && !FREE_FROM_SUFFIX.test(word.slice(keyword.length))) found.add(code);
+        if (found.has(code) || !word.startsWith(keyword)) continue;
+        if (set.exceptions[code]?.some((prefix) => word.startsWith(prefix))) continue;
+        if (set.notAfter[code]?.includes(list[i - 1] ?? '')) continue;
+        if (code === 'gluten' && set.negatesGluten(list[i - 1], list[i - 2])) continue;
+        // "soijaton", "glutenfri", "nut-free": the word says the food is free from it.
+        if (set.freeFromSuffix.test(word.slice(keyword.length)) || list[i + 1] === 'free') continue;
+        found.add(code);
       }
     }
   }
   return found;
 }
 
+function words(text: string): string[] {
+  return text.toLowerCase().match(/[a-zåäöé]+/g) ?? [];
+}
+
+const startIndexes = new Map<Language, ReadonlyMap<string, readonly [AllergenCode, string][]>>();
+
 /** Keywords by their first two letters, so each word is compared only with a few candidates. */
-const KEYWORDS_BY_START: ReadonlyMap<string, readonly [AllergenCode, string][]> = (() => {
+function keywordsByStart(language: Language): ReadonlyMap<string, readonly [AllergenCode, string][]> {
+  const cached = startIndexes.get(language);
+  if (cached) return cached;
   const map = new Map<string, [AllergenCode, string][]>();
-  for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS) as [AllergenCode, readonly string[]][]) {
+  for (const [code, keywords] of Object.entries(ALLERGEN_KEYWORDS[language].keywords) as [AllergenCode, readonly string[]][]) {
     for (const keyword of keywords) {
       const start = keyword.slice(0, 2);
       map.set(start, [...(map.get(start) ?? []), [code, keyword]]);
     }
   }
+  startIndexes.set(language, map);
   return map;
-})();
+}
 
 /** Everything a recipe contains, from its ingredients and its free text. */
 export type RecipeContents = {
@@ -210,7 +194,7 @@ export function recipeContents(recipe: RecipeSource, index: IngredientIndex): Re
     ingredient.allergens.forEach((code) => allergens.add(code));
     ingredient.tags.forEach((tag) => tags.add(tag));
   }
-  keywordAllergens([recipe.title, recipe.description, ...recipe.steps]).forEach((code) => allergens.add(code));
+  keywordAllergens(recipe.sourceText ?? [recipe.title, recipe.description, ...recipe.steps]).forEach((code) => allergens.add(code));
   const contents = { allergens, tags };
   byRecipe.set(recipe, contents);
   return contents;

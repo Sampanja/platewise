@@ -20,6 +20,7 @@ import {
 import { MIN_KCAL_GOAL } from '@/data/catalog';
 import { useProfileStore, type Profile } from '@/data/stores/profile';
 import type { AllergenCode, DietCode } from '@/data/types';
+import { LanguageStep } from '@/features/settings/LanguageStep';
 import { DietPicker } from '@/features/shared/DietPicker';
 import { format, formatInteger, strings } from '@/i18n';
 import { activeTheme, colors, radii, spacing, themedStyles } from '@/theme';
@@ -34,15 +35,18 @@ type Draft = Pick<
 >;
 
 /**
- * First-run setup. It starts with the character picker: choosing a character
+ * First-run setup. It starts with the language (preselected from the phone),
+ * then the character picker: choosing a character
  * re-themes the whole app (the navigator remounts), so the choice is saved
  * right away and the rest of the setup starts after it. Then a few short
  * screens, each one skippable. Shown only once.
  */
 export default function OnboardingScreen() {
+  const languageChosen = useProfileStore((s) => s.languageChosen);
   const chosen = useProfileStore((s) => s.characterChosen);
   const characterId = useProfileStore((s) => s.characterId);
   const update = useProfileStore((s) => s.update);
+  if (!languageChosen) return <LanguageStep />;
   if (!chosen) {
     return (
       <CharacterPicker

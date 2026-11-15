@@ -229,6 +229,12 @@ export type RecipeSource = {
   storage: string;
   /** How to reheat. */
   reheating: string;
+  /**
+   * The Finnish source text (title, description, steps) the allergen keyword
+   * scan reads, whatever the UI language. Catalog recipes have it; others fall
+   * back to their own text.
+   */
+  sourceText?: readonly string[];
 };
 
 /** Recipe with fields the backend derives from ingredient data. */

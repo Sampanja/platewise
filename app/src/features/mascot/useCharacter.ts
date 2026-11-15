@@ -1,12 +1,13 @@
 import { useProfileStore } from '@/data/stores/profile';
-import { fiCharacters, type CharacterVoice } from '@/i18n/fiCharacters';
+import type { CharacterVoice } from '@/i18n/fiCharacters';
+import { activeCharacterVoices } from '@/i18n/registry';
 import { DEFAULT_CHARACTER, isCharacterId, type CharacterId } from '@/theme/characters';
 
 export type ActiveCharacter = { id: CharacterId; voice: CharacterVoice };
 
 function resolve(id: unknown): ActiveCharacter {
   const safe = isCharacterId(id) ? id : DEFAULT_CHARACTER;
-  return { id: safe, voice: fiCharacters[safe] };
+  return { id: safe, voice: activeCharacterVoices()[safe] };
 }
 
 /** The character the user picked: its id and voice. Re-renders when it changes. */
@@ -21,5 +22,5 @@ export function currentCharacter(): ActiveCharacter {
 }
 
 export function characterVoice(id: CharacterId): CharacterVoice {
-  return fiCharacters[id];
+  return activeCharacterVoices()[id];
 }

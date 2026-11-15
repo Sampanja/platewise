@@ -5,6 +5,8 @@
  */
 
 import { PRICE_REGION_CODES } from '@/domain/priceRegion';
+import { isUnitSystem } from '@/domain/units';
+import { isLanguage } from '@/i18n/languages';
 
 type Loose = Record<string, unknown>;
 
@@ -79,4 +81,21 @@ export function profileWithoutStore<T>(profile: T, fromVersion: number): T {
   const region = rest.priceRegion;
   const valid = typeof region === 'string' && (PRICE_REGION_CODES as readonly string[]).includes(region);
   return { ...rest, priceRegion: valid ? region : null } as T;
+}
+
+/**
+ * Profile v8: language and units. The app was Finnish-only before, so people
+ * who already finished onboarding keep Finnish and skip the language picker;
+ * new installs see the picker first. Units follow the region (null) until
+ * chosen. Unknown values from a newer or broken save fall back the same way.
+ */
+export function withLanguageSettings<T>(profile: T, fromVersion: number): T {
+  if (!isObject(profile)) return profile;
+  const onboarded = profile.onboardingCompleted === true;
+  if (fromVersion < 8) {
+    return { ...profile, language: onboarded ? 'fi' : null, languageChosen: onboarded, unitSystem: null } as T;
+  }
+  const language = isLanguage(profile.language) ? profile.language : null;
+  const unitSystem = isUnitSystem(profile.unitSystem) ? profile.unitSystem : null;
+  return { ...profile, language, languageChosen: profile.languageChosen === true || onboarded, unitSystem } as T;
 }

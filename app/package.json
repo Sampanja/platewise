@@ -57,6 +57,9 @@
     "react-dom": "19.3.0"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/jest.setup.ts"
+    ]
   }
 }

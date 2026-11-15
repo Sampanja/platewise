@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Icon, Text } from '@/components/ui';
-import { strings } from '@/i18n';
+import { format, formatInteger, formatMoney, strings } from '@/i18n';
 import { radii, spacing, type Palette } from '@/theme';
 
 const t = strings.characters.preview;
@@ -35,7 +35,7 @@ export function ThemePreview({ palette }: { palette: Palette }) {
           <View style={[styles.fill, { backgroundColor: p.accent }]} />
         </View>
         <Text variant="caption" style={{ color: p.textMuted }}>
-          {t.progress}
+          {format(t.progress, { eaten: formatInteger(1240), goal: formatInteger(1900) })}
         </Text>
       </View>
 
@@ -48,7 +48,7 @@ export function ThemePreview({ palette }: { palette: Palette }) {
             {t.recipe}
           </Text>
           <Text variant="caption" style={{ color: p.textSubtle }} numberOfLines={1}>
-            {t.recipeMeta}
+            {format(t.recipeMeta, { price: formatMoney(340) })}
           </Text>
         </View>
         <Icon name="heart" size={16} tint={p.accentText} />

@@ -4,7 +4,10 @@ import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
 import { movingAverage, type WeightEntry } from '@/domain/energy';
-import { format, strings } from '@/i18n';
+import { displayWeight } from '@/domain/units';
+import { format, formatDecimal, strings } from '@/i18n';
+import { activeUnitSystem } from '@/i18n/locale';
+import { formatBodyWeight } from '@/lib/amounts';
 import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -15,7 +18,6 @@ type Props = {
 
 const HEIGHT = 180;
 const PAD = 12;
-const decimal = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: 1 });
 
 /** Weigh-ins as dots and the 7-day moving average as a line, over time. */
 export function WeightChart({ entries, targetKg }: Props) {
@@ -48,10 +50,10 @@ export function WeightChart({ entries, targetKg }: Props) {
     >
       <View style={styles.axis}>
         <Text variant="caption" color="textSubtle">
-          {decimal.format(max)}
+          {formatDecimal(displayWeight(max, activeUnitSystem()), 1)}
         </Text>
         <Text variant="caption" color="textSubtle">
-          {decimal.format(min)}
+          {formatDecimal(displayWeight(min, activeUnitSystem()), 1)}
         </Text>
       </View>
       <View style={styles.plot} onLayout={onLayout}>
@@ -97,7 +99,7 @@ export function WeightChart({ entries, targetKg }: Props) {
           <>
             <View style={[styles.lineKey, styles.targetKey]} />
             <Text variant="caption" color="textSubtle">
-              {format(strings.weight.legendTarget, { value: decimal.format(targetKg) })}
+              {format(strings.weight.legendTarget, { value: formatBodyWeight(targetKg) })}
             </Text>
           </>
         ) : null}

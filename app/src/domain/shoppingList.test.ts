@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID } from '@/data/catalog/ingredients';
-import { dish as makeDish } from '@/data/catalog/recipeHelpers';
+import { plainDish } from '@/data/catalog/recipeHelpers';
 
 import { buildShoppingList, groupByAisle } from './shoppingList';
 
@@ -9,7 +9,7 @@ const index = INGREDIENTS_BY_ID;
 
 function dish(id: string, ingredients: [string, number][]) {
   return {
-    ...makeDish({ id, title: id, desc: '', cat: 'other', cuisine: 'other', protein: 'none', time: [10, 10], ing: '', steps: [], tips: [] }),
+    ...plainDish({ id, cat: 'other', cuisine: 'other', protein: 'none', time: [10, 10], ing: '' }, { title: id }),
     ingredients: ingredients.map(([ingredientId, grams]) => ({ ingredientId, grams })),
   };
 }

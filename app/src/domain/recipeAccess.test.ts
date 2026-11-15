@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
-import { dish } from '@/data/catalog/recipeHelpers';
+import { plainDish } from '@/data/catalog/recipeHelpers';
 import type { AllergenCode, DietCode, RecipeSource } from '@/data/types';
 
 import { suggestRecipes, testAnswer, type RecipeHint } from './assistantRules';
@@ -22,18 +22,10 @@ const rules = (allergens: AllergenCode[], diets: DietCode[] = []) => ({ allergen
 
 function recipe(ing: string, extra: Partial<RecipeSource> = {}): RecipeSource {
   return {
-    ...dish({
-      id: 'test-dish',
-      title: 'Testiruoka',
-      desc: 'Testikuvaus.',
-      cat: 'other',
-      cuisine: 'other',
-      protein: 'none',
-      time: [10, 10],
-      ing,
-      steps: ['Sekoita ainekset.'],
-      tips: [],
-    }),
+    ...plainDish(
+      { id: 'test-dish', cat: 'other', cuisine: 'other', protein: 'none', time: [10, 10], ing },
+      { title: 'Testiruoka', description: 'Testikuvaus.', steps: ['Sekoita ainekset.'] },
+    ),
     ...extra,
   };
 }

@@ -4,8 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, SelectChip, Stepper, Text, TextField } from '@/components/ui';
 import type { DiaryMeal, FoodPortion, Macros } from '@/data/types';
 import { DIARY_MEALS } from '@/domain/diary';
-import { format, formatInteger, strings } from '@/i18n';
-import { formatCount } from '@/lib/amounts';
+import { GRAMS_PER_OUNCE, gToOz } from '@/domain/units';
+import { format, formatDecimal, formatInteger, parseDecimal, strings } from '@/i18n';
+import { activeUnitSystem } from '@/i18n/locale';
+import { formatCount, formatGrams } from '@/lib/amounts';
 import { spacing, themedStyles } from '@/theme';
 
 type FoodProps = {
@@ -139,6 +141,17 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
     setPortion(null);
     onGramsChange(Math.min(MAX_GRAMS, Math.max(0, value)));
   };
+  // Imperial users type ounces (one decimal) and step by 1 oz; the entry is still saved in grams.
+  const imperial = activeUnitSystem() === 'imperial';
+  const unit = imperial ? 'oz' : strings.common.gUnit;
+  const step = imperial ? GRAMS_PER_OUNCE : 10;
+  const stepLabel = imperial ? format(strings.units.oz, { value: 1 }) : format(strings.units.g, { value: 10 });
+  const shown = grams <= 0 ? '' : imperial ? formatDecimal(gToOz(grams), 1) : String(Math.round(grams));
+  const typed = (text: string) => {
+    if (!imperial) return setGrams(Number(text.replace(/\D/g, '')));
+    const oz = parseDecimal(text);
+    setGrams(Number.isFinite(oz) ? oz * GRAMS_PER_OUNCE : 0);
+  };
 
   return (
     <View style={styles.section}>
@@ -153,7 +166,7 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
             label={
               option.label === HUNDRED_G
                 ? option.label
-                : `${option.label} · ${format(strings.units.g, { value: formatInteger(option.grams) })}`
+                : `${option.label} · ${formatGrams(option.grams)}`
             }
             selected={portion?.label === option.label}
             onPress={() => choose(option)}
@@ -177,35 +190,35 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
         </View>
       ) : null}
       <Text variant="overline" color="textSubtle">
-        {t.grams}
+        {format(t.grams, { unit })}
       </Text>
       <View style={styles.gramsRow}>
         <IconButton
           icon="minus"
           haptic="select"
-          accessibilityLabel={t.minus10}
+          accessibilityLabel={format(t.minus10, { step: stepLabel })}
           disabled={grams <= 0}
-          onPress={() => setGrams(Math.round(grams) - 10)}
+          onPress={() => setGrams(grams - step)}
         />
         <TextField
-          value={grams > 0 ? String(Math.round(grams)) : ''}
-          onChangeText={(text) => setGrams(Number(text.replace(/\D/g, '')))}
-          keyboardType="number-pad"
-          accessibilityLabel={t.gramsA11y}
-          maxLength={4}
+          value={shown}
+          onChangeText={typed}
+          keyboardType={imperial ? 'decimal-pad' : 'number-pad'}
+          accessibilityLabel={format(t.gramsA11y, { unit })}
+          maxLength={imperial ? 5 : 4}
           style={styles.flex}
           trailing={
             <Text variant="label" color="textSubtle">
-              {strings.common.gUnit}
+              {unit}
             </Text>
           }
         />
         <IconButton
           icon="plus"
           haptic="select"
-          accessibilityLabel={t.plus10}
+          accessibilityLabel={format(t.plus10, { step: stepLabel })}
           disabled={grams >= MAX_GRAMS}
-          onPress={() => setGrams(Math.round(grams) + 10)}
+          onPress={() => setGrams(grams + step)}
         />
       </View>
     </View>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { dropHouseholdSize, planWithEaters, profileWithoutStore, waterToEntries, withPriceRegion } from './migrations';
+import { dropHouseholdSize, planWithEaters, profileWithoutStore, waterToEntries, withLanguageSettings, withPriceRegion } from './migrations';
 
 describe('dropHouseholdSize', () => {
   it('removes the field and keeps everything else', () => {
@@ -76,5 +76,32 @@ describe('profileWithoutStore', () => {
     expect(profileWithoutStore({ priceRegion: 'GB' }, 7)).toEqual({ priceRegion: 'GB' });
     expect(profileWithoutStore({ priceRegion: null }, 7)).toEqual({ priceRegion: null });
     expect(profileWithoutStore({ priceRegion: 'nope' }, 7)).toEqual({ priceRegion: null });
+  });
+});
+
+describe('withLanguageSettings', () => {
+  it('keeps Finnish for people who used the Finnish-only app', () => {
+    expect(withLanguageSettings({ name: 'A', onboardingCompleted: true }, 7)).toEqual({
+      name: 'A',
+      onboardingCompleted: true,
+      language: 'fi',
+      languageChosen: true,
+      unitSystem: null,
+    });
+  });
+
+  it('sends new installs to the language picker', () => {
+    expect(withLanguageSettings({ onboardingCompleted: false }, 7)).toMatchObject({ language: null, languageChosen: false });
+    expect(withLanguageSettings({}, 0)).toMatchObject({ language: null, languageChosen: false, unitSystem: null });
+  });
+
+  it('drops unknown languages and unit systems without crashing', () => {
+    expect(withLanguageSettings({ language: 'xx', unitSystem: 'cubits', languageChosen: true }, 8)).toMatchObject({
+      language: null,
+      unitSystem: null,
+      languageChosen: true,
+    });
+    expect(withLanguageSettings({ language: 'sv', unitSystem: 'imperial' }, 8)).toMatchObject({ language: 'sv', unitSystem: 'imperial' });
+    expect(withLanguageSettings(null, 7)).toBeNull();
   });
 });
