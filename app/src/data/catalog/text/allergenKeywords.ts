@@ -88,6 +88,7 @@ export const ALLERGEN_KEYWORDS: Readonly<Record<Language, KeywordSet>> = {
     exceptions: {
       milk: ['ostron', 'kokosmjölk', 'havremjölk', 'mandelmjölk', 'sojamjölk', 'kokosgrädde', 'havregrädde', 'smörgås', 'ostind'],
       nuts: ['nötkött', 'nötfärs'],
+      crustaceans: ['räkn'],
       gluten: ['kornig', 'kornel'],
     },
     freeFromSuffix: /^fri/,

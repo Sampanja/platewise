@@ -1,7 +1,7 @@
 import type { Ingredient } from '@/data/types';
 import { cmToFeetInches, displayWeight, gToOz, ML_PER_CUP, mlToFlOz, type UnitSystem } from '@/domain/units';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
-import { activeUnitSystem } from '@/i18n/locale';
+import { activeLanguage, activeUnitSystem } from '@/i18n/locale';
 
 /**
  * Display of amounts in the user's unit system. Everything is stored in grams,
@@ -57,7 +57,9 @@ export function formatAmount(ingredient: Ingredient, grams: number, system: Unit
   if (display.kind === 'piece') {
     const count = grams / display.grams;
     const rounded = count < 1 ? Math.round(count * 4) / 4 : Math.round(count * 2) / 2;
-    return `${formatCount(count)} ${rounded === 1 ? display.one : display.many}`;
+    // "1 sipuli" but "½ sipulia" in Finnish (partitive); "½ onion" and "½ lök" elsewhere.
+    const singular = rounded === 1 || (rounded < 1 && activeLanguage() !== 'fi');
+    return `${formatCount(count)} ${singular ? display.one : display.many}`;
   }
   if (display.kind === 'liquid') return formatLiquid(grams, system);
   return formatGrams(grams, system);
