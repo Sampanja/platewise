@@ -23,6 +23,18 @@ const LOG_TILES: readonly Tile[] = [
     href: (meal) => ({ pathname: '/camera', params: { mode: 'photo', meal, date: today() } }),
   },
   {
+    key: 'speak',
+    icon: 'mic',
+    label: () => t.speak,
+    href: (meal) => ({ pathname: '/log-text', params: { mode: 'speak', meal, date: today() } }),
+  },
+  {
+    key: 'write',
+    icon: 'write',
+    label: () => t.write,
+    href: (meal) => ({ pathname: '/log-text', params: { mode: 'write', meal, date: today() } }),
+  },
+  {
     key: 'barcode',
     icon: 'barcode',
     label: () => t.barcode,

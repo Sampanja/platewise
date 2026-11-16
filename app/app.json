@@ -39,7 +39,7 @@
         {
           "photosPermission": "PlatePal käyttää valitsemaasi kuvaa ruoan tunnistamiseen päiväkirjaan. Kuvaa ei tallenneta.",
           "cameraPermission": "PlatePal käyttää kameraa ruoka-annoksen kuvaamiseen päiväkirjaa varten. Kuvaa ei tallenneta.",
-          "microphonePermission": false
+          "microphonePermission": "PlatePal käyttää mikrofonia, kun kirjaat aterian puhumalla. Ääntä ei tallenneta."
         }
       ],
       [
@@ -57,7 +57,18 @@
           "color": "#C9461A"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "PlatePal käyttää mikrofonia, kun kirjaat aterian puhumalla. Ääntä ei tallenneta.",
+          "speechRecognitionPermission": "PlatePal muuttaa puheesi tekstiksi aterian kirjaamista varten. Ääntä ei tallenneta.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox",
+            "com.google.android.as"
+          ]
+        }
+      ]
     ],
     "scheme": "platepal",
     "experiments": {

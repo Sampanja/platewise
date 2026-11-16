@@ -24,8 +24,9 @@ import {
 } from '@/components/ui';
 import { FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
+import { useLogDraftStore } from '@/data/stores/logDraft';
 import type { DiaryMeal, Food } from '@/data/types';
-import { entryMacros, sumEntries } from '@/domain/diary';
+import { DIARY_MEALS, entryMacros, mealForHour, sumEntries } from '@/domain/diary';
 import { closestGuide, portionGuides } from '@/domain/portionGuides';
 import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { format, formatInteger, strings } from '@/i18n';
@@ -51,12 +52,15 @@ function basisOf(food: Food) {
  * and can be changed, resized or removed before saving. Always "arvio".
  */
 export default function PhotoScreen() {
-  const params = useLocalSearchParams<{ meal?: DiaryMeal; date?: string; uri?: string }>();
-  const meal: DiaryMeal = params.meal ?? 'snack';
+  // source 'text': foods from typed or spoken text (log-text.tsx), reviewed here the same way.
+  const params = useLocalSearchParams<{ meal?: DiaryMeal; date?: string; uri?: string; source?: 'text' }>();
+  const fromText = params.source === 'text';
+  const draft = useLogDraftStore();
+  const [meal, setMeal] = useState<DiaryMeal>(params.meal ?? mealForHour(new Date().getHours()));
   const addMany = useDiaryStore((s) => s.addMany);
   const [uri, setUri] = useState<string | null>(params.uri ?? null);
-  const [phase, setPhase] = useState<Phase>(params.uri ? 'analyzing' : 'pick');
-  const [items, setItems] = useState<RecognizedFood[]>([]);
+  const [phase, setPhase] = useState<Phase>(fromText ? 'result' : params.uri ? 'analyzing' : 'pick');
+  const [items, setItems] = useState<RecognizedFood[]>(fromText ? draft.foods : []);
   const [editing, setEditing] = useState<number | null>(null);
   const [picker, setPicker] = useState<{ mode: 'replace'; index: number } | { mode: 'add' } | null>(null);
 
@@ -122,9 +126,9 @@ export default function PhotoScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScreenHeader variant="close" title={t.title} />
+      <ScreenHeader variant="close" title={fromText ? strings.textLog.reviewTitle : t.title} />
       <ScrollView contentContainerStyle={styles.content}>
-        {foodRecognition.mode === 'test' ? <TestModeBanner title={r.testModeTitle} body={r.testModeBody} /> : null}
+        {!fromText && foodRecognition.mode === 'test' ? <TestModeBanner title={r.testModeTitle} body={r.testModeBody} /> : null}
         {uri ? (
           <View style={styles.photoWrap}>
             <Image source={uri} style={styles.photo} contentFit="cover" accessibilityLabel={t.title} />
@@ -165,6 +169,29 @@ export default function PhotoScreen() {
 
         {phase === 'result' ? (
           <FadeInView style={styles.gap}>
+            {fromText ? (
+              <View style={styles.gap}>
+                <Text variant="body" color="textMuted">
+                  {format(strings.textLog.understood, { text: draft.text })}
+                </Text>
+                {draft.unmatched.length > 0 ? (
+                  <Text variant="caption" color="textSubtle">
+                    {format(strings.textLog.unmatched, { items: draft.unmatched.join(', ') })}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+            <View style={styles.meals} accessibilityRole="radiogroup" accessibilityLabel={strings.textLog.mealTitle}>
+              {DIARY_MEALS.map((value) => (
+                <SelectChip
+                  key={value}
+                  role="radio"
+                  label={strings.diaryMeals[value]}
+                  selected={meal === value}
+                  onPress={() => setMeal(value)}
+                />
+              ))}
+            </View>
             <Card style={styles.summary}>
               <View style={styles.row}>
                 <Text variant="overline" color="textSubtle" style={styles.flex}>
@@ -387,6 +414,11 @@ const PHOTO_HEIGHT = 240;
 
 const styles = themedStyles(() =>
   StyleSheet.create({
+    meals: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
     safe: {
       flex: 1,
       backgroundColor: colors.bg,

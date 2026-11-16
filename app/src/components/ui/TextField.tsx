@@ -15,10 +15,10 @@ export type TextFieldProps = Omit<TextInputProps, 'style'> & {
   ref?: Ref<ComponentRef<typeof TextInput>>;
 };
 
-/** Themed single-line input. */
+/** Themed input: one line (a pill) or, with `multiline`, a text box. */
 export function TextField({ icon, trailing, style, large, ref, ...rest }: TextFieldProps) {
   return (
-    <View style={[styles.wrap, style]}>
+    <View style={[styles.wrap, rest.multiline && styles.multiWrap, style]}>
       {icon ? <Icon name={icon} size={20} color="textSubtle" /> : null}
       <TextInput
         ref={ref}
@@ -27,7 +27,7 @@ export function TextField({ icon, trailing, style, large, ref, ...rest }: TextFi
         cursorColor={colors.accent}
         maxFontSizeMultiplier={1.6}
         {...rest}
-        style={[styles.input, large && styles.large]}
+        style={[styles.input, large && styles.large, rest.multiline && styles.multiInput]}
       />
       {trailing}
     </View>
@@ -52,6 +52,15 @@ const styles = themedStyles(() =>
       ...typography.body,
       color: colors.text,
       paddingVertical: spacing.sm,
+    },
+    multiWrap: {
+      alignItems: 'flex-start',
+      borderRadius: radii.lg,
+      paddingVertical: spacing.sm,
+    },
+    multiInput: {
+      textAlignVertical: 'top',
+      minHeight: 120,
     },
     large: {
       ...typography.display,
