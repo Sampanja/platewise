@@ -2,6 +2,7 @@
 import { svDiary } from './svDiary';
 import { svFun } from './svFun';
 import { svGoals } from './svGoals';
+import { svInsights } from './svInsights';
 import { svKitchen } from './svKitchen';
 import type { Strings } from './types';
 
@@ -10,6 +11,7 @@ export const sv: Strings = {
   ...svGoals,
   ...svFun,
   ...svKitchen,
+  ...svInsights,
   common: {
     priceEstimate: 'prisuppskattning',
     priceEstimateTitle: 'Prisuppskattning',

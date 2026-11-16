@@ -13,7 +13,13 @@ type Doc = 'privacy' | 'terms' | 'sources';
 const docs = (): Record<Doc, { title: string; body: string; placeholder: boolean }> => ({
   privacy: { title: strings.legal.privacyTitle, body: strings.legal.privacyBody, placeholder: true },
   terms: { title: strings.legal.termsTitle, body: strings.legal.termsBody, placeholder: true },
-  sources: { title: strings.legal.sourcesTitle, body: strings.legal.sourcesBody, placeholder: false },
+  sources: {
+    title: strings.legal.sourcesTitle,
+    body: `${strings.legal.sourcesBody}
+
+${strings.nutrientInfo.sourceLong}`,
+    placeholder: false,
+  },
 });
 
 /** Privacy policy, terms and sources. The first two are placeholders until launch. */

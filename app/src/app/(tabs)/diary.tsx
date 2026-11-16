@@ -39,14 +39,14 @@ import {
   sumEntries,
   weekKcal,
 } from '@/domain/diary';
-import { REFERENCE } from '@/domain/report';
 import { entryAmount } from '@/features/diary/entryAmount';
 import { WaterCard } from '@/features/diary/WaterCard';
+import { DayNutrientsCard } from '@/features/nutrients/DayNutrientsCard';
 import { WeekChart } from '@/features/diary/WeekChart';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { ReportsView } from '@/features/reports/ReportsView';
 import { useCharacter } from '@/features/mascot/useCharacter';
-import { format, formatDecimal, formatInteger, strings } from '@/i18n';
+import { format, formatInteger, strings } from '@/i18n';
 import { addDays, diaryDayLabel, today, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -209,11 +209,6 @@ function DiaryScreen() {
                 <MacroBar label={strings.macros.fat} value={totals.fatG} goal={hasGoal ? goals.fatG : null} />
               </View>
             </Card>
-            <View style={styles.micros}>
-              <Micro label={strings.micros.fiber} value={totals.fiberG} hint={strings.micros.fiberRef} />
-              <Micro label={strings.micros.sugar} value={totals.sugarG} />
-              <Micro label={strings.micros.salt} value={totals.saltG} hint={strings.micros.saltRef} max={REFERENCE.saltMaxG} />
-            </View>
           </FadeInView>
           )}
 
@@ -307,6 +302,14 @@ function DiaryScreen() {
               </Card>
             );
           })}
+
+          {hideCalories ? null : (
+            <DayNutrientsCard
+              totals={totals}
+              entryCount={dayEntries.length}
+              partial={dayEntries.some((entry) => entryMacros(entry).vitCMg === undefined)}
+            />
+          )}
 
           <WaterCard date={date} />
 
@@ -409,26 +412,6 @@ function DiaryScreen() {
   );
 }
 
-/** Fibre, sugars or salt for the day: a plain number with the reference, never a warning colour. */
-function Micro({ label, value, hint, max }: { label: string; value: number | undefined; hint?: string; max?: number }) {
-  const text = value === undefined ? strings.nutrients.unknown : `${formatDecimal(value)} g`;
-  return (
-    <View style={styles.micro} accessible accessibilityLabel={`${label} ${text}${hint ? `, ${hint}` : ''}`}>
-      <Text variant="caption" color="textSubtle">
-        {label}
-      </Text>
-      <Text variant="number">{text}</Text>
-      {hint ? (
-        <Text variant="caption" color="textSubtle" numberOfLines={1}>
-          {hint}
-        </Text>
-      ) : null}
-      {max !== undefined && value !== undefined ? (
-        <ProgressMeter value={value / max} size="thin" accessibilityLabel={`${label} ${text}`} />
-      ) : null}
-    </View>
-  );
-}
 
 function MacroBar({ label, value, goal }: { label: string; value: number; goal: number | null }) {
   const text =

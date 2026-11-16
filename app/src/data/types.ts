@@ -159,10 +159,35 @@ export type Macros = {
   fiberG?: number;
   sugarG?: number;
   saltG?: number;
+  /** Saturated fat (g), vitamins and minerals, from Fineli. Optional like the above. */
+  satFatG?: number;
+  vitDUg?: number;
+  vitCMg?: number;
+  b12Ug?: number;
+  folateUg?: number;
+  ironMg?: number;
+  calciumMg?: number;
+  potassiumMg?: number;
+  magnesiumMg?: number;
+  zincMg?: number;
 };
 
 /** Optional nutrients summed only where known. */
-export const MICRO_KEYS = ['fiberG', 'sugarG', 'saltG'] as const;
+export const MICRO_KEYS = [
+  'fiberG',
+  'sugarG',
+  'saltG',
+  'satFatG',
+  'vitDUg',
+  'vitCMg',
+  'b12Ug',
+  'folateUg',
+  'ironMg',
+  'calciumMg',
+  'potassiumMg',
+  'magnesiumMg',
+  'zincMg',
+] as const;
 export type MicroKey = (typeof MICRO_KEYS)[number];
 
 /** How an ingredient amount is shown to people. Amounts are always stored in grams. */

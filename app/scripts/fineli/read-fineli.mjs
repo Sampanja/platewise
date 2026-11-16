@@ -19,9 +19,14 @@ export function readFineli(dir) {
   const foods = new Map();
   for (const r of rows(dir, 'food.csv')) {
     const id = Number(r.FOODID);
-    foods.set(id, { id, name: names.get(id) ?? r.FOODNAME, foodType: r.FOODTYPE, process: r.PROCESS, kJ: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0, sugarG: 0, saltMg: 0, diets: [] });
+    foods.set(id, { id, name: names.get(id) ?? r.FOODNAME, foodType: r.FOODTYPE, process: r.PROCESS, kJ: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0, sugarG: 0, saltMg: 0, satFatG: 0, vitDUg: 0, vitCMg: 0, b12Ug: 0, folateUg: 0, ironMg: 0, calciumMg: 0, potassiumMg: 0, magnesiumMg: 0, zincMg: 0, diets: [] });
   }
-  const field = { ENERC: 'kJ', PROT: 'proteinG', CHOAVL: 'carbsG', FAT: 'fatG', FIBC: 'fiberG', SUGAR: 'sugarG', NACL: 'saltMg' };
+  // Units as in Fineli: grams for FASAT, mg for VITC and the minerals, µg for VITD, VITB12 and FOL.
+  const field = {
+    ENERC: 'kJ', PROT: 'proteinG', CHOAVL: 'carbsG', FAT: 'fatG', FIBC: 'fiberG', SUGAR: 'sugarG', NACL: 'saltMg',
+    FASAT: 'satFatG', VITD: 'vitDUg', VITC: 'vitCMg', VITB12: 'b12Ug', FOL: 'folateUg',
+    FE: 'ironMg', CA: 'calciumMg', K: 'potassiumMg', MG: 'magnesiumMg', ZN: 'zincMg',
+  };
   for (const r of rows(dir, 'component_value.csv')) {
     const key = field[r.EUFDNAME];
     const food = foods.get(Number(r.FOODID));
@@ -41,6 +46,16 @@ export function readFineli(dir) {
       fiberG: r1(f.fiberG),
       sugarG: r1(f.sugarG),
       saltG: Math.round(f.saltMg / 10) / 100,
+      satFatG: r1(f.satFatG),
+      vitDUg: r1(f.vitDUg),
+      vitCMg: r1(f.vitCMg),
+      b12Ug: r1(f.b12Ug),
+      folateUg: r1(f.folateUg),
+      ironMg: r1(f.ironMg),
+      calciumMg: Math.round(f.calciumMg),
+      potassiumMg: Math.round(f.potassiumMg),
+      magnesiumMg: Math.round(f.magnesiumMg),
+      zincMg: r1(f.zincMg),
       diets: f.diets.sort(),
     });
   }

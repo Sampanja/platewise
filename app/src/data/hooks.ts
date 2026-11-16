@@ -5,6 +5,7 @@ import { goalsForDate } from '@/domain/dailyGoals';
 import { repairProposal } from '@/domain/generate';
 import { manualWaterGoal, NO_EXTRAS, recommendedWaterGoal, type HydrationProfile, type WaterGoal } from '@/domain/hydration';
 import { entriesOn, sumEntries } from '@/domain/diary';
+import { nutrientReference, type NutrientReference } from '@/domain/nutrients';
 import { lastDinnerDate, savingsCents } from '@/domain/plan';
 import { isRecipeAllowed, recipeCostCents } from '@/domain/recipes';
 import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/shoppingList';
@@ -261,5 +262,27 @@ export function useDayNutrition(date: LocalDate): DayNutrition {
   return useMemo(
     () => ({ date, eaten: sumEntries(entriesOn(entries, date)), goals }),
     [entries, date, goals],
+  );
+}
+
+/**
+ * The user's daily nutrient references (NNR2023) from the profile's body
+ * details. Without a calorie goal saturated fat is compared with 2 000 kcal.
+ */
+export function useNutrientReference(): NutrientReference {
+  const sex = useProfileStore((s) => s.body.sex);
+  const birthYear = useProfileStore((s) => s.body.birthYear);
+  const pregnancy = useProfileStore((s) => s.body.pregnancy);
+  const kcalGoal = useProfileStore((s) => s.goals.kcal);
+  const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
+  return useMemo(
+    () =>
+      nutrientReference({
+        sex,
+        age: birthYear ? new Date().getFullYear() - birthYear : null,
+        pregnancy,
+        kcal: hasGoal ? kcalGoal : 2000,
+      }),
+    [sex, birthYear, pregnancy, kcalGoal, hasGoal],
   );
 }

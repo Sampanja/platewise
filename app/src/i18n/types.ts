@@ -3,6 +3,7 @@ import type { fiCharacters } from './fiCharacters';
 import type { fiDiary } from './fiDiary';
 import type { fiFun } from './fiFun';
 import type { fiGoals } from './fiGoals';
+import type { fiInsights } from './fiInsights';
 import type { fiKitchen } from './fiKitchen';
 
 /**
@@ -23,4 +24,5 @@ export type DiaryStrings = Widen<typeof fiDiary>;
 export type FunStrings = Widen<typeof fiFun>;
 export type GoalStrings = Widen<typeof fiGoals>;
 export type KitchenStrings = Widen<typeof fiKitchen>;
+export type InsightStrings = Widen<typeof fiInsights>;
 export type CharacterVoices = typeof fiCharacters;

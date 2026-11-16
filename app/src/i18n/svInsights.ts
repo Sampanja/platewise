@@ -1,0 +1,51 @@
+import type { InsightStrings } from './types';
+
+/** Swedish strings for nutrients, the food quality score and the weekly and monthly reports. */
+export const svInsights: InsightStrings = {
+  nutrientInfo: {
+    title: 'Näringsämnen',
+    intro: 'Dagens intag jämfört med de nordiska näringsrekommendationerna. Enskilda dagar varierar, veckans genomsnitt säger mer.',
+    recipeTitle: 'Näringsämnen per portion',
+    recipeIntro: 'Andel av dagens rekommendation i en portion.',
+    show: 'Visa näringsämnen',
+    hide: 'Dölj näringsämnen',
+    names: {
+      fiberG: 'Fiber',
+      sugarG: 'Sockerarter',
+      saltG: 'Salt',
+      satFatG: 'Mättat fett',
+      vitDUg: 'D-vitamin',
+      vitCMg: 'C-vitamin',
+      b12Ug: 'B12-vitamin',
+      folateUg: 'Folat',
+      ironMg: 'Järn',
+      calciumMg: 'Kalcium',
+      potassiumMg: 'Kalium',
+      magnesiumMg: 'Magnesium',
+      zincMg: 'Zink',
+    },
+    target: 'rekommendation {value}',
+    limit: 'högst {value}',
+    share: '{value} %',
+    a11yRow: '{name} {value}, {reference}',
+    sources: {
+      fiberG: 'Fiber får du från fullkorn, grönsaker, baljväxter och bär.',
+      sugarG: 'Talet innehåller också de naturliga sockerarterna i frukt och mjölk.',
+      saltG: 'Mest salt kommer från bröd, ost, pålägg och färdigrätter.',
+      satFatG: 'Mest mättat fett finns i smör, ost, charkuterier och bakverk.',
+      vitDUg: 'D-vitamin får du särskilt från fisk och från berikade mejeriprodukter och växtdrycker.',
+      vitCMg: 'C-vitamin får du från bär, frukt, paprika och kål.',
+      b12Ug: 'B12-vitamin får du från fisk, kött, mejeriprodukter och ägg; vid vegansk kost från berikade produkter.',
+      folateUg: 'Folat får du från bladgrönsaker, baljväxter, fullkorn och bär.',
+      ironMg: 'Järn får du från kött, baljväxter och fullkorn. C-vitamin hjälper upptaget.',
+      calciumMg: 'Kalcium får du från mejeriprodukter och kalciumberikade växtdrycker.',
+      potassiumMg: 'Kalium får du från grönsaker, potatis, frukt och bär.',
+      magnesiumMg: 'Magnesium får du från fullkorn, nötter, frön och baljväxter.',
+      zincMg: 'Zink får du från kött, fullkorn, ost och baljväxter.',
+    },
+    partial: 'Vissa anteckningar saknar några näringsämnen (t.ex. snabbtillägg), så siffrorna kan vara lägre än det verkliga intaget.',
+    empty: 'Näringsämnena visas när du har loggat mat för dagen.',
+    sourceLong:
+      'Näringsrekommendationer: Nordiska näringsrekommendationer 2023 (NNR2023, Nordiska ministerrådet). Värdena är dagliga rekommenderade intag för vuxna efter kön, ålder, graviditet och amning; riktvärdet för mättat fett är under 10 % av energin och för salt högst 5 g om dagen. Vitaminer och mineraler kommer från Fineli, från samma livsmedel som övriga näringsvärden.',
+  },
+};

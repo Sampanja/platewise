@@ -1,0 +1,51 @@
+import type { InsightStrings } from './types';
+
+/** English strings for nutrients, the food quality score and the weekly and monthly reports. */
+export const enInsights: InsightStrings = {
+  nutrientInfo: {
+    title: 'Nutrients',
+    intro: 'Today’s intake compared with the Nordic Nutrition Recommendations. Single days vary; the weekly average says more.',
+    recipeTitle: 'Nutrients per serving',
+    recipeIntro: 'Share of the daily recommendation in one serving.',
+    show: 'Show nutrients',
+    hide: 'Hide nutrients',
+    names: {
+      fiberG: 'Fibre',
+      sugarG: 'Sugars',
+      saltG: 'Salt',
+      satFatG: 'Saturated fat',
+      vitDUg: 'Vitamin D',
+      vitCMg: 'Vitamin C',
+      b12Ug: 'Vitamin B12',
+      folateUg: 'Folate',
+      ironMg: 'Iron',
+      calciumMg: 'Calcium',
+      potassiumMg: 'Potassium',
+      magnesiumMg: 'Magnesium',
+      zincMg: 'Zinc',
+    },
+    target: 'recommended {value}',
+    limit: 'at most {value}',
+    share: '{value} %',
+    a11yRow: '{name} {value}, {reference}',
+    sources: {
+      fiberG: 'Fibre comes from wholegrains, vegetables, pulses and berries.',
+      sugarG: 'This includes the natural sugars in fruit and milk.',
+      saltG: 'Most salt comes from bread, cheese, cold cuts and ready meals.',
+      satFatG: 'Saturated fat is highest in butter, cheese, processed meat and pastries.',
+      vitDUg: 'Vitamin D comes especially from fish and from fortified dairy products and plant drinks.',
+      vitCMg: 'Vitamin C comes from berries, fruit, peppers and cabbages.',
+      b12Ug: 'Vitamin B12 comes from fish, meat, dairy and eggs; on a vegan diet from fortified products.',
+      folateUg: 'Folate comes from leafy greens, pulses, wholegrains and berries.',
+      ironMg: 'Iron comes from meat, pulses and wholegrains. Vitamin C helps it absorb.',
+      calciumMg: 'Calcium comes from dairy products and calcium-fortified plant drinks.',
+      potassiumMg: 'Potassium comes from vegetables, potatoes, fruit and berries.',
+      magnesiumMg: 'Magnesium comes from wholegrains, nuts, seeds and pulses.',
+      zincMg: 'Zinc comes from meat, wholegrains, cheese and pulses.',
+    },
+    partial: 'Some entries don’t have every nutrient (e.g. quick entries), so the figures may be lower than the real intake.',
+    empty: 'Nutrients appear once you log food for the day.',
+    sourceLong:
+      'Nutrient recommendations: Nordic Nutrition Recommendations 2023 (NNR2023, Nordic Council of Ministers). The values are daily recommended intakes for adults by sex, age, pregnancy and breastfeeding; the guide value for saturated fat is under 10 % of energy and for salt at most 5 g a day. Vitamins and minerals come from Fineli, from the same food as the other nutrients.',
+  },
+};

@@ -1,5 +1,6 @@
 import type { Food, FoodCategory } from '../types';
 
+import { FOOD_FINELI } from './foodFineli.generated';
 import { FOOD_MICROS } from './foodMicros';
 import { foodText } from './text';
 
@@ -33,12 +34,19 @@ function f(
   return Object.defineProperty(food, 'name', { get: () => foodText(id).name, enumerable: true });
 }
 
-/** Fibre, sugars and salt from the micronutrient table (all foods have them; a test checks). */
+/**
+ * Fibre, sugars and salt from the micronutrient table, and saturated fat,
+ * vitamins and minerals from the closest Fineli food (foodFineli.generated.ts,
+ * scripts/fineli/match-foods.mjs). All foods have them; tests check.
+ */
 function micros(id: string) {
   const values = FOOD_MICROS[id];
   if (!values) return {};
   const [fiberG, sugarG, saltG] = values;
-  return { fiberG, sugarG, saltG };
+  const fineli = FOOD_FINELI[id];
+  if (!fineli) return { fiberG, sugarG, saltG };
+  const [, satFatG, vitDUg, vitCMg, b12Ug, folateUg, ironMg, calciumMg, potassiumMg, magnesiumMg, zincMg] = fineli;
+  return { fiberG, sugarG, saltG, satFatG, vitDUg, vitCMg, b12Ug, folateUg, ironMg, calciumMg, potassiumMg, magnesiumMg, zincMg };
 }
 
 const SLICE: Portion = 30;

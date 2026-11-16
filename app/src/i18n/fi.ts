@@ -2,6 +2,7 @@
 import { fiDiary } from './fiDiary';
 import { fiFun } from './fiFun';
 import { fiGoals } from './fiGoals';
+import { fiInsights } from './fiInsights';
 import { fiKitchen } from './fiKitchen';
 
 export const fi = {
@@ -9,6 +10,7 @@ export const fi = {
   ...fiGoals,
   ...fiFun,
   ...fiKitchen,
+  ...fiInsights,
   common: {
     priceEstimate: 'hinta-arvio',
     priceEstimateTitle: 'Hinta-arvio',

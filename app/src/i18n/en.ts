@@ -2,6 +2,7 @@
 import { enDiary } from './enDiary';
 import { enFun } from './enFun';
 import { enGoals } from './enGoals';
+import { enInsights } from './enInsights';
 import { enKitchen } from './enKitchen';
 import type { Strings } from './types';
 
@@ -10,6 +11,7 @@ export const en: Strings = {
   ...enGoals,
   ...enFun,
   ...enKitchen,
+  ...enInsights,
   common: {
     priceEstimate: 'price estimate',
     priceEstimateTitle: 'Price estimate',

@@ -23,6 +23,7 @@ import { usePriceRegion, useRecipeAllowed, useServingPrice, useUserRules } from 
 import { isRoughEstimate } from '@/domain/priceRegion';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS, mealForHour } from '@/domain/diary';
+import { RecipeNutrients } from '@/features/nutrients/RecipeNutrients';
 import { MacroBars } from '@/features/recipe/MacroBars';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
@@ -211,6 +212,7 @@ export default function RecipeScreen() {
 
           <Section title={strings.macros.perServingTitle}>
             <MacroBars macros={recipe.perServing} />
+            <RecipeNutrients perServing={recipe.perServing} />
             <Text variant="caption" color="textSubtle">
               {strings.macros.source}
             </Text>
