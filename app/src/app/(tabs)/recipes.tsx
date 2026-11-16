@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { FlatList, Platform, ScrollView, StyleSheet, useWindowDimensions, View, type ListRenderItem } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { useServingPrice, useUserRules } from '@/data/hooks';
 import { useAllowedRecipesQuery } from '@/data/queries';
 import type { Recipe } from '@/data/types';
 import { useFavoritesStore } from '@/data/stores/favorites';
+import { PantrySuggestionsView } from '@/features/pantry/PantrySuggestionsView';
 import { MyRecipesList } from '@/features/recipe/MyRecipesList';
 import {
   filterRecipes,
@@ -40,8 +41,9 @@ const SORTS: readonly RecipeSort[] = ['recommended', 'price', 'time', 'kcal'];
 const LIBRARY_FILTERS = RECIPE_FILTERS.filter((filter) => filter !== 'favorites');
 const FAVORITES_ONLY: RecipeFilter[] = ['favorites'];
 
-type Segment = 'library' | 'favorites' | 'mine';
-const SEGMENTS: readonly Segment[] = ['library', 'favorites', 'mine'];
+type Segment = 'library' | 'pantry' | 'favorites' | 'mine';
+const SEGMENTS: readonly Segment[] = ['library', 'pantry', 'favorites', 'mine'];
+const isSegment = (value: unknown): value is Segment => SEGMENTS.includes(value as Segment);
 
 function RecipesScreen() {
   const tabBarSpace = useTabBarSpace();
@@ -62,6 +64,13 @@ function RecipesScreen() {
   const [filters, setFilters] = useState<RecipeFilter[]>([]);
   const [sort, setSort] = useState<RecipeSort>('recommended');
   const [segment, setSegment] = useState<Segment>('library');
+  // Other screens open a segment directly (Ruokavarasto → "Mitä voin tehdä?").
+  const { segment: requested } = useLocalSearchParams<{ segment?: string }>();
+  const [seenRequest, setSeenRequest] = useState<string | undefined>(undefined);
+  if (requested !== seenRequest) {
+    setSeenRequest(requested);
+    if (isSegment(requested)) setSegment(requested);
+  }
   const favoritesView = segment === 'favorites';
   const shownFilters = favoritesView ? FAVORITES_ONLY : filters;
   const shownMeal: MealChoice = favoritesView ? 'all' : meal;
@@ -93,6 +102,16 @@ function RecipesScreen() {
   };
   const onlyFavorites = favoritesView && query === '';
   const segments = SEGMENTS.map((value) => ({ value, label: strings.recipeSegments[value] }));
+
+  // Title and segments only, for the segments that are not the library.
+  const plainHeader = (
+    <View style={styles.plainHeader}>
+      <Text variant="displayLarge" accessibilityRole="header" style={styles.titleRow}>
+        {t.title}
+      </Text>
+      <Segmented value={segment} options={segments} onChange={setSegment} accessibilityLabel={strings.recipeSegments.a11y} />
+    </View>
+  );
 
   const header = (
     <View style={styles.header}>
@@ -212,17 +231,9 @@ function RecipesScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {segment === 'mine' ? (
-        <MyRecipesList
-          header={
-            <View style={styles.header}>
-              <Text variant="displayLarge" accessibilityRole="header" style={styles.titleRow}>
-                {t.title}
-              </Text>
-              <Segmented value={segment} options={segments} onChange={setSegment} accessibilityLabel={strings.recipeSegments.a11y} />
-            </View>
-          }
-          bottomSpace={tabBarSpace}
-        />
+        <MyRecipesList header={plainHeader} bottomSpace={tabBarSpace} />
+      ) : segment === 'pantry' ? (
+        <PantrySuggestionsView header={plainHeader} bottomSpace={tabBarSpace} />
       ) : recipesQuery.isPending ? (
         <ScrollView contentContainerStyle={styles.list}>
           {header}
@@ -285,6 +296,9 @@ const styles = themedStyles(() =>
       gap: spacing.md,
       paddingTop: spacing.sm,
       paddingBottom: spacing.sm,
+    },
+    plainHeader: {
+      gap: spacing.md,
     },
     titleRow: {
       flexDirection: 'row',

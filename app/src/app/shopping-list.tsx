@@ -20,7 +20,9 @@ import { INGREDIENTS_BY_ID, RECIPES_BY_ID } from '@/data/catalog';
 import { useCurrentShoppingList } from '@/data/hooks';
 import type { PriceRegionCode } from '@/domain/priceRegion';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
+import { usePantryStore } from '@/data/stores/pantry';
 import { usePlansStore } from '@/data/stores/plans';
+import { defaultLocation } from '@/domain/pantry';
 import { groupByAisle, type ShoppingItem } from '@/domain/shoppingList';
 import { format, formatMoney, formatServings, strings } from '@/i18n';
 import { formatAmount, formatPackage } from '@/lib/amounts';
@@ -55,6 +57,8 @@ export default function ShoppingListScreen() {
   const toggleChecked = usePlansStore((s) => s.toggleChecked);
   const clearChecked = usePlansStore((s) => s.clearChecked);
   const removeExtra = usePlansStore((s) => s.removeExtra);
+  const markMoved = usePlansStore((s) => s.markMoved);
+  const addToPantry = usePantryStore((s) => s.add);
 
   const groups = useMemo(() => groupByAisle(list.items, INGREDIENTS_BY_ID), [list.items]);
   const checked = new Set(state.checked);
@@ -63,6 +67,32 @@ export default function ShoppingListScreen() {
   const remainingCents = list.items
     .filter((item) => !checked.has(item.ingredientId))
     .reduce((sum, item) => sum + item.costCents, 0);
+
+  // Ticked items not yet moved to Ruokavarasto: one tap moves them, as whole packages.
+  const moved = new Set(state.moved ?? []);
+  const movable = list.items.filter((item) => checked.has(item.ingredientId) && !moved.has(item.ingredientId));
+  const moveToPantry = () => {
+    if (movable.length === 0) return;
+    addToPantry(
+      movable.map((item) => {
+        const ingredient = INGREDIENTS_BY_ID[item.ingredientId];
+        return {
+          ingredientId: item.ingredientId,
+          amount: { kind: 'grams' as const, grams: item.packages * ingredient.packageG },
+          bestBefore: null,
+          location: defaultLocation(ingredient),
+          source: 'shopping' as const,
+          estimate: false,
+        };
+      }),
+    );
+    markMoved(listId, movable.map((item) => item.ingredientId));
+    haptics.success();
+    showToast(format(strings.shoppingPantry.moved, { count: movable.length }), {
+      label: strings.pantry.homeCta,
+      onPress: () => router.push('/pantry'),
+    });
+  };
 
   const share = async () => {
     try {
@@ -153,6 +183,14 @@ export default function ShoppingListScreen() {
               style={styles.flex}
             />
           </View>
+          {movable.length > 0 ? (
+            <Button
+              label={format(strings.shoppingPantry.move, { count: movable.length })}
+              size="compact"
+              icon={<Icon name="fridge" size={18} color="textOnAccent" />}
+              onPress={moveToPantry}
+            />
+          ) : null}
         </Card>
 
         <PriceRegionNote region={region} />

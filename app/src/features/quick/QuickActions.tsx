@@ -39,6 +39,7 @@ const LOG_TILES: readonly Tile[] = [
 type Row = { key: string; icon: IconName; title: () => string; hint: () => string; href: Href };
 
 const ROWS: readonly Row[] = [
+  { key: 'pantry', icon: 'fridge', title: () => t.scanPantry, hint: () => t.scanPantryHint, href: '/pantry-scan' },
   { key: 'plan', icon: 'calendarCheck', title: () => t.makePlan, hint: () => t.makePlanHint, href: '/plan' },
   { key: 'weight', icon: 'lineChart', title: () => t.addWeight, hint: () => t.addWeightHint, href: '/weight' },
 ];

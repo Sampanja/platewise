@@ -15,6 +15,7 @@ import { useColorScheme, View } from 'react-native';
 
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
+import { useNotificationRouting, usePantryReminderSync } from '@/features/notifications/useNotificationRouting';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
@@ -46,6 +47,7 @@ export default function RootLayout() {
     DMSans_700Bold,
   });
   const hydrated = useHydrated();
+  usePantryReminderSync(hydrated);
   useKeepProposalSuitable();
   const hapticsEnabled = useProfileStore((s) => s.hapticsEnabled);
   useEffect(() => setHapticsEnabled(hapticsEnabled), [hapticsEnabled]);
@@ -110,6 +112,7 @@ export default function RootLayout() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMountedTheme(theme);
   }, [mountedTheme, theme, navigation]);
+  useNotificationRouting(hydrated && Boolean(fontsLoaded || fontError) && mountedTheme === theme);
   const barStyle = mode === 'dark' ? 'light' : 'dark';
 
   // Keep the dark background while fonts and saved data load; fall back to system fonts on error.

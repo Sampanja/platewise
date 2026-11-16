@@ -48,6 +48,12 @@ export type CharacterVoice = {
     level: string;
     water: string;
   };
+  /** Ruokavarasto: an item expiring tomorrow (with and without a recipe idea) and the suggestions heading. */
+  pantry: {
+    expiring: string;
+    expiringPlain: string;
+    suggest: string;
+  };
   chat: {
     intro: string;
     thinking: string;
@@ -95,6 +101,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'Kasvat kuin punajuuri hyvässä mullassa!',
       water: 'Vesitavoite täynnä – juuret kiittävät!',
     },
+    pantry: {
+      expiring: '{item} kaipaa käyttöä huomiseen mennessä. Kokeile vaikka: {recipe}',
+      expiringPlain: '{item} kaipaa käyttöä huomiseen mennessä. Katsotaan, mitä siitä syntyy.',
+      suggest: 'Kotona on jo paljon hyvää. Katsotaan, mitä siitä syntyy.',
+    },
     chat: {
       intro: 'Hei, olen Nuppu! Kysy ruoasta, reseptivinkeistä tai kirjauksistasi. En ole lääkäri, mutta autan mielelläni arjen ruokapulmissa.',
       thinking: 'Nuppu miettii…',
@@ -139,6 +150,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'Uusi saavutus. Pysähdy hetkeksi iloitsemaan.',
       level: 'Uusi taso. Kasvu on tapahtunut hiljaa ja varmasti.',
       water: 'Vesitavoite täynnä. Kehosi kiittää.',
+    },
+    pantry: {
+      expiring: '{item} vanhenee huomenna. Rauhassa: {recipe} sopisi tähän.',
+      expiringPlain: '{item} vanhenee huomenna. Katsotaan rauhassa, mitä siitä tehdään.',
+      suggest: 'Kaikki tarvittava voi jo olla kotona. Katsotaan yhdessä.',
     },
     chat: {
       intro: 'Hei, olen Avo. Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta pohdin kanssasi mielelläni arjen ruokakysymyksiä.',
@@ -185,6 +201,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'Uusi taso! Keittiöön syntyi uusi tähti!',
       water: 'Vesitavoite täynnä! Mehukasta!',
     },
+    pantry: {
+      expiring: '{item} vanhenee huomenna. Tehdään siitä herkkua: {recipe}!',
+      expiringPlain: '{item} vanhenee huomenna. Keittiöön, siitä tulee jotain herkullista!',
+      suggest: 'Varastossa on aineksia herkkuihin. Bravo!',
+    },
     chat: {
       intro: 'Hei, Tomo täällä! Kysy resepteistä, ruoasta tai kirjauksistasi. En ole lääkäri, mutta keittiöasioissa olen intohimoinen apuri!',
       thinking: 'Tomo hämmentää ajatuksia…',
@@ -229,6 +250,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'Uusi saavutus! Sä teit sen!',
       level: 'Tasonnousu! Kasvat kuin porkkana kesällä!',
       water: 'Vesitavoite täynnä! Täyttä virtaa!',
+    },
+    pantry: {
+      expiring: '{item} vanhenee huomenna! Mennään: {recipe}!',
+      expiringPlain: '{item} vanhenee huomenna! Napataan se käyttöön!',
+      suggest: 'Kaappi täynnä mahdollisuuksia – mennään!',
     },
     chat: {
       intro: 'Moi, Karo tässä! Kysy ruoasta, resepteistä tai kirjauksista. En ole lääkäri, mutta arjen ruokajutuissa autan täysillä!',
@@ -275,6 +301,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'Uusi taso! Kypsyt kuin sitruuna auringossa!',
       water: 'Vesitavoite täynnä! Raikasta!',
     },
+    pantry: {
+      expiring: '{item} vanhenee huomenna – ei hapanta naamaa, tehdään: {recipe}!',
+      expiringPlain: '{item} vanhenee huomenna. Puristetaan siitä kaikki irti!',
+      suggest: 'Varastosi on täynnä raikkaita ideoita!',
+    },
     chat: {
       intro: 'Hei, olen Lemo! Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta raikkaita ruokaideoita löytyy!',
       thinking: 'Lemo puristaa vastausta…',
@@ -319,6 +350,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'Uusi saavutus kirjattu tutkimuspäiväkirjaan!',
       level: 'Uusi taso. Tietoa ja taitoa kertyy!',
       water: 'Vesitavoite täynnä. Hyvä havainto!',
+    },
+    pantry: {
+      expiring: '{item} vanhenee huomenna. Tiesitkö? Siitä syntyy: {recipe}.',
+      expiringPlain: '{item} vanhenee huomenna. Pieni fakta: käytetty ruoka on paras ruoka.',
+      suggest: 'Tutkitaan, mitä kotona olevista aineksista voi tehdä!',
     },
     chat: {
       intro: 'Hei, olen Blu! Kysy ruoasta, ravintoaineista tai kirjauksistasi. En ole lääkäri, mutta kerron mielelläni, mitä tiedän.',

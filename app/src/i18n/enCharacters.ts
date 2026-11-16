@@ -40,6 +40,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'You’re growing like a beetroot in good soil!',
       water: 'Water goal reached – my roots thank you!',
     },
+    pantry: {
+      expiring: '{item} would love to be used by tomorrow. Why not try: {recipe}',
+      expiringPlain: '{item} would love to be used by tomorrow. Let’s see what it can become.',
+      suggest: 'There’s already so much good food at home. Let’s see what it can become.',
+    },
     chat: {
       intro: 'Hello, I’m Nuppu! Ask me about food, recipe ideas or your entries. I’m not a doctor, but I’m happy to help with everyday food questions.',
       thinking: 'Nuppu is thinking…',
@@ -84,6 +89,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'A new achievement. Pause for a moment and enjoy it.',
       level: 'A new level. Growth has happened quietly and surely.',
       water: 'Water goal reached. Your body thanks you.',
+    },
+    pantry: {
+      expiring: '{item} expires tomorrow. No rush: {recipe} would suit it.',
+      expiringPlain: '{item} expires tomorrow. Let’s calmly see what to make of it.',
+      suggest: 'Everything you need may already be at home. Let’s look together.',
     },
     chat: {
       intro: 'Hello, I’m Avo. Ask me about food, recipes or your entries. I’m not a doctor, but I’m glad to think through everyday food questions with you.',
@@ -130,6 +140,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'New level! A new star is born in the kitchen!',
       water: 'Water goal reached! Juicy!',
     },
+    pantry: {
+      expiring: '{item} expires tomorrow. Let’s make something tasty: {recipe}!',
+      expiringPlain: '{item} expires tomorrow. To the kitchen – it’s going to be delicious!',
+      suggest: 'Your pantry has the makings of something tasty. Bravo!',
+    },
     chat: {
       intro: 'Hello, Tomo here! Ask me about recipes, food or your entries. I’m not a doctor, but in the kitchen I’m a passionate helper!',
       thinking: 'Tomo is stirring up some thoughts…',
@@ -174,6 +189,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'New achievement! You did it!',
       level: 'Level up! You’re growing like a carrot in summer!',
       water: 'Water goal reached! Full power!',
+    },
+    pantry: {
+      expiring: '{item} expires tomorrow! Let’s go: {recipe}!',
+      expiringPlain: '{item} expires tomorrow! Let’s put it to use!',
+      suggest: 'A cupboard full of possibilities – let’s go!',
     },
     chat: {
       intro: 'Hey, Karo here! Ask about food, recipes or your entries. I’m not a doctor, but with everyday food stuff I’ve got your back!',
@@ -220,6 +240,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       level: 'New level! You’re ripening like a lemon in the sun!',
       water: 'Water goal reached! Refreshing!',
     },
+    pantry: {
+      expiring: '{item} expires tomorrow – no sour faces, let’s make: {recipe}!',
+      expiringPlain: '{item} expires tomorrow. Let’s squeeze every bit out of it!',
+      suggest: 'Your pantry is full of fresh ideas!',
+    },
     chat: {
       intro: 'Hi, I’m Lemo! Ask about food, recipes or your entries. I’m not a doctor, but I’ve got plenty of fresh food ideas!',
       thinking: 'Lemo is squeezing out an answer…',
@@ -264,6 +289,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       achievement: 'New achievement recorded in the research log!',
       level: 'A new level. Knowledge and skill are adding up!',
       water: 'Water goal reached. Good observation!',
+    },
+    pantry: {
+      expiring: '{item} expires tomorrow. Did you know? It can become: {recipe}.',
+      expiringPlain: '{item} expires tomorrow. A little fact: food that gets used is the best food.',
+      suggest: 'Let’s find out what your ingredients at home can become!',
     },
     chat: {
       intro: 'Hello, I’m Blu! Ask about food, nutrients or your entries. I’m not a doctor, but I’m glad to share what I know.',

@@ -19,6 +19,7 @@ import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
 import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
+import { usePantryStore } from './stores/pantry';
 import { useProfileStore } from './stores/profile';
 import { useChatStore } from './stores/chat';
 import { useCustomFoodsStore } from './stores/customFoods';
@@ -47,6 +48,7 @@ export const PERSISTED = [
   useRemindersStore,
   useGameStore,
   useChatStore,
+  usePantryStore,
 ] as const;
 
 /** True once every persisted store has been read from device storage. */
@@ -229,13 +231,16 @@ export function useCurrentShoppingList(): CurrentShoppingList {
         }
       }
     }
+    // Single ingredients from the pantry suggestions, as a one-serving pseudo recipe.
+    const items = (state.items ?? []).filter((item) => INGREDIENTS_BY_ID[item.ingredientId]);
+    if (items.length > 0) entries.push({ recipe: { ingredients: items }, servings: 1 });
     for (const extra of state.extras) {
       if (RECIPES_BY_ID[extra.recipeId]) {
         entries.push({ recipe: RECIPES_BY_ID[extra.recipeId], servings: extra.servings });
       }
     }
     return buildShoppingList(entries, INGREDIENTS_BY_ID, pantry, priceFactor(listRegion));
-  }, [plan, state.extras, pantry, listRegion]);
+  }, [plan, state.extras, state.items, pantry, listRegion]);
 
   return { listId, plan, state, list, extraCount: state.extras.length, region: listRegion };
 }

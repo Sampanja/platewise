@@ -392,3 +392,39 @@ export type DayNutrition = {
   eaten: Macros;
   goals: NutritionGoals;
 };
+
+/** Where a pantry item is kept. */
+export type PantryLocation = 'fridge' | 'freezer' | 'cupboard';
+export const PANTRY_LOCATIONS: readonly PantryLocation[] = ['fridge', 'freezer', 'cupboard'];
+
+/** A rough amount ("vähän / puolet / paljon") or an exact one in grams. */
+export type PantryLevel = 'low' | 'half' | 'plenty';
+export const PANTRY_LEVELS: readonly PantryLevel[] = ['low', 'half', 'plenty'];
+export type PantryAmount = { kind: 'level'; level: PantryLevel } | { kind: 'grams'; grams: number };
+
+/** How a pantry item was added. Scans are estimates until the user edits them. */
+export type PantrySource = 'scan' | 'barcode' | 'search' | 'shopping' | 'recipe';
+
+/** One ingredient at home (future `pantry_items`). Always an id from the ingredient table. */
+export type PantryItem = {
+  id: string;
+  ingredientId: string;
+  amount: PantryAmount;
+  /** Optional best-before date. */
+  bestBefore: LocalDate | null;
+  location: PantryLocation;
+  source: PantrySource;
+  /** Recognised from a photo and not yet edited: shown as "arvio". */
+  estimate: boolean;
+  addedAt: string;
+};
+
+/** A recipe marked as cooked: what was used from the pantry (future `cooked_recipes`). */
+export type CookedEntry = {
+  id: string;
+  date: LocalDate;
+  recipeId: string;
+  servings: number;
+  /** Pantry ingredients used, in grams (for reports: food used before it expired). */
+  usedFromPantry: { ingredientId: string; grams: number }[];
+};

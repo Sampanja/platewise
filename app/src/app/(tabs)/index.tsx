@@ -28,6 +28,7 @@ import { CompanionCard } from '@/features/home/CompanionCard';
 import { EmptyPlanCard } from '@/features/home/EmptyPlanCard';
 import { NewListCard } from '@/features/home/NewListCard';
 import { NutritionCard } from '@/features/home/NutritionCard';
+import { PantryCard } from '@/features/home/PantryCard';
 import { ProposalCard } from '@/features/home/ProposalCard';
 import { RecipeRow } from '@/features/home/RecipeRow';
 import { SavingsCard } from '@/features/home/SavingsCard';
@@ -124,6 +125,10 @@ function HomeScreen() {
             entryCount={todayEntryCount}
             onOpenDiary={goToDiary}
           />
+        </FadeInView>
+
+        <FadeInView delay={delay()} style={styles.padded}>
+          <PantryCard />
         </FadeInView>
 
         <FadeInView delay={delay()} style={styles.padded}>

@@ -13,6 +13,10 @@ export type ShoppingState = {
   checked: string[];
   /** Recipes added with "Lisää ostoslistaan", on top of the plan's dinners. */
   extras: { recipeId: string; servings: number }[];
+  /** Single ingredients added from Reseptit → Varastosta ("puuttuu"), in grams. Missing in old saves. */
+  items?: { ingredientId: string; grams: number }[];
+  /** Ticked ingredients already moved to the pantry, so they are not moved twice. */
+  moved?: string[];
 };
 
 /** Shopping list used when there is no active plan. */
@@ -45,6 +49,9 @@ type PlansState = {
   clearChecked: (listId: string) => void;
   addExtra: (listId: string, recipeId: string, servings: number) => void;
   removeExtra: (listId: string, recipeId: string) => void;
+  /** Adds single ingredients (amounts add up for the same ingredient). */
+  addItems: (listId: string, items: readonly { ingredientId: string; grams: number }[]) => void;
+  markMoved: (listId: string, ingredientIds: readonly string[]) => void;
   reset: () => void;
 };
 
@@ -116,6 +123,32 @@ export const usePlansStore = create<PlansState>()(
           shopping: updateList(state.shopping, listId, (list) => ({
             ...list,
             extras: list.extras.filter((e) => e.recipeId !== recipeId),
+          })),
+        })),
+      addItems: (listId, items) =>
+        set((state) => ({
+          shopping: updateList(state.shopping, listId, (list) => {
+            const next = [...(list.items ?? [])];
+            for (const item of items) {
+              const index = next.findIndex((i) => i.ingredientId === item.ingredientId);
+              if (index < 0) next.push({ ...item });
+              else next[index] = { ...next[index], grams: next[index].grams + item.grams };
+            }
+            // A newly needed item is not ticked or moved yet.
+            const ids = new Set(items.map((i) => i.ingredientId));
+            return {
+              ...list,
+              items: next,
+              checked: list.checked.filter((id) => !ids.has(id)),
+              moved: (list.moved ?? []).filter((id) => !ids.has(id)),
+            };
+          }),
+        })),
+      markMoved: (listId, ingredientIds) =>
+        set((state) => ({
+          shopping: updateList(state.shopping, listId, (list) => ({
+            ...list,
+            moved: [...new Set([...(list.moved ?? []), ...ingredientIds])],
           })),
         })),
       reset: () =>

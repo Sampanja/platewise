@@ -3,7 +3,8 @@ import type { AisleCode, RecipeSource } from '@/data/types';
 
 import type { IngredientIndex } from './recipes';
 
-export type ListEntry = { recipe: RecipeSource; servings: number };
+/** A recipe and its servings; single ingredients come as a recipe with only ingredients. */
+export type ListEntry = { recipe: Pick<RecipeSource, 'ingredients'>; servings: number };
 
 export type ShoppingItem = {
   ingredientId: string;

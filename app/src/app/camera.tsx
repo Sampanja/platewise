@@ -28,7 +28,9 @@ const ink: Palette = new Proxy({} as Palette, {
  * photo goes to the recognition service and is dropped.
  */
 export default function CameraScreen() {
-  const params = useLocalSearchParams<{ mode?: Mode; meal?: DiaryMeal; date?: string }>();
+  // target 'pantry': barcode only, and the product goes to Ruokavarasto instead of the diary.
+  const params = useLocalSearchParams<{ mode?: Mode; meal?: DiaryMeal; date?: string; target?: 'pantry' }>();
+  const forPantry = params.target === 'pantry';
   const [mode, setMode] = useState<Mode>(params.mode ?? 'photo');
   const [permission, requestPermission] = useCameraPermissions();
   const [torch, setTorch] = useState(false);
@@ -41,6 +43,10 @@ export default function CameraScreen() {
   const context = { meal: params.meal ?? 'snack', date: params.date ?? '' };
 
   const openProduct = (code: string) => {
+    if (forPantry) {
+      router.replace({ pathname: '/pantry', params: { barcode: code } });
+      return;
+    }
     router.replace({ pathname: '/product/[code]', params: { code, ...context } });
   };
 
@@ -174,7 +180,7 @@ export default function CameraScreen() {
 
         <View style={styles.bottom}>
           <View style={styles.modes} accessibilityRole="tablist">
-            {MODES.map((value) => {
+            {(forPantry ? (['barcode'] as const) : MODES).map((value) => {
               const selected = value === mode;
               return (
                 <PressableScale

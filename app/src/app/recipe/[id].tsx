@@ -30,6 +30,8 @@ import { format, formatInteger, formatMoney, formatServings, strings } from '@/i
 import { formatAmount } from '@/lib/amounts';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
+import { CookSheet } from '@/features/pantry/CookSheet';
+
 const t = strings.recipe;
 
 export default function RecipeScreen() {
@@ -47,7 +49,7 @@ export default function RecipeScreen() {
   // Bakes (a whole pie, a tray of muffins) start from the whole batch.
   const [servings, setServings] = useState(() => (recipe && recipe.servings >= 6 ? recipe.servings : 1));
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
-  const [sheet, setSheet] = useState<'diary' | 'plan' | null>(null);
+  const [sheet, setSheet] = useState<'diary' | 'plan' | 'cook' | null>(null);
   const [scrollY] = useState(() => new Animated.Value(0));
 
   if (!recipe) {
@@ -351,12 +353,17 @@ export default function RecipeScreen() {
       </View>
 
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-        {isDinner ? (
-          <Button label={t.addToPlan} onPress={() => setSheet('plan')} haptic="tap" />
-        ) : (
-          <Button label={t.addToDiary} onPress={() => setSheet('diary')} haptic="tap" />
-        )}
+        <IconButton icon="chef" size={56} accessibilityLabel={strings.cook.action} onPress={() => setSheet('cook')} />
+        <View style={styles.flex}>
+          {isDinner ? (
+            <Button label={t.addToPlan} onPress={() => setSheet('plan')} haptic="tap" />
+          ) : (
+            <Button label={t.addToDiary} onPress={() => setSheet('diary')} haptic="tap" />
+          )}
+        </View>
       </View>
+
+      <CookSheet recipe={recipe} visible={sheet === 'cook'} initialServings={servings} onClose={() => setSheet(null)} />
 
       <Sheet visible={sheet === 'diary'} onClose={() => setSheet(null)} title={t.chooseMeal}>
         {DIARY_MEALS.map((meal: DiaryMeal) => (
@@ -545,6 +552,9 @@ const styles = themedStyles(() =>
       padding: spacing.lg,
     },
     bottomBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
       position: 'absolute',
       left: 0,
       right: 0,

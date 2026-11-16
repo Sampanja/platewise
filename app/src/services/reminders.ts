@@ -10,6 +10,8 @@ import { currentCharacter } from '@/features/mascot/useCharacter';
 import { strings } from '@/i18n';
 import { reminderHours } from '@/domain/hydration';
 
+import { syncExpiryReminders } from './pantryReminders';
+
 /**
  * Meal reminders as local notifications (no server, no push token). The
  * reminder text is neutral and never mentions calories or weight. The text
@@ -28,13 +30,17 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/** The Android channel every reminder uses (meals, water, pantry, weekly report). */
+export async function ensureReminderChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  await Notifications.setNotificationChannelAsync(CHANNEL, {
+    name: strings.reminders.channelName,
+    importance: AndroidImportance.DEFAULT,
+  });
+}
+
 export async function ensurePermission(): Promise<boolean> {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync(CHANNEL, {
-      name: strings.reminders.channelName,
-      importance: AndroidImportance.DEFAULT,
-    });
-  }
+  await ensureReminderChannel();
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
   if (!current.canAskAgain) return false;
@@ -115,4 +121,5 @@ export function rescheduleReminders(): void {
   if (meals.enabled) void scheduleMealReminders(true, meals.times);
   const water = useWaterStore.getState().reminders;
   if (water.on) void scheduleWaterReminders(water);
+  void syncExpiryReminders();
 }
