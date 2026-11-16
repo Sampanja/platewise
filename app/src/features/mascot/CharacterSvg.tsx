@@ -1,35 +1,50 @@
-import Svg, { Circle, Ellipse, G, Path, Text as SvgText } from 'react-native-svg';
+import { memo, type JSX } from 'react';
+import Svg, { Circle, Defs, Ellipse, G, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import type { CharacterId } from '@/theme/characters';
 
 import type { MascotState } from './types';
 
 /**
- * Temporary vector characters in one consistent style: a 200 × 200 canvas, a
- * warm dark outline, big expressive eyes with white highlights and rosy
- * cheeks. Every character has its own body; faces and props are shared, so
- * all states look alike across characters. Fixed colours: a character keeps
- * its look in light and dark mode. Replaced by final artwork from
- * assets/mascot when it exists (docs/MASCOT.md).
+ * Vector characters in one finished style (docs/MASCOT.md, section 6):
+ * - 200 × 200 canvas, warm dark outline (INK, 3.5 px), soft ground shadow.
+ * - Bodies are shaded with a radial gradient (light from the upper left) and
+ *   a glossy highlight, so every character reads as a rounded object.
+ * - Big expressive eyes with two highlights, brows and a mouth per state.
+ * - Little outlined arms whose pose tells the state at a glance (wave, both
+ *   up, hand on chin, spoon, thumbs up), so states differ in silhouette too.
+ * Faces, arms and props are shared; only the body differs per character.
+ * Fixed colours: a character keeps its look in light and dark mode. Replaced
+ * by final artwork from assets/mascot when it exists.
  */
 
 const INK = '#2B1D15';
 const STROKE = 3.5;
 const CHEEK = '#F48FB1';
+const LEAF = '#3E9A5A';
+const LEAF_LIGHT = '#5DB874';
+const LEAF_DARK = '#2C7543';
+const GOLD = '#F5C451';
+
+type Point = readonly [number, number];
 
 type Body = {
-  /** Draws the body behind the face. */
-  draw: () => React.JSX.Element;
-  /** Face centre and size. */
+  /** Base, light and shade colour of the gradient. */
+  colors: { base: string; light: string; shade: string };
+  /** Arm and hand colour (a little darker than the body). */
+  limb: string;
+  /** Draws the body; `fill` is the shaded gradient. */
+  draw: (fill: string) => JSX.Element;
+  /** Drawn on top of the body but under the face (leaves over the head, pit). */
+  front?: () => JSX.Element;
   face: { x: number; y: number; scale: number };
+  /** Shoulders: where the arms join the body (left, right). */
+  shoulders: readonly [Point, Point];
   /** Top of the head, where the chef hat sits. */
   top: number;
   /** Eye whites help faces read on dark bodies. */
   sclera: boolean;
 };
-
-const LEAF = '#3E9A5A';
-const LEAF_DARK = '#2C7543';
 
 function Leaf({ d, vein }: { d: string; vein: string }) {
   return (
@@ -40,202 +55,225 @@ function Leaf({ d, vein }: { d: string; vein: string }) {
   );
 }
 
+/** Glossy highlight on the upper left of a body. */
+function Shine({ d }: { d: string }) {
+  return <Path d={d} stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={6} strokeLinecap="round" fill="none" />;
+}
+
 const BODIES: Record<CharacterId, Body> = {
-  // Beetroot: round magenta root with three leaves and a curly tail.
+  // Beetroot: round magenta root, three leaves on purple stems, a curly tail.
   nuppu: {
-    face: { x: 100, y: 130, scale: 1 },
-    top: 66,
+    colors: { base: '#9C2160', light: '#C24A86', shade: '#6E1441' },
+    limb: '#7E184C',
+    face: { x: 100, y: 128, scale: 1 },
+    shoulders: [
+      [38, 136],
+      [162, 136],
+    ],
+    top: 64,
     sclera: true,
-    draw: () => (
+    draw: (fill) => (
       <G>
-        <Path d="M96 64 C92 48 90 36 92 22" stroke="#8E1B50" strokeWidth={4} fill="none" strokeLinecap="round" />
-        <Leaf d="M92 30 C70 26 56 8 64 0 C82 2 96 16 92 30 Z" vein="M90 28 C80 20 72 12 68 6" />
-        <Leaf d="M100 34 C102 14 116 2 132 4 C134 22 118 36 100 34 Z" vein="M104 30 C112 20 120 12 128 8" />
-        <Leaf d="M104 50 C122 40 146 42 156 54 C144 66 120 64 104 50 Z" vein="M110 50 C124 48 138 50 150 54" />
-        <Path d="M100 186 C98 194 102 199 108 198" stroke={INK} strokeWidth={STROKE} fill="none" strokeLinecap="round" />
+        <Path d="M96 66 C92 50 90 38 92 24" stroke="#8E1B50" strokeWidth={5} fill="none" strokeLinecap="round" />
+        <Path d="M104 66 C112 54 120 48 128 44" stroke="#8E1B50" strokeWidth={4} fill="none" strokeLinecap="round" />
+        <Leaf d="M92 32 C70 28 54 10 62 0 C82 2 96 18 92 32 Z" vein="M90 30 C80 22 72 12 66 4" />
+        <Leaf d="M100 34 C102 14 118 2 134 4 C136 22 120 36 100 34 Z" vein="M104 30 C112 20 120 12 130 8" />
+        <Leaf d="M124 46 C138 34 160 34 170 46 C158 58 138 58 124 46 Z" vein="M130 46 C142 44 154 44 164 46" />
+        <Path d="M100 186 C98 194 103 199 110 197" stroke={INK} strokeWidth={STROKE} fill="none" strokeLinecap="round" />
         <Path
           d="M100 62 C152 62 174 98 170 134 C166 168 136 188 100 188 C64 188 34 168 30 134 C26 98 48 62 100 62 Z"
-          fill="#8E1B50"
+          fill={fill}
           stroke={INK}
           strokeWidth={STROKE}
         />
-        <Path d="M62 88 C72 76 86 72 100 72" stroke="#B9467F" strokeWidth={7} strokeLinecap="round" fill="none" />
-        <Path d="M150 150 C146 160 140 168 132 174" stroke="#6E1440" strokeWidth={4} strokeLinecap="round" fill="none" />
+        <Shine d="M58 96 C66 82 80 74 94 72" />
+        <Path d="M150 152 C146 162 140 170 132 176" stroke="#5E1037" strokeWidth={3.5} strokeLinecap="round" fill="none" />
+        <Path d="M60 166 C66 172 72 176 80 179" stroke="#5E1037" strokeWidth={3} strokeLinecap="round" fill="none" />
       </G>
     ),
   },
-  // Carrot: tapering orange root with ridges and fronds.
-  porkkis: {
-    face: { x: 100, y: 104, scale: 0.85 },
-    top: 62,
-    sclera: false,
-    draw: () => (
-      <G>
-        <Leaf d="M96 66 C80 50 72 30 80 16 C94 26 100 46 96 66 Z" vein="M94 60 C88 46 84 34 82 22" />
-        <Leaf d="M104 66 C106 44 116 26 130 22 C134 40 122 58 104 66 Z" vein="M108 60 C114 46 120 36 126 28" />
-        <Leaf d="M100 64 C96 44 98 24 104 10 C114 26 110 48 100 64 Z" vein="M101 58 C101 42 102 28 104 16" />
-        <Path
-          d="M54 76 C54 64 76 58 100 58 C124 58 146 64 146 76 C146 94 120 160 108 186 C104 194 96 194 92 186 C80 160 54 94 54 76 Z"
-          fill="#F28A2E"
-          stroke={INK}
-          strokeWidth={STROKE}
-          strokeLinejoin="round"
-        />
-        <Path d="M70 132 L84 128 M118 150 L130 146 M78 158 L90 156 M120 112 L134 108" stroke="#C9631A" strokeWidth={3} strokeLinecap="round" />
-        <Path d="M68 74 C78 68 90 66 102 66" stroke="#FFB16B" strokeWidth={6} strokeLinecap="round" fill="none" />
-      </G>
-    ),
-  },
-  // Avocado: dark green skin, creamy flesh and a round pit.
-  aava: {
-    face: { x: 100, y: 98, scale: 0.85 },
+  // Avocado: pear-shaped dark skin, buttery flesh and a round pit as a belly.
+  avo: {
+    colors: { base: '#4A7A2E', light: '#6C9E43', shade: '#2F5219' },
+    limb: '#3E6A25',
+    face: { x: 100, y: 96, scale: 0.86 },
+    shoulders: [
+      [48, 128],
+      [152, 128],
+    ],
     top: 34,
     sclera: false,
-    draw: () => (
+    draw: (fill) => (
       <G>
+        <Path d="M100 32 C101 24 104 18 110 14" stroke={INK} strokeWidth={4} strokeLinecap="round" fill="none" />
         <Path
-          d="M100 30 C134 30 152 68 158 110 C164 158 136 192 100 192 C64 192 36 158 42 110 C48 68 66 30 100 30 Z"
-          fill="#3F6E2A"
+          d="M100 30 C134 30 152 70 158 112 C164 160 136 192 100 192 C64 192 36 160 42 112 C48 70 66 30 100 30 Z"
+          fill={fill}
           stroke={INK}
           strokeWidth={STROKE}
         />
         <Path
-          d="M100 42 C126 42 142 74 147 110 C152 150 128 180 100 180 C72 180 48 150 53 110 C58 74 74 42 100 42 Z"
-          fill="#D8EAA6"
+          d="M100 42 C126 42 142 76 147 112 C152 152 128 181 100 181 C72 181 48 152 53 112 C58 76 74 42 100 42 Z"
+          fill="#DCEDAA"
         />
-        <Circle cx={100} cy={146} r={24} fill="#8A5A2B" stroke={INK} strokeWidth={3} />
-        <Ellipse cx={92} cy={138} rx={7} ry={5} fill="#B57D47" />
+        <Path d="M100 50 C122 50 136 80 140 112" stroke="#F2F8D2" strokeWidth={5} strokeLinecap="round" fill="none" />
+      </G>
+    ),
+    front: () => (
+      <G>
+        <Circle cx={100} cy={148} r={23} fill="#8A5A2B" stroke={INK} strokeWidth={3} />
+        <Ellipse cx={92} cy={140} rx={7} ry={5} fill="#B9844D" />
       </G>
     ),
   },
-  // Tomato: plump red with a green star calyx.
-  tomppa: {
-    face: { x: 100, y: 126, scale: 1 },
+  // Tomato: plump, wide and red, with a green star calyx and a little stem.
+  tomo: {
+    colors: { base: '#E0412F', light: '#F4705B', shade: '#B02A1D' },
+    limb: '#C2321F',
+    face: { x: 100, y: 128, scale: 1 },
+    shoulders: [
+      [28, 132],
+      [172, 132],
+    ],
     top: 60,
     sclera: false,
-    draw: () => (
+    draw: (fill) => (
       <G>
-        <Ellipse cx={100} cy={124} rx={74} ry={64} fill="#E2412F" stroke={INK} strokeWidth={STROKE} />
-        <Path d="M62 92 C72 80 88 74 102 74" stroke="#FF8A78" strokeWidth={7} strokeLinecap="round" fill="none" />
+        <Ellipse cx={100} cy={126} rx={76} ry={64} fill={fill} stroke={INK} strokeWidth={STROKE} />
+        <Shine d="M50 104 C56 90 70 80 86 76" />
+        <Path d="M74 66 C84 72 92 74 100 74 C108 74 116 72 126 66" stroke="#B02A1D" strokeWidth={3} fill="none" strokeLinecap="round" />
+      </G>
+    ),
+    front: () => (
+      <G>
         <Path
-          d="M100 74 L86 56 L94 70 L70 64 L90 78 L76 90 L98 80 L102 96 L106 80 L126 90 L112 76 L132 64 L106 70 L114 56 Z"
+          d="M100 74 L86 58 L98 64 L100 48 L104 64 L118 56 L108 72 L126 76 L106 80 L100 94 L94 80 L74 78 Z"
           fill={LEAF}
           stroke={INK}
-          strokeWidth={2.5}
+          strokeWidth={3}
           strokeLinejoin="round"
         />
-        <Path d="M100 62 C100 54 102 48 106 44" stroke={LEAF_DARK} strokeWidth={5} strokeLinecap="round" fill="none" />
+        <Path d="M100 52 C100 42 104 36 110 32" stroke={LEAF_DARK} strokeWidth={6} strokeLinecap="round" fill="none" />
+        <Path d="M100 52 C100 42 104 36 110 32" stroke={INK} strokeWidth={1.5} strokeLinecap="round" fill="none" strokeOpacity={0.4} />
       </G>
     ),
   },
-  // Blueberry: round indigo berry with a little crown.
-  mustis: {
-    face: { x: 100, y: 122, scale: 1 },
+  // Carrot: a tall tapering root with ridges and a tuft of fronds.
+  karo: {
+    colors: { base: '#F28A2E', light: '#FFAE5E', shade: '#C9631A' },
+    limb: '#D9701F',
+    face: { x: 100, y: 102, scale: 0.86 },
+    shoulders: [
+      [58, 116],
+      [142, 116],
+    ],
+    top: 60,
+    sclera: false,
+    draw: (fill) => (
+      <G>
+        <Leaf d="M94 66 C76 52 66 30 74 14 C90 24 100 46 94 66 Z" vein="M92 60 C86 46 80 32 77 20" />
+        <Leaf d="M106 66 C108 42 120 22 136 18 C140 38 126 58 106 66 Z" vein="M110 60 C116 46 124 32 132 24" />
+        <Leaf d="M100 64 C94 42 96 20 104 4 C116 22 112 46 100 64 Z" vein="M101 58 C100 40 101 24 104 10" />
+        <Path
+          d="M52 78 C52 64 76 58 100 58 C124 58 148 64 148 78 C148 98 122 160 108 188 C104 196 96 196 92 188 C78 160 52 98 52 78 Z"
+          fill={fill}
+          stroke={INK}
+          strokeWidth={STROKE}
+          strokeLinejoin="round"
+        />
+        <Shine d="M66 80 C74 70 86 67 98 67" />
+        <Path
+          d="M68 136 L82 132 M118 152 L130 148 M80 162 L92 160 M122 124 L136 120 M90 178 L98 177"
+          stroke="#C2591A"
+          strokeWidth={3}
+          strokeLinecap="round"
+        />
+      </G>
+    ),
+  },
+  // Lemon: a sunny oval with a nub at each end and one leaf on top.
+  lemo: {
+    colors: { base: '#FAD12E', light: '#FFE878', shade: '#E0A800' },
+    limb: '#E6B400',
+    face: { x: 100, y: 118, scale: 0.95 },
+    shoulders: [
+      [36, 138],
+      [164, 138],
+    ],
     top: 56,
-    sclera: true,
-    draw: () => (
+    sclera: false,
+    draw: (fill) => (
       <G>
-        <Circle cx={100} cy={122} r={68} fill="#3E4FA8" stroke={INK} strokeWidth={STROKE} />
-        <Path d="M56 96 C66 78 84 68 104 66" stroke="#7D8CE0" strokeWidth={9} strokeLinecap="round" fill="none" opacity={0.8} />
+        <Leaf d="M102 58 C104 40 120 26 140 26 C140 46 122 60 102 58 Z" vein="M106 54 C116 44 126 36 136 30" />
         <Path
-          d="M84 60 L90 48 L96 58 L100 44 L104 58 L110 48 L116 60 Z"
-          fill="#2A3570"
+          d="M22 118 C22 110 28 106 34 104 C44 76 70 58 100 58 C130 58 156 76 166 104 C172 106 178 110 178 118 C178 126 172 130 166 132 C156 162 130 180 100 180 C70 180 44 162 34 132 C28 130 22 126 22 118 Z"
+          fill={fill}
+          stroke={INK}
+          strokeWidth={STROKE}
+          strokeLinejoin="round"
+        />
+        <Shine d="M54 92 C64 78 80 70 96 68" />
+        <Circle cx={142} cy={156} r={2} fill="#D69E00" />
+        <Circle cx={60} cy={158} r={2} fill="#D69E00" />
+        <Circle cx={150} cy={86} r={2} fill="#D69E00" />
+      </G>
+    ),
+  },
+  // Blueberry: a round indigo berry with a dusty bloom, a five-point crown and a twig.
+  blu: {
+    colors: { base: '#4F5BB8', light: '#7C88DA', shade: '#323C8A' },
+    limb: '#414CA2',
+    face: { x: 100, y: 128, scale: 0.98 },
+    shoulders: [
+      [34, 138],
+      [166, 138],
+    ],
+    top: 62,
+    sclera: true,
+    draw: (fill) => (
+      <G>
+        <Path d="M112 64 C118 46 128 36 142 30" stroke="#6B4A2E" strokeWidth={5} strokeLinecap="round" fill="none" />
+        <Leaf d="M132 36 C138 18 158 8 176 12 C172 32 152 42 132 36 Z" vein="M138 32 C148 24 160 18 170 15" />
+        <Circle cx={100} cy={128} r={68} fill={fill} stroke={INK} strokeWidth={STROKE} />
+        <Path d="M54 96 C62 82 76 72 92 68" stroke="#C9D0F5" strokeOpacity={0.7} strokeWidth={6} strokeLinecap="round" fill="none" />
+        <Circle cx={140} cy={168} r={3} fill="#C9D0F5" opacity={0.5} />
+        <Circle cx={60} cy={164} r={2.5} fill="#C9D0F5" opacity={0.5} />
+      </G>
+    ),
+    front: () => (
+      <G>
+        <Path
+          d="M100 58 L106 68 L118 66 L110 76 L116 86 L104 82 L100 92 L96 82 L84 86 L90 76 L82 66 L94 68 Z"
+          fill="#2B336F"
           stroke={INK}
           strokeWidth={2.5}
           strokeLinejoin="round"
         />
-      </G>
-    ),
-  },
-  // Lemon: sunny oval with pointed ends and a leaf.
-  sitru: {
-    face: { x: 100, y: 120, scale: 1 },
-    top: 62,
-    sclera: false,
-    draw: () => (
-      <G>
-        <Leaf d="M120 64 C130 44 152 36 168 40 C164 58 144 70 120 64 Z" vein="M124 62 C136 54 150 48 162 44" />
-        <Path
-          d="M24 120 C28 112 32 108 38 104 C46 78 70 62 100 62 C130 62 154 78 162 104 C168 108 172 112 176 120 C172 128 168 132 162 136 C154 162 130 178 100 178 C70 178 46 162 38 136 C32 132 28 128 24 120 Z"
-          fill="#FFD43B"
-          stroke={INK}
-          strokeWidth={STROKE}
-          strokeLinejoin="round"
-        />
-        <Path d="M60 92 C72 78 88 72 104 72" stroke="#FFF0A8" strokeWidth={7} strokeLinecap="round" fill="none" />
-        <Circle cx={142} cy={150} r={2} fill="#D9AE18" />
-        <Circle cx={60} cy={152} r={2} fill="#D9AE18" />
-        <Circle cx={150} cy={96} r={2} fill="#D9AE18" />
-      </G>
-    ),
-  },
-  // Chanterelle: wavy golden cap on a sturdy stem.
-  kanttu: {
-    face: { x: 100, y: 140, scale: 0.85 },
-    top: 50,
-    sclera: false,
-    draw: () => (
-      <G>
-        <Path
-          d="M66 100 C62 140 66 178 100 184 C134 178 138 140 134 100 Z"
-          fill="#F7C46E"
-          stroke={INK}
-          strokeWidth={STROKE}
-          strokeLinejoin="round"
-        />
-        <Path d="M78 108 L82 124 M100 106 L100 122 M122 108 L118 124" stroke="#D9952F" strokeWidth={2.5} strokeLinecap="round" />
-        <Path
-          d="M24 92 C30 58 70 46 100 46 C130 46 170 58 176 92 C166 104 152 96 142 106 C130 96 118 110 100 102 C82 110 70 96 58 106 C48 96 34 104 24 92 Z"
-          fill="#F2A93B"
-          stroke={INK}
-          strokeWidth={STROKE}
-          strokeLinejoin="round"
-        />
-        <Path d="M50 74 C64 60 82 56 100 56" stroke="#FFD08A" strokeWidth={7} strokeLinecap="round" fill="none" />
-      </G>
-    ),
-  },
-  // Rye bread: a slice with a dark crust, crumb and caraway seeds.
-  ruis: {
-    face: { x: 100, y: 120, scale: 0.95 },
-    top: 42,
-    sclera: true,
-    draw: () => (
-      <G>
-        <Path
-          d="M38 88 C36 54 68 40 100 40 C132 40 164 54 162 88 C156 96 156 102 158 110 L156 176 C156 186 150 190 140 190 L60 190 C50 190 44 186 44 176 L42 110 C44 102 44 96 38 88 Z"
-          fill="#5A3A26"
-          stroke={INK}
-          strokeWidth={STROKE}
-          strokeLinejoin="round"
-        />
-        <Path
-          d="M50 90 C50 64 74 52 100 52 C126 52 150 64 150 90 C146 98 146 104 147 110 L146 172 C146 176 142 180 136 180 L64 180 C58 180 54 176 54 172 L53 110 C54 104 54 98 50 90 Z"
-          fill="#8B5E3C"
-        />
-        <Ellipse cx={70} cy={160} rx={3} ry={1.6} fill="#D8B58C" rotation={30} origin="70, 160" />
-        <Ellipse cx={130} cy={164} rx={3} ry={1.6} fill="#D8B58C" rotation={-20} origin="130, 164" />
-        <Ellipse cx={74} cy={80} rx={3} ry={1.6} fill="#D8B58C" rotation={10} origin="74, 80" />
-        <Ellipse cx={128} cy={78} rx={3} ry={1.6} fill="#D8B58C" rotation={-30} origin="128, 78" />
+        <Circle cx={100} cy={75} r={4} fill="#1B2150" />
       </G>
     ),
   },
 };
 
-function Eye({ x, y, sclera, look = 0 }: { x: number; y: number; sclera: boolean; look?: number }) {
+// ——— Faces ———
+
+function Eye({ x, y, sclera, look = [0, 0] }: { x: number; y: number; sclera: boolean; look?: Point }) {
+  const [lx, ly] = look;
   return (
     <G>
-      {sclera ? <Ellipse cx={x} cy={y} rx={11} ry={13} fill="#FFFFFF" stroke={INK} strokeWidth={2.5} /> : null}
-      <Ellipse cx={x + look * 3} cy={y + (sclera ? 1 : 0) - look * 3} rx={sclera ? 6.5 : 8} ry={sclera ? 7.5 : 10} fill={INK} />
-      <Circle cx={x + look * 3 + 2.5} cy={y - 3 - look * 3} r={2.6} fill="#FFFFFF" />
+      {sclera ? <Ellipse cx={x} cy={y} rx={11.5} ry={13.5} fill="#FFFFFF" stroke={INK} strokeWidth={2.5} /> : null}
+      <Ellipse cx={x + lx * 3} cy={y + ly * 3 + (sclera ? 1 : 0)} rx={sclera ? 6.8 : 8.5} ry={sclera ? 8 : 10.5} fill={INK} />
+      <Circle cx={x + lx * 3 + 2.8} cy={y + ly * 3 - 3.5} r={2.8} fill="#FFFFFF" />
+      <Circle cx={x + lx * 3 - 2.4} cy={y + ly * 3 + 3.6} r={1.3} fill="#FFFFFF" opacity={0.85} />
     </G>
   );
 }
 
+/** A closed eye: a smiling arc (^) or, with `down`, a sleepy one. */
 function ClosedEye({ x, y, down = false }: { x: number; y: number; down?: boolean }) {
   return (
     <Path
-      d={down ? `M${x - 10} ${y} Q${x} ${y + 8} ${x + 10} ${y}` : `M${x - 10} ${y + 2} Q${x} ${y - 10} ${x + 10} ${y + 2}`}
+      d={down ? `M${x - 10} ${y} Q${x} ${y + 8} ${x + 10} ${y}` : `M${x - 10} ${y + 3} Q${x} ${y - 10} ${x + 10} ${y + 3}`}
       stroke={INK}
       strokeWidth={5}
       fill="none"
@@ -244,56 +282,99 @@ function ClosedEye({ x, y, down = false }: { x: number; y: number; down?: boolea
   );
 }
 
-function Face({ state, body }: { state: MascotState; body: Body }) {
+function Brow({ x, y, tilt, lift = 0 }: { x: number; y: number; tilt: number; lift?: number }) {
+  return (
+    <Path
+      d={`M${x - 9} ${y - lift + tilt} Q${x} ${y - lift - 5} ${x + 9} ${y - lift - tilt}`}
+      stroke={INK}
+      strokeWidth={3.5}
+      fill="none"
+      strokeLinecap="round"
+    />
+  );
+}
+
+const LX = -24;
+const RX = 24;
+const MOUTH = 22;
+
+function Face({ state, body, blink }: { state: MascotState; body: Body; blink: boolean }) {
   const { x, y, scale } = body.face;
-  const lx = -24;
-  const rx = 24;
-  const mouthY = 22;
+  const open = (look?: Point) =>
+    blink ? (
+      <G>
+        <ClosedEye x={LX} y={2} down />
+        <ClosedEye x={RX} y={2} down />
+      </G>
+    ) : (
+      <G>
+        <Eye x={LX} y={0} sclera={body.sclera} look={look} />
+        <Eye x={RX} y={0} sclera={body.sclera} look={look} />
+      </G>
+    );
+  const browY = body.sclera ? -20 : -18;
   const inner = (() => {
     switch (state) {
       case 'happy':
+        return (
+          <G>
+            <ClosedEye x={LX} y={0} />
+            <ClosedEye x={RX} y={0} />
+            <Path d={`M-16 ${MOUTH - 4} Q0 ${MOUTH + 22} 16 ${MOUTH - 4} Z`} fill={INK} />
+            <Path d={`M-8 ${MOUTH + 7} Q0 ${MOUTH + 13} 8 ${MOUTH + 7}`} stroke="#E36B6B" strokeWidth={6} fill="none" strokeLinecap="round" />
+          </G>
+        );
       case 'celebrating':
         return (
           <G>
-            <ClosedEye x={lx} y={0} />
-            <ClosedEye x={rx} y={0} />
-            <Path d={`M-16 ${mouthY - 4} Q0 ${mouthY + 22} 16 ${mouthY - 4} Z`} fill={INK} />
-            <Path d={`M-8 ${mouthY + 6} Q0 ${mouthY + 12} 8 ${mouthY + 6}`} stroke="#E36B6B" strokeWidth={6} fill="none" strokeLinecap="round" />
+            <ClosedEye x={LX} y={0} />
+            <ClosedEye x={RX} y={0} />
+            <Brow x={LX} y={browY - 2} tilt={-2} lift={2} />
+            <Brow x={RX} y={browY - 2} tilt={2} lift={2} />
+            <Path d={`M-19 ${MOUTH - 6} Q0 ${MOUTH + 30} 19 ${MOUTH - 6} Z`} fill={INK} />
+            <Path d={`M-9 ${MOUTH + 10} Q0 ${MOUTH + 17} 9 ${MOUTH + 10}`} stroke="#E36B6B" strokeWidth={7} fill="none" strokeLinecap="round" />
           </G>
         );
       case 'thinking':
         return (
           <G>
-            <Eye x={lx} y={0} sclera={body.sclera} look={1} />
-            <Eye x={rx} y={0} sclera={body.sclera} look={1} />
-            <Path d={`M${rx - 12} -20 Q${rx} -27 ${rx + 12} -20`} stroke={INK} strokeWidth={4} fill="none" strokeLinecap="round" />
-            <Circle cx={6} cy={mouthY + 2} r={5} fill={INK} />
+            {open([1, -1])}
+            <Brow x={LX} y={browY} tilt={0} />
+            <Brow x={RX} y={browY} tilt={3} lift={4} />
+            <Ellipse cx={8} cy={MOUTH + 3} rx={5} ry={5.5} fill={INK} />
           </G>
         );
       case 'sleepy':
         return (
           <G>
-            <ClosedEye x={lx} y={0} down />
-            <ClosedEye x={rx} y={0} down />
-            <Path d={`M-7 ${mouthY + 2} Q0 ${mouthY + 6} 7 ${mouthY + 2}`} stroke={INK} strokeWidth={4} fill="none" strokeLinecap="round" />
+            <ClosedEye x={LX} y={0} down />
+            <ClosedEye x={RX} y={0} down />
+            <Ellipse cx={0} cy={MOUTH + 4} rx={5} ry={4} fill={INK} />
           </G>
         );
       case 'encouraging':
         return (
           <G>
-            <Eye x={lx} y={0} sclera={body.sclera} />
-            <ClosedEye x={rx} y={2} />
-            <Path d={`M-14 ${mouthY} Q0 ${mouthY + 14} 14 ${mouthY}`} stroke={INK} strokeWidth={5} fill="none" strokeLinecap="round" />
+            {blink ? <ClosedEye x={LX} y={2} down /> : <Eye x={LX} y={0} sclera={body.sclera} />}
+            <ClosedEye x={RX} y={2} />
+            <Brow x={LX} y={browY} tilt={-2} lift={2} />
+            <Path d={`M-15 ${MOUTH - 2} Q0 ${MOUTH + 16} 15 ${MOUTH - 2}`} stroke={INK} strokeWidth={5} fill="none" strokeLinecap="round" />
           </G>
         );
       case 'cooking':
+        return (
+          <G>
+            {open([0, 0.4])}
+            <Path d={`M-12 ${MOUTH} Q0 ${MOUTH + 11} 12 ${MOUTH}`} stroke={INK} strokeWidth={5} fill="none" strokeLinecap="round" />
+            <Path d={`M3 ${MOUTH + 6} Q8 ${MOUTH + 13} 12 ${MOUTH + 5}`} fill="#E36B6B" stroke={INK} strokeWidth={2} />
+          </G>
+        );
       case 'idle':
       default:
         return (
           <G>
-            <Eye x={lx} y={0} sclera={body.sclera} />
-            <Eye x={rx} y={0} sclera={body.sclera} />
-            <Path d={`M-12 ${mouthY} Q0 ${mouthY + 11} 12 ${mouthY}`} stroke={INK} strokeWidth={5} fill="none" strokeLinecap="round" />
+            {open()}
+            <Path d={`M-12 ${MOUTH} Q0 ${MOUTH + 11} 12 ${MOUTH}`} stroke={INK} strokeWidth={5} fill="none" strokeLinecap="round" />
           </G>
         );
     }
@@ -307,6 +388,78 @@ function Face({ state, body }: { state: MascotState; body: Body }) {
   );
 }
 
+// ——— Arms ———
+
+type Pose = 'down' | 'wave' | 'up' | 'scratch' | 'spoon' | 'thumb' | 'droop';
+
+/** Each state's arm poses (left, right). */
+const POSES: Record<MascotState, readonly [Pose, Pose]> = {
+  idle: ['down', 'down'],
+  happy: ['down', 'wave'],
+  celebrating: ['up', 'up'],
+  thinking: ['down', 'scratch'],
+  cooking: ['down', 'spoon'],
+  sleepy: ['droop', 'droop'],
+  encouraging: ['down', 'thumb'],
+};
+
+/** Hand position relative to the shoulder for a right arm (mirrored for the left). */
+function handFor(pose: Pose): Point {
+  switch (pose) {
+    case 'wave':
+      return [20, -40];
+    case 'up':
+      return [16, -46];
+    case 'scratch':
+      // Up to the side of the head, scratching it while thinking.
+      return [-2, -54];
+    case 'spoon':
+      return [6, -26];
+    case 'thumb':
+      return [20, -20];
+    case 'droop':
+      return [8, 26];
+    case 'down':
+    default:
+      return [14, 22];
+  }
+}
+
+function Arm({ body, side, pose }: { body: Body; side: 0 | 1; pose: Pose }) {
+  const [sx, sy] = body.shoulders[side];
+  const dir = side === 0 ? -1 : 1;
+  const [hx0, hy] = handFor(pose);
+  const hx = hx0 * dir;
+  const ex = sx + hx;
+  const ey = sy + hy;
+  // An elbow bend outwards keeps the arm soft and readable.
+  const cx = sx + (pose === 'scratch' ? 26 * dir : hx * 0.5 + 10 * dir);
+  const cy = sy + hy * 0.5 + (pose === 'scratch' ? -6 : 4);
+  const d = `M${sx} ${sy} Q${cx} ${cy} ${ex} ${ey}`;
+  return (
+    <G>
+      <Path d={d} stroke={INK} strokeWidth={10} strokeLinecap="round" fill="none" />
+      <Path d={d} stroke={body.limb} strokeWidth={5} strokeLinecap="round" fill="none" />
+      {pose === 'spoon' ? (
+        <G>
+          <Path d={`M${ex + 4} ${ey + 10} L${ex - 8} ${ey - 30}`} stroke={INK} strokeWidth={7} strokeLinecap="round" />
+          <Path d={`M${ex + 4} ${ey + 10} L${ex - 8} ${ey - 30}`} stroke="#C99A5E" strokeWidth={3.5} strokeLinecap="round" />
+          <Ellipse cx={ex - 10} cy={ey - 36} rx={6} ry={9} fill="#C99A5E" stroke={INK} strokeWidth={2.5} rotation={-17} origin={`${ex - 10}, ${ey - 36}`} />
+        </G>
+      ) : null}
+      <Circle cx={ex} cy={ey} r={7.5} fill={body.limb} stroke={INK} strokeWidth={3} />
+      {pose === 'thumb' ? (
+        <Path d={`M${ex - 1} ${ey - 6} L${ex - 1} ${ey - 15}`} stroke={INK} strokeWidth={8} strokeLinecap="round" />
+      ) : null}
+      {pose === 'thumb' ? (
+        <Path d={`M${ex - 1} ${ey - 6} L${ex - 1} ${ey - 15}`} stroke={body.limb} strokeWidth={3.5} strokeLinecap="round" />
+      ) : null}
+    </G>
+  );
+}
+
+// ——— Props ———
+
 function ChefHat({ x, top }: { x: number; top: number }) {
   const y = top - 30;
   return (
@@ -319,6 +472,7 @@ function ChefHat({ x, top }: { x: number; top: number }) {
         strokeLinejoin="round"
       />
       <Path d="M68 38 L68 50 L134 50 L134 38" fill="#FFFFFF" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
+      <Path d="M84 40 L84 48 M101 40 L101 48 M118 40 L118 48" stroke="#E2D9D0" strokeWidth={2} />
     </G>
   );
 }
@@ -330,45 +484,97 @@ function Star({ x, y, color, s = 1 }: { x: number; y: number; color: string; s?:
       fill={color}
       stroke={INK}
       strokeWidth={1.5}
+      strokeLinejoin="round"
     />
   );
 }
 
-export function CharacterSvg({ character, state, size }: { character: CharacterId; state: MascotState; size: number }) {
+/** A question mark drawn as a path (no font needed). */
+function Question({ x, y }: { x: number; y: number }) {
+  return (
+    <G>
+      <Path
+        d={`M${x - 8} ${y - 8} C${x - 8} ${y - 18} ${x + 9} ${y - 18} ${x + 9} ${y - 7} C${x + 9} ${y} ${x} ${y} ${x} ${y + 7}`}
+        stroke={INK}
+        strokeWidth={5}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Circle cx={x} cy={y + 16} r={3.2} fill={INK} />
+    </G>
+  );
+}
+
+/** A "z" drawn as a path. */
+function Zed({ x, y, s }: { x: number; y: number; s: number }) {
+  return (
+    <Path
+      d={`M${x - 6 * s} ${y - 6 * s} L${x + 6 * s} ${y - 6 * s} L${x - 6 * s} ${y + 6 * s} L${x + 6 * s} ${y + 6 * s}`}
+      stroke="#7B5BB0"
+      strokeWidth={3.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  );
+}
+
+export type CharacterSvgProps = {
+  character: CharacterId;
+  state: MascotState;
+  size: number;
+  /** Eyes closed for a blink (only states with open eyes change). */
+  blink?: boolean;
+};
+
+export const CharacterSvg = memo(function CharacterSvg({ character, state, size, blink = false }: CharacterSvgProps) {
   const body = BODIES[character];
+  const gradientId = `body-${character}`;
+  const [leftPose, rightPose] = POSES[state];
+  const hatX = body.face.x;
   return (
     <Svg width={size} height={size} viewBox="0 0 200 200" accessible={false}>
-      {body.draw()}
-      {state === 'cooking' ? <ChefHat x={body.face.x} top={body.top} /> : null}
-      <Face state={state} body={body} />
+      <Defs>
+        <RadialGradient id={gradientId} cx="38%" cy="32%" rx="70%" ry="72%" fx="34%" fy="28%">
+          <Stop offset="0" stopColor={body.colors.light} />
+          <Stop offset="0.55" stopColor={body.colors.base} />
+          <Stop offset="1" stopColor={body.colors.shade} />
+        </RadialGradient>
+      </Defs>
+      <Ellipse cx={100} cy={194} rx={52} ry={5} fill={INK} opacity={0.14} />
+      {body.draw(`url(#${gradientId})`)}
+      {body.front?.()}
+      <Arm body={body} side={0} pose={leftPose} />
+      <Arm body={body} side={1} pose={rightPose} />
+      {state === 'cooking' ? <ChefHat x={hatX} top={body.top} /> : null}
+      <Face state={state} body={body} blink={blink} />
       {state === 'thinking' ? (
         <G>
-          <Circle cx={170} cy={70} r={5} fill={INK} />
-          <Circle cx={182} cy={54} r={7} fill={INK} />
-          <SvgText x={182} y={36} fontSize={28} fontWeight="bold" fill={INK} textAnchor="middle">
-            ?
-          </SvgText>
+          <Circle cx={164} cy={62} r={4} fill={INK} />
+          <Circle cx={174} cy={48} r={6} fill={INK} />
+          <Question x={184} y={22} />
         </G>
       ) : null}
       {state === 'sleepy' ? (
         <G>
-          <SvgText x={164} y={72} fontSize={24} fontWeight="bold" fill="#7B5BB0" textAnchor="middle">
-            z
-          </SvgText>
-          <SvgText x={182} y={50} fontSize={18} fontWeight="bold" fill="#7B5BB0" textAnchor="middle">
-            z
-          </SvgText>
+          <Zed x={164} y={62} s={1.1} />
+          <Zed x={182} y={38} s={0.8} />
         </G>
       ) : null}
       {state === 'celebrating' ? (
         <G>
-          <Star x={20} y={64} color="#F5C451" />
-          <Star x={180} y={74} color="#F28DB2" />
-          <Star x={34} y={24} color="#7CC4F2" s={0.6} />
-          <Star x={168} y={26} color="#7FCB8E" s={0.6} />
+          <Star x={18} y={60} color={GOLD} />
+          <Star x={184} y={78} color="#F28DB2" />
+          <Star x={30} y={20} color="#7CC4F2" s={0.6} />
+          <Star x={170} y={22} color={LEAF_LIGHT} s={0.6} />
+          <Circle cx={56} cy={34} r={3.5} fill="#F28DB2" />
+          <Circle cx={148} cy={44} r={3.5} fill={GOLD} />
         </G>
       ) : null}
-      {state === 'encouraging' ? <Star x={170} y={60} color="#F5C451" s={0.7} /> : null}
+      {state === 'encouraging' ? <Star x={178} y={70} color={GOLD} s={0.7} /> : null}
     </Svg>
   );
-}
+});
+
+/** Every character id with a drawn body (for tests). */
+export const DRAWN_CHARACTERS = Object.keys(BODIES) as CharacterId[];

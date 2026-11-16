@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,6 +34,8 @@ import { SavingsCard } from '@/features/home/SavingsCard';
 import { TodayMealCard } from '@/features/home/TodayMealCard';
 import { format, strings } from '@/i18n';
 import { addDays, greeting, longDate, relativeDayLabel, today } from '@/lib/dates';
+import { showToast } from '@/lib/toast';
+import { useCharacter } from '@/features/mascot/useCharacter';
 import { colors, spacing, themedStyles } from '@/theme';
 
 const t = strings.home;
@@ -55,6 +57,15 @@ function HomeScreen() {
   const rules = useUserRules();
   const favoriteIds = useFavoritesStore((s) => s.ids);
   const recipesQuery = useAllowedRecipesQuery();
+  const characterRenewed = useProfileStore((s) => s.characterRenewed);
+  const character = useCharacter();
+
+  // The saved character was retired: say once which one took its place.
+  useEffect(() => {
+    if (!characterRenewed) return;
+    useProfileStore.getState().update({ characterRenewed: false });
+    showToast(format(strings.castRenewed, { name: character.voice.name }));
+  }, [characterRenewed, character.voice.name]);
 
   const recommended = useMemo(() => {
     if (!recipesQuery.data) return [];

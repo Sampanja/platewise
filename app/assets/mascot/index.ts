@@ -18,8 +18,9 @@
  * GIF files also work because expo-image plays them.
  */
 
-type State = 'idle' | 'happy' | 'thinking' | 'celebrating' | 'cooking' | 'sleepy' | 'encouraging';
-type Character = 'nuppu' | 'porkkis' | 'aava' | 'tomppa' | 'mustis' | 'sitru' | 'kanttu' | 'ruis';
+/** `idleBlink` is the idle pose with closed eyes (idle-blink.png), shown during a blink. */
+type State = 'idle' | 'idleBlink' | 'happy' | 'thinking' | 'celebrating' | 'cooking' | 'sleepy' | 'encouraging';
+type Character = 'nuppu' | 'avo' | 'tomo' | 'karo' | 'lemo' | 'blu';
 
 /** Values are `require()` results (asset ids). */
 export const CHARACTER_IMAGES: Partial<Record<Character, Partial<Record<State, number>>>> = {};

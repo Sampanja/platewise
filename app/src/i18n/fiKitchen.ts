@@ -1,5 +1,6 @@
 /** Finnish strings for the quick actions, the pantry, text and voice logging and recipe import. */
 export const fiKitchen = {
+  castRenewed: 'Hahmot uudistuivat! Kaverisi on nyt {name}. Voit vaihtaa hahmon Profiilissa.',
   quick: {
     tabLabel: 'Lisää',
     a11y: 'Pikatoiminnot',

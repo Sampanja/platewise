@@ -52,7 +52,7 @@ describe.each(cases)('%s %s', (id, mode) => {
 
   it('the accent button stands out from the background (or carries a clear outline colour)', () => {
     // Light yellow (lemon) cannot reach 3:1 on a near-white page; its button text carries the contrast instead.
-    const min = id === 'sitru' && mode === 'light' ? 2 : AA_LARGE;
+    const min = id === 'lemo' && mode === 'light' ? 2 : AA_LARGE;
     expect(contrast(p.accent, p.bg)).toBeGreaterThanOrEqual(min);
   });
 

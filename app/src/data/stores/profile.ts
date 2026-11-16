@@ -15,10 +15,11 @@ import {
   type Sex,
   type Workout,
 } from '@/domain/energy';
+import { migrateCharacter } from '@/domain/characterMigration';
 import { convertBudget, DEFAULT_PRICE_REGION, type PriceRegionCode } from '@/domain/priceRegion';
 import type { UnitSystem } from '@/domain/units';
 import type { Language } from '@/i18n/languages';
-import { DEFAULT_CHARACTER, isCharacterId, type CharacterId } from '@/theme/characters';
+import { DEFAULT_CHARACTER, type CharacterId } from '@/theme/characters';
 import type { ThemePreference } from '@/theme/colors';
 
 import type { AllergenCode, DietCode, NutritionGoals } from '../types';
@@ -126,6 +127,8 @@ export type Profile = {
   characterId: CharacterId;
   /** The picker has been seen (first screen of onboarding). */
   characterChosen: boolean;
+  /** The saved character was retired and replaced; Koti tells the user once, then clears this. */
+  characterRenewed: boolean;
   /** XP, streaks, quests, achievements and celebrations. Can be turned off. */
   gamificationEnabled: boolean;
   /** The assistant may read today's diary and goals (asked in the chat, revocable). */
@@ -153,6 +156,7 @@ export const DEFAULT_PROFILE: Profile = {
   themePreference: 'system',
   characterId: DEFAULT_CHARACTER,
   characterChosen: false,
+  characterRenewed: false,
   gamificationEnabled: true,
   chatShareConsent: false,
   onboardingCompleted: false,
@@ -208,21 +212,24 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 8,
+      version: 9,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
       // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
       // v7: stores removed; earlier users keep the Finnish price region their budget is in.
       // v8: language and units; earlier users keep Finnish and skip the language picker.
+      // v9: the cast was renewed (six international characters); retired ids map to the closest one.
       migrate: (persisted, version) => {
         const saved = withLanguageSettings(
           profileWithoutStore(dropHouseholdSize((persisted ?? {}) as Partial<Profile>), version),
           version,
         );
+        const character = migrateCharacter(saved.characterId);
         return {
           ...DEFAULT_PROFILE,
           ...saved,
-          characterId: isCharacterId(saved.characterId) ? saved.characterId : DEFAULT_CHARACTER,
+          characterId: character.id,
+          characterRenewed: character.changed || (saved.characterRenewed ?? false),
           // People who already finished onboarding are not sent back to the picker.
           characterChosen: saved.characterChosen ?? saved.onboardingCompleted ?? false,
           body: { ...DEFAULT_BODY, ...saved.body },

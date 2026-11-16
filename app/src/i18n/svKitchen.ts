@@ -2,6 +2,7 @@ import type { KitchenStrings } from './types';
 
 /** Swedish strings for the quick actions, the pantry, text and voice logging and recipe import. */
 export const svKitchen: KitchenStrings = {
+  castRenewed: 'Figurerna har förnyats! Din kompis är nu {name}. Du kan byta figur i profilen.',
   quick: {
     tabLabel: 'Lägg till',
     a11y: 'Snabbval',

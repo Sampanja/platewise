@@ -2,6 +2,7 @@ import type { KitchenStrings } from './types';
 
 /** English strings for the quick actions, the pantry, text and voice logging and recipe import. */
 export const enKitchen: KitchenStrings = {
+  castRenewed: 'The characters have been renewed! Your companion is now {name}. You can change it in your profile.',
   quick: {
     tabLabel: 'Add',
     a11y: 'Quick actions',
