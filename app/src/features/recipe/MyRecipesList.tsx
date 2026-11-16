@@ -1,15 +1,21 @@
 import { router } from 'expo-router';
-import { memo, useCallback, type ReactElement } from 'react';
+import { memo, useCallback, useMemo, type ReactElement } from 'react';
 import { FlatList, StyleSheet, View, type ListRenderItem } from 'react-native';
 
-import { Button, EmptyState, Icon, PressableScale, Text } from '@/components/ui';
+import { RecipeImage } from '@/components/RecipeImage';
+import { Button, Chip, EmptyState, Icon, PressableScale, Text } from '@/components/ui';
+import { importedAsRecipe } from '@/data/catalog/imported';
+import { useImportedRecipesStore } from '@/data/stores/importedRecipes';
 import { useMyMealsStore } from '@/data/stores/myMeals';
-import type { OwnRecipe } from '@/data/types';
+import type { ImportedRecipe, OwnRecipe } from '@/data/types';
 import { ownRecipePerServing } from '@/domain/diary';
 import { format, formatInteger, strings } from '@/i18n';
+import { sourceHost } from '@/services/recipeImport';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.myRecipes;
+
+type Item = { kind: 'imported'; recipe: ImportedRecipe } | { kind: 'own'; recipe: OwnRecipe };
 
 export type MyRecipesListProps = {
   /** The tab's title and segments, scrolled with the list. */
@@ -17,16 +23,23 @@ export type MyRecipesListProps = {
   bottomSpace: number;
 };
 
-/** Reseptit → Omat: the user's own recipes. Visible only to them. */
+/** Reseptit → Omat: imported recipes and the user's own diary recipes. Visible only to them. */
 export function MyRecipesList({ header, bottomSpace }: MyRecipesListProps) {
-  const recipes = useMyMealsStore((s) => s.recipes);
-  const create = () => router.push('/my-recipe');
-  const renderItem = useCallback<ListRenderItem<OwnRecipe>>(({ item }) => <OwnRecipeRow recipe={item} />, []);
+  const own = useMyMealsStore((s) => s.recipes);
+  const imported = useImportedRecipesStore((s) => s.recipes);
+  const items = useMemo<Item[]>(
+    () => [...imported.map((recipe) => ({ kind: 'imported' as const, recipe })), ...own.map((recipe) => ({ kind: 'own' as const, recipe }))],
+    [imported, own],
+  );
+  const renderItem = useCallback<ListRenderItem<Item>>(
+    ({ item }) => (item.kind === 'imported' ? <ImportedRow recipe={item.recipe} /> : <OwnRecipeRow recipe={item.recipe} />),
+    [],
+  );
 
   return (
     <FlatList
-      data={recipes}
-      keyExtractor={(recipe) => recipe.id}
+      data={items}
+      keyExtractor={(item) => `${item.kind}:${item.recipe.id}`}
       renderItem={renderItem}
       contentContainerStyle={[styles.list, { paddingBottom: bottomSpace }]}
       ListHeaderComponent={
@@ -35,13 +48,42 @@ export function MyRecipesList({ header, bottomSpace }: MyRecipesListProps) {
           <Text variant="body" color="textMuted">
             {t.intro}
           </Text>
-          <Button label={t.create} variant="secondary" icon={<Icon name="chef" size={20} />} onPress={create} />
+          <Button label={strings.recipeImport.fromLink} icon={<Icon name="link" size={20} color="textOnAccent" />} onPress={() => router.push('/import-recipe')} />
+          <Button label={t.create} variant="secondary" icon={<Icon name="chef" size={20} />} onPress={() => router.push('/my-recipe')} />
         </View>
       }
       ListEmptyComponent={<EmptyState icon="chef" mascot="cooking" title={t.emptyTitle} body={t.emptyBody} />}
     />
   );
 }
+
+const ImportedRow = memo(function ImportedRow({ recipe }: { recipe: ImportedRecipe }) {
+  const asRecipe = importedAsRecipe(recipe);
+  const kcal = format(t.perServing, { kcal: formatInteger(asRecipe.perServing.kcal) });
+  const source = recipe.sourceUrl ? sourceHost(recipe.sourceUrl) : strings.recipeImport.manualTitle;
+  return (
+    <PressableScale
+      onPress={() => router.push({ pathname: '/imported/[id]', params: { id: recipe.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${recipe.title}, ${source}, ${kcal}`}
+      style={styles.row}
+    >
+      <RecipeImage recipe={asRecipe} style={styles.thumb} />
+      <View style={styles.texts}>
+        <Text variant="bodyStrong" numberOfLines={2}>
+          {recipe.title}
+        </Text>
+        <View style={styles.meta}>
+          <Chip label={strings.recipeImport.importedChip} tone="accent" />
+          <Text variant="caption" color="textSubtle" numberOfLines={1} style={styles.flex}>
+            {`${source} · ${kcal}`}
+          </Text>
+        </View>
+      </View>
+      <Icon name="chevronRight" size={18} color="textSubtle" />
+    </PressableScale>
+  );
+});
 
 const OwnRecipeRow = memo(function OwnRecipeRow({ recipe }: { recipe: OwnRecipe }) {
   const kcal = formatInteger(ownRecipePerServing(recipe).kcal);
@@ -92,16 +134,29 @@ const styles = themedStyles(() =>
       borderColor: colors.border,
     },
     icon: {
-      width: 44,
-      height: 44,
+      width: 52,
+      height: 52,
       borderRadius: radii.md,
       backgroundColor: colors.accentSoft,
       alignItems: 'center',
       justifyContent: 'center',
     },
+    thumb: {
+      width: 52,
+      height: 52,
+      borderRadius: radii.md,
+    },
     texts: {
       flex: 1,
       gap: 2,
+    },
+    meta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    flex: {
+      flex: 1,
     },
   }),
 );

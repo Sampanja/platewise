@@ -6,6 +6,7 @@ import { useChatStore } from './stores/chat';
 import { useCustomFoodsStore } from './stores/customFoods';
 import { useGameStore } from './stores/game';
 import { useMyMealsStore } from './stores/myMeals';
+import { useImportedRecipesStore } from './stores/importedRecipes';
 import { usePantryStore } from './stores/pantry';
 import { useRemindersStore } from './stores/reminders';
 import { useWaterStore } from './stores/water';
@@ -26,5 +27,6 @@ export async function resetAppData(): Promise<void> {
   useGameStore.getState().reset();
   useChatStore.getState().reset();
   usePantryStore.getState().reset();
+  useImportedRecipesStore.getState().reset();
   await clearDeviceStorage();
 }

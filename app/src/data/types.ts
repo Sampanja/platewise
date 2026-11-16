@@ -455,3 +455,29 @@ export type CookedEntry = {
   /** Pantry ingredients used, in grams (for reports: food used before it expired). */
   usedFromPantry: { ingredientId: string; grams: number }[];
 };
+
+/** One ingredient line of an imported recipe, matched to the ingredient table (or not yet). */
+export type ImportedIngredient = {
+  /** The line as written on the page. */
+  line: string;
+  /** Null until matched; unmatched lines are left out of the nutrition. */
+  ingredientId: string | null;
+  /** Grams for the whole recipe; null when the line had no usable amount. */
+  grams: number | null;
+  /** Match certainty 0–1; under 0.8 the review asks the user to check it. */
+  confidence: number;
+};
+
+/** A recipe imported from a link or typed in (future `user_recipes`). The user's own: never shared. */
+export type ImportedRecipe = {
+  id: string;
+  title: string;
+  /** The page it came from, shown in the recipe; null when typed in. */
+  sourceUrl: string | null;
+  servings: number;
+  totalTimeMin: number | null;
+  activeTimeMin: number | null;
+  ingredients: ImportedIngredient[];
+  steps: string[];
+  createdAt: string;
+};

@@ -177,3 +177,10 @@ describe('keywordAllergens in English and Swedish (translation checks)', () => {
     expect(keywordAllergens(['glutenfritt ströbröd', 'mjölkfria bullar', 'sojafri'], 'sv').size).toBe(0);
   });
 });
+
+describe('Finnish inflected allergen words', () => {
+  it('finds allergens whose stem changes when inflected', () => {
+    const found = keywordAllergens(['Lisää saksanpähkinöitä ja maapähkinöitä', 'kahvi maidolla', 'rukiin jauhoja', 'lohta', 'sinapin kanssa']);
+    expect([...found].sort()).toEqual(['fish', 'gluten', 'milk', 'mustard', 'nuts', 'peanut']);
+  });
+});

@@ -28,17 +28,18 @@ export type KeywordSet = {
 export const ALLERGEN_KEYWORDS: Readonly<Record<Language, KeywordSet>> = {
   fi: {
     keywords: {
-      gluten: ['vehnä', 'ruis', 'ohra', 'spelt', 'seitan', 'korppujauho'],
-      milk: ['maito', 'kerma', 'juusto', 'jogurtti', 'rahka', 'parmesaani', 'feta', 'mozzarella', 'halloumi'],
+      // Inflected stems too: consonant gradation and plurals change the start (rukiin, maidolla, pähkinöitä).
+      gluten: ['vehnä', 'ruis', 'rukii', 'ohra', 'spelt', 'seitan', 'korppujauho'],
+      milk: ['maito', 'maido', 'kerma', 'juusto', 'jogurtti', 'rahka', 'parmesaani', 'feta', 'mozzarella', 'halloumi'],
       egg: ['kananmun', 'muna'],
-      fish: ['kala', 'lohi', 'seiti', 'tonnikala', 'turska', 'silakka', 'muikku', 'anjovis'],
+      fish: ['kala', 'lohi', 'lohta', 'lohen', 'lohes', 'seiti', 'tonnikala', 'turska', 'silakka', 'muikku', 'anjovis'],
       crustaceans: ['katkara', 'rapu', 'hummeri'],
       molluscs: ['simpuk', 'mustekala', 'kalmari', 'osteri'],
-      peanut: ['maapähkinä'],
-      nuts: ['pähkinä', 'manteli', 'cashew', 'hasselpähkinä', 'saksanpähkinä', 'pistaasi', 'pekaani'],
+      peanut: ['maapähkinä', 'maapähkinö'],
+      nuts: ['pähkinä', 'pähkinö', 'manteli', 'cashew', 'hasselpähkinä', 'hasselpähkinö', 'saksanpähkinä', 'saksanpähkinö', 'pistaasi', 'pekaani'],
       soy: ['soija', 'tofu', 'edamame'],
       sesame: ['seesam', 'tahini'],
-      mustard: ['sinappi'],
+      mustard: ['sinappi', 'sinapi'],
       celery: ['selleri'],
       lupin: ['lupiini'],
     },

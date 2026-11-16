@@ -20,6 +20,7 @@ import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from './catalog';
 import { useDiaryStore } from './stores/diary';
 import { useFavoritesStore } from './stores/favorites';
 import { usePlansStore, shoppingStateOf, STANDALONE_LIST, type ShoppingState } from './stores/plans';
+import { useImportedRecipesStore } from './stores/importedRecipes';
 import { usePantryStore } from './stores/pantry';
 import { useProfileStore } from './stores/profile';
 import { useChatStore } from './stores/chat';
@@ -50,6 +51,7 @@ export const PERSISTED = [
   useGameStore,
   useChatStore,
   usePantryStore,
+  useImportedRecipesStore,
 ] as const;
 
 /** True once every persisted store has been read from device storage. */

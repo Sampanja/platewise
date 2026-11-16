@@ -65,7 +65,9 @@ function wordScore(query: string, word: string): number {
     else if (word.length > query.length) best = 0.75;
   }
   // The query inside a compound word ('leipa' in 'ruisleipa'), or a long word inside the query.
-  if (query.length >= 4 && word.includes(query)) best = Math.max(best, 0.7);
+  // Finnish and Swedish compounds put the head last: "ruokakerma" is a kind of "kerma".
+  if (query.length >= 4 && word.length > query.length && word.endsWith(query)) best = Math.max(best, 0.8);
+  else if (query.length >= 4 && word.includes(query)) best = Math.max(best, 0.7);
   else if (word.length >= 5 && query.includes(word)) best = Math.max(best, 0.5);
   const typos = allowedTypos(shorter);
   if (typos > 0 && editDistance(query, word, typos) <= typos) best = Math.max(best, 0.6);
@@ -96,7 +98,9 @@ export function matchScore(query: string, name: string): number {
     if (best === 0) return 0;
     total += best;
   }
-  const coverage = Math.min(1, q.length / n.length);
+  // Numbers in a name ("15 %") are details, not words the query should cover.
+  const nameWords = n.filter((word) => !/^\d+$/.test(word)).length || n.length;
+  const coverage = Math.min(1, q.length / nameWords);
   return Math.min(0.99, (total / q.length) * (0.85 + 0.15 * coverage));
 }
 
