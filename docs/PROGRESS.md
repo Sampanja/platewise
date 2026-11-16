@@ -4,6 +4,18 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 
 ## Käynnissä oleva tehtävä
 
+[Yksiköt, aktiivisuus, makrot ja widget](tasks/2026-11-17-yksikot-aktiivisuus-widget.md), osat 1–5.
+
+| Osa | Tila |
+| --- | --- |
+| 1. Yksiköt | aloittamatta |
+| 2. Aktiivisuus | aloittamatta |
+| 3. Makrot ja ruokavaliotyylit | aloittamatta |
+| 4. Widget | aloittamatta |
+| 5. Dokumentaatio | aloittamatta |
+
+## Edellinen tehtävä (valmis)
+
 [PlatePal-laajennus](tasks/2026-11-16-platepal-laajennus.md), osat 1–11.
 
 | Osa | Tila |
