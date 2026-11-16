@@ -1,5 +1,7 @@
 # Platewise
 
+Lue docs/PROGRESS.md jokaisen keskustelun alussa ja päivitä se ennen jokaista committia (mitä tehtiin, mikä on kesken, seuraava askel).
+
 Maksullinen mobiilisovellus (iOS + Android), **yksilösovellus**: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Kotitalouden kokoa ei ole; syöjien määrä (1–6, oletus 1) valitaan vain Suunnittele-kyselyssä suunnitelmakohtaisesti. Käyttäjä antaa allergiat ja ruokavalion; hinta-alue (maa) tulee puhelimen alueasetuksesta. Kielet ovat suomi, englanti ja ruotsi (ensikäynnistyksen ensimmäinen näkymä on kielen valinta), ja mittayksiköt metriset tai imperiaaliset. Tekoäly generoi päivälliset, joissa on ainesosat, makrot, hinta-arvio ja kuva, sekä niistä yhden ostoslistan. Lisäksi sovelluksessa on reseptikirjasto (aamiaiset, lounaat, päivälliset, välipalat), kalorilaskuri (päiväkirja), johon ruoan voi lisätä kuvasta, nimihaulla tai omalta listalta, sekä henkilökohtainen vesitavoite. Tärkein laatuvaatimus on selkeys ja helppokäyttöisyys.
 
 Alapalkissa on viisi välilehteä: Koti, Reseptit, Suunnittele (keskellä, korostettu), Päiväkirja ja Profiili. Suunnittele on kysely (budjetti → syöjät 1–6 → ateriamäärä 2–7 → allergiat ja ruokavalio → toiveet), jonka tuloksena syntyy ehdotus. Ehdotus hyväksytään erikseen, ja siitä tulee ostoslista. Moottori on yksi, **N päivällistä + budjetti → yksi ostoslista**:
