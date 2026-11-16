@@ -16,6 +16,7 @@ import { useColorScheme, View } from 'react-native';
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { useNotificationRouting, usePantryReminderSync } from '@/features/notifications/useNotificationRouting';
+import { useWidgetSync } from '@/features/widget/useWidgetSync';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
@@ -73,6 +74,7 @@ export default function RootLayout() {
   // formatting read them at render time, and a change remounts the screens.
   const language = useLanguage();
   if (activeLanguage() !== language) setActiveLanguage(language);
+  useWidgetSync(hydrated, language);
   const unitSystem = useUnitSystem();
   if (activeUnitSystem() !== unitSystem) setActiveUnitSystem(unitSystem);
   setFirstWeekday(useDeviceLocale().firstWeekday, priceRegion);

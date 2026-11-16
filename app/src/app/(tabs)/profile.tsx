@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/react/shallow';
@@ -16,6 +16,7 @@ import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
+import { WidgetGuideSheet } from '@/features/widget/WidgetGuideSheet';
 import { format, formatMoney, formatInteger, LANGUAGE_NAMES, strings } from '@/i18n';
 import { formatBodyWeight, formatWater } from '@/lib/amounts';
 import { today } from '@/lib/dates';
@@ -59,6 +60,7 @@ function ProfileScreen() {
   const reminders = useRemindersStore(useShallow((s) => ({ enabled: s.enabled, times: s.times })));
   const reminderCount = Object.values(reminders.times).filter((r) => r.on).length;
 
+  const [widgetGuide, setWidgetGuide] = useState(false);
   const listOr = (items: string[]) => (items.length > 0 ? items.join(', ') : t.noneSelected);
 
   const confirmReset = () =>
@@ -199,6 +201,7 @@ function ProfileScreen() {
           <Row icon="sun" label={strings.characters.modeTitle} value={strings.themes[profile.themePreference]} href={edit('theme')} />
           <Row icon="language" label={strings.language.profileRow} value={LANGUAGE_NAMES[language]} href={edit('language')} />
           <Row icon="ruler" label={strings.unitSystems.profileRow} value={strings.unitSystems[unitSystem]} href={edit('units')} />
+          <Row icon="phone" label={strings.widget.guideTitle} value={strings.widget.guideHint} onPress={() => setWidgetGuide(true)} />
           <Row icon="crown" label={t.subscription} value={t.subscriptionValue} href="/paywall" />
           <Row icon="shield" label={t.privacy} href={{ pathname: '/legal/[doc]', params: { doc: 'privacy' } }} />
           <Row icon="file" label={t.terms} href={{ pathname: '/legal/[doc]', params: { doc: 'terms' } }} />
@@ -222,6 +225,7 @@ function ProfileScreen() {
           {format(t.version, { version })}
         </Text>
       </ScrollView>
+      <WidgetGuideSheet visible={widgetGuide} onClose={() => setWidgetGuide(false)} />
     </SafeAreaView>
   );
 }

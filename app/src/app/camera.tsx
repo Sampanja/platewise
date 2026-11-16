@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sheet } from '@/components/Sheet';
 import { Button, haptics, Icon, PressableScale, Text, TextField, useReducedMotion } from '@/components/ui';
 import type { DiaryMeal } from '@/data/types';
+import { mealForHour } from '@/domain/diary';
 import { isValidBarcode } from '@/domain/openFoodFacts';
 import { foodRecognition } from '@/services/foodRecognition';
 import { strings } from '@/i18n';
@@ -40,7 +41,8 @@ export default function CameraScreen() {
   const [manualCode, setManualCode] = useState('');
   const scanned = useRef(false);
   const camera = useRef<CameraView>(null);
-  const context = { meal: params.meal ?? 'snack', date: params.date ?? '' };
+  // Opened from the widget without a meal: the meal of the time of day.
+  const context = { meal: params.meal ?? mealForHour(new Date().getHours()), date: params.date ?? '' };
 
   const openProduct = (code: string) => {
     if (forPantry) {

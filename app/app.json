@@ -68,6 +68,25 @@
             "com.google.android.as"
           ]
         }
+      ],
+      "expo-sharing",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Today",
+              "label": "PlatePal",
+              "description": "Päivän kalorit ja makrot sekä pikakirjaus kuvalla tai puheella",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "scheme": "platepal",

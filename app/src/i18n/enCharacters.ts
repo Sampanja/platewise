@@ -49,6 +49,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'If you fancy a change, {recipe} has the same spirit and scores {grade}.',
       tip: 'A little tip with love: {tip}',
     },
+    report: {
+      opening: 'Let’s look at the period together:',
+      suggest: 'A small thought for what’s next: {tip}',
+      empty: 'This period is still empty. Let’s start gently, even with one meal.',
+    },
     chat: {
       intro: 'Hello, I’m Nuppu! Ask me about food, recipe ideas or your entries. I’m not a doctor, but I’m happy to help with everyday food questions.',
       thinking: 'Nuppu is thinking…',
@@ -102,6 +107,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'No rush. {recipe} is a similar dish, score {grade}.',
       tip: 'A thought, not a rule: {tip}',
+    },
+    report: {
+      opening: 'Let’s take a breath and look back:',
+      suggest: 'A calm suggestion: {tip}',
+      empty: 'Nothing logged yet. No worries, start whenever it suits you.',
     },
     chat: {
       intro: 'Hello, I’m Avo. Ask me about food, recipes or your entries. I’m not a doctor, but I’m glad to think through everyday food questions with you.',
@@ -157,6 +167,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Try this one too: {recipe}, score {grade}. Delicious!',
       tip: 'Kitchen tip: {tip}',
     },
+    report: {
+      opening: 'Bravo, here are the flavours of your period:',
+      suggest: 'The kitchen recommends: {tip}',
+      empty: 'The plate is still empty! Let’s log the first treat.',
+    },
     chat: {
       intro: 'Hello, Tomo here! Ask me about recipes, food or your entries. I’m not a doctor, but in the kitchen I’m a passionate helper!',
       thinking: 'Tomo is stirring up some thoughts…',
@@ -210,6 +225,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Alternative ready: {recipe}, score {grade}!',
       tip: 'Cheer-up tip: {tip}',
+    },
+    report: {
+      opening: 'Let’s go through it, here’s your period!',
+      suggest: 'Next goal: {tip}',
+      empty: 'An empty period – let’s kick off with the first entry!',
     },
     chat: {
       intro: 'Hey, Karo here! Ask about food, recipes or your entries. I’m not a doctor, but with everyday food stuff I’ve got your back!',
@@ -265,6 +285,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Fresh idea: {recipe}, score {grade}!',
       tip: 'A freshly squeezed tip: {tip}',
     },
+    report: {
+      opening: 'A freshly squeezed summary:',
+      suggest: 'A zesty idea: {tip}',
+      empty: 'It’s as empty as a lemon peel here. Let’s log something!',
+    },
     chat: {
       intro: 'Hi, I’m Lemo! Ask about food, recipes or your entries. I’m not a doctor, but I’ve got plenty of fresh food ideas!',
       thinking: 'Lemo is squeezing out an answer…',
@@ -318,6 +343,11 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Did you know? {recipe} is similar and scores {grade}.',
       tip: 'A little fact: {tip}',
+    },
+    report: {
+      opening: 'Let’s find out what the period tells us:',
+      suggest: 'An observation to try: {tip}',
+      empty: 'No data to explore yet. The first entry starts the story.',
     },
     chat: {
       intro: 'Hello, I’m Blu! Ask about food, nutrients or your entries. I’m not a doctor, but I’m glad to share what I know.',

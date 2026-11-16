@@ -1,317 +1,361 @@
-import { useMemo, useState } from 'react';
+import * as Sharing from 'expo-sharing';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import { useShallow } from 'zustand/react/shallow';
 
-import { Card, EmptyState, FadeInView, PressableScale, ProgressMeter, Text } from '@/components/ui';
+import { QualityBadge } from '@/components/QualityBadge';
+import { Button, Card, EmptyState, haptics, Icon, IconButton, ProgressMeter, Segmented, SwitchRow, Text } from '@/components/ui';
+import { useNutrientReference, useWaterGoal } from '@/data/hooks';
 import { useDiaryStore } from '@/data/stores/diary';
+import { usePantryStore } from '@/data/stores/pantry';
+import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
-import { useWaterGoal } from '@/data/hooks';
+import { useRemindersStore } from '@/data/stores/reminders';
 import { useWaterStore } from '@/data/stores/water';
-import { DIARY_MEALS } from '@/domain/diary';
-import { dayReport, REFERENCE, weekReport } from '@/domain/report';
+import { useWeightStore } from '@/data/stores/weight';
+import { periodFor, periodReport, type PeriodKind } from '@/domain/periodReport';
+import { QUALITY_GRADES } from '@/domain/qualityScore';
 import { BarChart } from '@/features/diary/BarChart';
-import { format, formatDecimal, formatInteger, strings } from '@/i18n';
-import { formatWater } from '@/lib/amounts';
-import { diaryDayLabel, weekdayShort, type LocalDate } from '@/lib/dates';
-import { colors, radii, spacing, themedStyles, type ColorToken } from '@/theme';
+import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { useCharacter } from '@/features/mascot/useCharacter';
+import { NutrientList } from '@/features/nutrients/NutrientList';
+import { dayQuality } from '@/features/quality/entryQuality';
+import { WeightChart } from '@/features/weight/WeightChart';
+import { format, formatInteger, formatMoney, strings } from '@/i18n';
+import { activeFirstWeekday } from '@/i18n/locale';
+import { formatWater, formatWeightChange } from '@/lib/amounts';
+import { dayMonth, today, weekdayShort, type LocalDate } from '@/lib/dates';
+import { showToast } from '@/lib/toast';
+import { insights, ruleInsights, type ReportInsights } from '@/services/insights';
+import { scheduleWeeklyReport } from '@/services/reminders';
+import { colors, radii, spacing, themedStyles } from '@/theme';
 
-const t = strings.report;
-type View_ = 'day' | 'week';
+const t = strings.reports;
+const KINDS: readonly PeriodKind[] = ['week', 'month'];
+/** How far back the period arrows go. */
+const MAX_BACK = { week: 52, month: 24 } as const;
 
 export type ReportsViewProps = {
-  /** The day the diary shows; the week ends on it. */
-  date: LocalDate;
   bottomSpace: number;
 };
 
-/** Päiväkirja → Raportit: day and week reports. Describes what was logged; never judges it. */
-export function ReportsView({ date, bottomSpace }: ReportsViewProps) {
-  const [view, setView] = useState<View_>('day');
+/**
+ * Päiväkirja → Raportit: a week or a month, browsed backwards. Averages,
+ * charts and the character's summary describe habits; nothing is judged.
+ * The report can be shared as an image.
+ */
+export function ReportsView({ bottomSpace }: ReportsViewProps) {
+  const [kind, setKind] = useState<PeriodKind>('week');
+  const [offset, setOffset] = useState(0);
+  const now = today();
   const entries = useDiaryStore((s) => s.entries);
-  const goals = useProfileStore((s) => s.goals);
-  const hasGoal = useProfileStore((s) => s.hasCalorieGoal);
-  const hideCalories = useProfileStore((s) => s.hideCalories);
-  const water = useWaterStore((s) => s.byDate);
-  const waterGoal = useWaterGoal(date).totalMl;
+  const profile = useProfileStore(useShallow((s) => ({ goals: s.goals, hasGoal: s.hasCalorieGoal, hideCalories: s.hideCalories, weightGoal: s.weightGoal })));
+  const waterByDate = useWaterStore((s) => s.byDate);
+  const waterGoalMl = useWaterGoal(now).totalMl;
+  const weights = useWeightStore((s) => s.entries);
+  const cooked = usePantryStore((s) => s.cooked);
+  const plans = usePlansStore((s) => s.plans);
+  const weeklyReport = useRemindersStore((s) => s.weeklyReport);
+  const setWeeklyReport = useRemindersStore((s) => s.setWeeklyReport);
+  const reference = useNutrientReference();
+  const { voice } = useCharacter();
+  const captureTarget = useRef<ComponentRef<typeof View>>(null);
+  const [sharing, setSharing] = useState(false);
 
-  const day = useMemo(() => dayReport(entries, date), [entries, date]);
-  const week = useMemo(() => weekReport(entries, date, hasGoal ? goals : null, water), [entries, date, hasGoal, goals, water]);
-  const weekday = (d: LocalDate) => weekdayShort(d);
+  const period = useMemo(() => periodFor(kind, offset, now, activeFirstWeekday()), [kind, offset, now]);
+  const report = useMemo(
+    () =>
+      periodReport({
+        period,
+        now,
+        entries,
+        goals: profile.hasGoal ? profile.goals : null,
+        waterByDate,
+        waterGoalMl,
+        weights,
+        cooked,
+        plans,
+        gradeOf: (dayEntries) => dayQuality(dayEntries)?.grade ?? null,
+      }),
+    [period, now, entries, profile.hasGoal, profile.goals, waterByDate, waterGoalMl, weights, cooked, plans],
+  );
+
+  // The summary comes from the insights service (rules now, the model later); the rules show at once.
+  const rulesSummary = useMemo(() => ruleInsights(report, voice, reference), [report, voice, reference]);
+  const [live, setLive] = useState<{ report: typeof report; value: ReportInsights } | null>(null);
+  const summary = live?.report === report ? live.value : rulesSummary;
+  useEffect(() => {
+    let cancelled = false;
+    void insights.summarize(report, voice, reference).then((value) => {
+      if (!cancelled) setLive({ report, value });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [report, voice, reference]);
+
+  const title =
+    offset === 0
+      ? kind === 'week'
+        ? t.thisWeek
+        : t.thisMonth
+      : format(t.range, { start: dayMonth(period.start), end: dayMonth(period.end) });
+
+  const share = async () => {
+    if (!captureTarget.current || sharing) return;
+    setSharing(true);
+    try {
+      // The view-shot types predate React Native's element refs; the ref is a host view.
+      const uri = await captureRef(captureTarget as unknown as Parameters<typeof captureRef>[0], { format: 'png', quality: 0.95, result: 'tmpfile' });
+      if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing unavailable');
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t.share });
+    } catch {
+      showToast(t.shareError);
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const toggleWeekly = (on: boolean) => {
+    setWeeklyReport(on);
+    void scheduleWeeklyReport(on).then((ok) => {
+      if (on && !ok) setWeeklyReport(false);
+    });
+  };
+
+  const barLabel = (date: LocalDate, index: number) =>
+    kind === 'week' ? weekdayShort(date) : index % 7 === 0 ? String(Number(date.slice(8))) : '';
+  const hasWeight = report.weight.points.length >= 2;
 
   return (
-    <View style={styles.safe}>
-      <View style={styles.tabs} accessibilityRole="tablist">
-        {(['day', 'week'] as const).map((value) => {
-          const selected = view === value;
-          return (
-            <PressableScale
-              key={value}
-              haptic="select"
-              onPress={() => setView(value)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              style={[styles.tab, selected && styles.tabSelected]}
-            >
-              <Text variant="bodyStrong" color={selected ? 'textOnAccent' : 'textMuted'}>
-                {value === 'day' ? t.day : t.week}
-              </Text>
-            </PressableScale>
-          );
-        })}
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
+      <Segmented
+        value={kind}
+        options={KINDS.map((value) => ({ value, label: t[value] }))}
+        onChange={(value) => {
+          setKind(value);
+          setOffset(0);
+        }}
+        accessibilityLabel={t.kindA11y}
+      />
+      <View style={styles.nav}>
+        <IconButton
+          icon="chevronLeft"
+          accessibilityLabel={t.prev}
+          disabled={offset >= MAX_BACK[kind]}
+          onPress={() => setOffset((value) => value + 1)}
+        />
+        <Text variant="title" accessibilityRole="header" accessibilityLiveRegion="polite" style={styles.navTitle}>
+          {title}
+        </Text>
+        <IconButton icon="chevronRight" accessibilityLabel={t.next} disabled={offset === 0} onPress={() => setOffset((value) => value - 1)} />
       </View>
 
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
-        {view === 'day' ? (
-          <FadeInView key="day" style={styles.gap}>
-            <Text variant="title" accessibilityRole="header">
-              {diaryDayLabel(date)}
+      <View ref={captureTarget} collapsable={false} style={styles.capture}>
+        <Card style={styles.gap}>
+          <Text variant="overline" color="accentText">
+            {t.summaryTitle}
+          </Text>
+          <MascotSays state={report.loggedDays > 0 ? 'happy' : 'encouraging'} message={summary.opening} size={56} />
+          {summary.observations.map((line) => (
+            <View key={line} style={styles.bullet}>
+              <Icon name="check" size={16} color="success" />
+              <Text variant="body" style={styles.flex}>
+                {line}
+              </Text>
+            </View>
+          ))}
+          <View style={styles.suggestion}>
+            <Text variant="label" color="accentText">
+              {t.suggestionTitle}
             </Text>
-            {day.entryCount === 0 ? (
-              <EmptyState icon="chart" mascot="encouraging" voice="diary" title={t.emptyDayTitle} body={t.emptyDayBody} />
-            ) : (
-              <>
-                {hideCalories ? null : (
-                  <Card style={styles.gap}>
-                    <Text variant="heading">{t.byMeal}</Text>
-                    {DIARY_MEALS.map((meal) => (
-                      <View key={meal} style={styles.mealRow}>
-                        <View style={styles.rowBetween}>
-                          <Text variant="label" color="textMuted">
-                            {strings.diaryMeals[meal]}
-                          </Text>
-                          <Text variant="label">{format(strings.common.kcal, { value: formatInteger(day.byMeal[meal]) })}</Text>
-                        </View>
-                        <ProgressMeter
-                          value={day.totals.kcal > 0 ? day.byMeal[meal] / day.totals.kcal : 0}
-                          size="thin"
-                          accessibilityLabel={`${strings.diaryMeals[meal]} ${formatInteger(day.byMeal[meal])} kcal`}
-                        />
-                      </View>
-                    ))}
-                  </Card>
-                )}
+            <Text variant="body">{summary.suggestion}</Text>
+          </View>
+        </Card>
 
-                {hideCalories ? null : (
-                  <Card style={styles.gap}>
-                    <Text variant="heading">{t.split}</Text>
-                    <View
-                      style={styles.split}
-                      accessible
-                      accessibilityLabel={format(t.splitA11y, {
-                        protein: day.split.proteinPct,
-                        carbs: day.split.carbsPct,
-                        fat: day.split.fatPct,
-                      })}
-                    >
-                      <View style={[styles.segment, { flex: day.split.proteinPct, backgroundColor: colors.herb }]} />
-                      <View style={[styles.segment, { flex: day.split.carbsPct, backgroundColor: colors.accent }]} />
-                      <View style={[styles.segment, { flex: day.split.fatPct, backgroundColor: colors.berry }]} />
-                    </View>
-                    <View style={styles.legend}>
-                      <Legend color="herb" label={`${strings.macros.protein} ${day.split.proteinPct} %`} />
-                      <Legend color="accent" label={`${strings.macros.carbs} ${day.split.carbsPct} %`} />
-                      <Legend color="berry" label={`${strings.macros.fat} ${day.split.fatPct} %`} />
-                    </View>
-                  </Card>
-                )}
+        {report.loggedDays === 0 && report.cooked.count === 0 && report.water.daysWithWater === 0 ? (
+          <EmptyState icon="chart" mascot="sleepy" title={t.emptyTitle} body={t.emptyBody} />
+        ) : (
+          <>
+            <View style={styles.tiles}>
+              <Tile label={t.loggedDays} value={format(t.loggedValue, { count: report.loggedDays, days: report.elapsedDays })} />
+              <Tile label={t.streak} value={format(t.daysValue, { count: report.longestStreak })} />
+              <Tile label={t.water} value={report.water.daysWithWater > 0 ? formatWater(report.water.avgMl) : '–'} />
+              <Tile label={t.waterGoalDays} value={format(t.daysValue, { count: report.water.goalDays })} />
+              <Tile label={t.cooked} value={formatInteger(report.cooked.count)} />
+              <Tile label={t.pantryUsed} value={format(t.pantryUsedValue, { count: report.pantry.itemsUsed })} />
+              {report.savingsCents > 0 ? <Tile label={t.savings} value={formatMoney(report.savingsCents)} /> : null}
+            </View>
 
-                <Card style={styles.gap}>
-                  <Text variant="heading">{t.micros}</Text>
-                  <MicroRow label={strings.micros.fiber} value={day.totals.fiberG} hint={strings.micros.fiberRef} goal={REFERENCE.fiberMinG} />
-                  <MicroRow label={strings.micros.sugar} value={day.totals.sugarG} />
-                  <MicroRow label={strings.micros.salt} value={day.totals.saltG} hint={strings.micros.saltRef} goal={REFERENCE.saltMaxG} />
-                  {day.entriesWithoutMicros > 0 ? (
-                    <Text variant="caption" color="textSubtle">
-                      {strings.micros.partial}
-                    </Text>
-                  ) : null}
-                </Card>
-              </>
+            {profile.hideCalories || report.loggedDays === 0 ? null : (
+              <Card style={styles.gap}>
+                <Text variant="heading">{t.energyTitle}</Text>
+                <Text variant="caption" color="textSubtle">
+                  {format(t.energyAvg, { value: formatInteger(report.avg.kcal) })}
+                </Text>
+                <BarChart
+                  bars={report.days.map((day, index) => ({
+                    key: day.date,
+                    label: barLabel(day.date, index),
+                    value: day.kcal,
+                    muted: !day.logged,
+                    a11y: `${dayMonth(day.date)} ${formatInteger(day.kcal)} kcal`,
+                  }))}
+                  reference={report.goals?.kcal ?? null}
+                  format={(value) => formatInteger(value)}
+                />
+              </Card>
+            )}
+
+            {profile.hideCalories || report.loggedDays === 0 ? null : (
+              <Card style={styles.gap}>
+                <Text variant="heading">{t.macrosTitle}</Text>
+                <MacroRow label={strings.macros.protein} value={report.avg.proteinG} goal={report.goals?.proteinG} />
+                <MacroRow label={strings.macros.carbsLong} value={report.avg.carbsG} goal={report.goals?.carbsG} />
+                <MacroRow label={strings.macros.fat} value={report.avg.fatG} goal={report.goals?.fatG} />
+              </Card>
+            )}
+
+            {profile.hideCalories ? null : (
+              <Card style={styles.gap}>
+                <Text variant="heading">{t.weightTitle}</Text>
+                {hasWeight ? (
+                  <>
+                    <WeightChart entries={report.weight.points} targetKg={profile.weightGoal.targetWeightKg} />
+                    {report.weight.changeKg !== null ? (
+                      <Text variant="caption" color="textSubtle">
+                        {format(t.weightChange, { value: formatWeightChange(report.weight.changeKg) })}
+                      </Text>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text variant="body" color="textMuted">
+                    {t.weightNone}
+                  </Text>
+                )}
+              </Card>
             )}
 
             <Card style={styles.gap}>
-              <Text variant="heading">{t.water}</Text>
-              <View style={styles.rowBetween}>
-                <Text variant="body" color="textMuted">
-                  {format(strings.water.amount, {
-                    value: formatWater(water[date] ?? 0),
-                    goal: formatWater(waterGoal),
+              <Text variant="heading">{t.qualityTitle}</Text>
+              {QUALITY_GRADES.some((g) => report.grades[g] > 0) ? (
+                <View style={styles.grades}>
+                  {QUALITY_GRADES.map((grade) => {
+                    const count = report.grades[grade];
+                    return (
+                      <View key={grade} style={styles.grade} accessible accessibilityLabel={format(t.qualityA11y, { grade, count })}>
+                        <QualityBadge grade={grade} />
+                        <ProgressMeter value={report.loggedDays > 0 ? count / report.loggedDays : 0} size="thin" accessibilityLabel={grade} />
+                        <Text variant="label" color="textMuted">
+                          {formatInteger(count)}
+                        </Text>
+                      </View>
+                    );
                   })}
-                </Text>
-              </View>
-              <ProgressMeter value={(water[date] ?? 0) / waterGoal} size="thin" tone="success" accessibilityLabel={t.water} />
-            </Card>
-          </FadeInView>
-        ) : (
-          <FadeInView key="week" style={styles.gap}>
-            {week.loggedDays === 0 ? (
-              <EmptyState icon="chart" mascot="encouraging" title={t.emptyWeekTitle} body={t.emptyWeekBody} />
-            ) : (
-              <>
-                <View style={styles.tiles}>
-                  {hideCalories ? null : (
-                    <Tile label={t.avgKcal} value={formatInteger(week.avgKcal)} unit={t.avgKcalUnit} />
-                  )}
-                  <Tile label={t.loggedDays} value={format(t.loggedDaysValue, { count: week.loggedDays })} />
-                  {hasGoal && !hideCalories ? (
-                    <Tile label={t.proteinDays} value={format(t.proteinDaysValue, { count: week.proteinGoalDays })} />
-                  ) : null}
-                  {hasGoal && !hideCalories ? (
-                    <Tile label={t.onTarget} value={format(t.onTargetValue, { count: week.onTargetDays })} />
-                  ) : null}
-                  <Tile label={t.avgWater} value={formatWater(week.avgWaterMl)} />
                 </View>
-                {hideCalories ? null : (
-                  <Card style={styles.gap}>
-                    <Text variant="heading">{t.weekKcal}</Text>
-                    <BarChart
-                      bars={week.days.map((d) => ({
-                        key: d.date,
-                        label: weekday(d.date),
-                        value: d.kcal,
-                        muted: !d.logged,
-                        a11y: `${weekday(d.date)} ${formatInteger(d.kcal)} kcal`,
-                      }))}
-                      reference={hasGoal ? goals.kcal : null}
-                      format={(v) => formatInteger(v)}
-                    />
-                  </Card>
-                )}
-                {hideCalories ? null : (
-                  <Card style={styles.gap}>
-                    <Text variant="heading">{t.weekProtein}</Text>
-                    <BarChart
-                      tone="herb"
-                      bars={week.days.map((d) => ({
-                        key: d.date,
-                        label: weekday(d.date),
-                        value: d.proteinG,
-                        a11y: `${weekday(d.date)} ${formatInteger(d.proteinG)} g`,
-                      }))}
-                      reference={hasGoal ? goals.proteinG : null}
-                      format={(v) => `${formatInteger(v)}`}
-                    />
-                  </Card>
-                )}
-              </>
-            )}
-          </FadeInView>
+              ) : (
+                <Text variant="body" color="textMuted">
+                  {t.qualityNone}
+                </Text>
+              )}
+            </Card>
+
+            {report.loggedDays > 0 ? (
+              <Card style={styles.gap}>
+                <Text variant="heading">{t.nutrientsTitle}</Text>
+                <NutrientList values={report.nutrients} reference={reference} />
+              </Card>
+            ) : null}
+
+            <Text variant="caption" color="textSubtle">
+              {t.neutral}
+            </Text>
+          </>
         )}
-        <Text variant="caption" color="textSubtle">
-          {t.neutral}
-        </Text>
-      </ScrollView>
-    </View>
-  );
-}
-
-function Legend({ color, label }: { color: ColorToken; label: string }) {
-  return (
-    <View style={styles.legendItem}>
-      <View style={[styles.dot, { backgroundColor: colors[color] }]} />
-      <Text variant="caption" color="textMuted">
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function MicroRow({ label, value, hint, goal }: { label: string; value: number | undefined; hint?: string; goal?: number }) {
-  const text = value === undefined ? strings.nutrients.unknown : `${formatDecimal(value)} g`;
-  return (
-    <View style={styles.mealRow}>
-      <View style={styles.rowBetween}>
-        <Text variant="label" color="textMuted">
-          {hint ? `${label} (${hint})` : label}
-        </Text>
-        <Text variant="label">{text}</Text>
       </View>
-      {goal !== undefined && value !== undefined ? (
-        <ProgressMeter value={value / goal} size="thin" accessibilityLabel={`${label} ${text}`} />
-      ) : null}
-    </View>
+
+      <Button
+        label={t.share}
+        variant="secondary"
+        disabled={sharing}
+        icon={<Icon name="share" size={20} />}
+        onPress={() => {
+          haptics.tap();
+          void share();
+        }}
+      />
+      <SwitchRow label={t.notify} hint={t.notifyHint} value={weeklyReport} onValueChange={toggleWeekly} />
+    </ScrollView>
   );
 }
 
-function Tile({ label, value, unit }: { label: string; value: string; unit?: string }) {
+function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.tile} accessible accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ''}`}>
+    <View style={styles.tile} accessible accessibilityLabel={`${label}: ${value}`}>
       <Text variant="caption" color="textSubtle">
         {label}
       </Text>
-      <Text variant="title">{value}</Text>
-      {unit ? (
-        <Text variant="caption" color="textSubtle">
-          {unit}
+      <Text variant="title" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function MacroRow({ label, value, goal }: { label: string; value: number; goal: number | undefined }) {
+  const text = goal
+    ? format(t.macroGoal, { value: formatInteger(value), goal: formatInteger(goal) })
+    : format(t.macroValue, { value: formatInteger(value) });
+  return (
+    <View style={styles.macro}>
+      <View style={styles.macroTop}>
+        <Text variant="label" color="textMuted" style={styles.flex}>
+          {label}
         </Text>
-      ) : null}
+        <Text variant="label">{text}</Text>
+      </View>
+      {goal ? <ProgressMeter value={value / goal} size="thin" accessibilityLabel={`${label} ${text}`} /> : null}
     </View>
   );
 }
 
 const styles = themedStyles(() =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-    },
-    tabs: {
-      flexDirection: 'row',
-      marginHorizontal: spacing.lg,
-      marginTop: spacing.md,
-      padding: spacing.xs,
-      gap: spacing.xs,
-      borderRadius: radii.pill,
-      backgroundColor: colors.surface,
-    },
-    tab: {
-      flex: 1,
-      minHeight: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: radii.pill,
-    },
-    tabSelected: {
-      backgroundColor: colors.accent,
-    },
     content: {
-      padding: spacing.lg,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.md,
       gap: spacing.lg,
+    },
+    nav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    navTitle: {
+      flex: 1,
+      textAlign: 'center',
+    },
+    capture: {
+      gap: spacing.lg,
+      backgroundColor: colors.bg,
     },
     gap: {
       gap: spacing.md,
     },
-    rowBetween: {
+    flex: {
+      flex: 1,
+    },
+    bullet: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      alignItems: 'flex-start',
       gap: spacing.sm,
-      flexWrap: 'wrap',
     },
-    mealRow: {
+    suggestion: {
       gap: spacing.xs,
-    },
-    split: {
-      flexDirection: 'row',
-      height: 16,
-      borderRadius: radii.pill,
-      overflow: 'hidden',
-      gap: 2,
-    },
-    segment: {
-      height: '100%',
-    },
-    legend: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: spacing.md,
-    },
-    legendItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    dot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
+      padding: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.accentSoft,
     },
     tiles: {
       flexDirection: 'row',
@@ -325,6 +369,22 @@ const styles = themedStyles(() =>
       padding: spacing.lg,
       borderRadius: radii.lg,
       backgroundColor: colors.surface,
+    },
+    macro: {
+      gap: spacing.xs,
+    },
+    macroTop: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    grades: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    grade: {
+      flex: 1,
+      alignItems: 'center',
+      gap: spacing.xs,
     },
   }),
 );

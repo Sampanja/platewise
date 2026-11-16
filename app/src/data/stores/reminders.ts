@@ -17,6 +17,9 @@ export const DEFAULT_REMINDERS: Record<DiaryMeal, ReminderTime> = {
 type RemindersState = {
   enabled: boolean;
   times: Record<DiaryMeal, ReminderTime>;
+  /** "Viikkoraportti valmis" on Monday mornings. Off by default. */
+  weeklyReport: boolean;
+  setWeeklyReport: (on: boolean) => void;
   setEnabled: (enabled: boolean) => void;
   setTime: (meal: DiaryMeal, patch: Partial<ReminderTime>) => void;
   reset: () => void;
@@ -27,9 +30,11 @@ export const useRemindersStore = create<RemindersState>()(
     (set) => ({
       enabled: false,
       times: { ...DEFAULT_REMINDERS },
+      weeklyReport: false,
+      setWeeklyReport: (weeklyReport) => set({ weeklyReport }),
       setEnabled: (enabled) => set({ enabled }),
       setTime: (meal, patch) => set((state) => ({ times: { ...state.times, [meal]: { ...state.times[meal], ...patch } } })),
-      reset: () => set({ enabled: false, times: { ...DEFAULT_REMINDERS } }),
+      reset: () => set({ enabled: false, times: { ...DEFAULT_REMINDERS }, weeklyReport: false }),
     }),
     { name: `${STORAGE_PREFIX}reminders`, storage: deviceStorage, version: 1 },
   ),

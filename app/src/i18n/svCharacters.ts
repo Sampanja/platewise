@@ -49,6 +49,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Om du vill ha omväxling har {recipe} samma känsla och får betyget {grade}.',
       tip: 'Ett litet tips med värme: {tip}',
     },
+    report: {
+      opening: 'Vi tittar på perioden tillsammans:',
+      suggest: 'En liten tanke framåt: {tip}',
+      empty: 'Perioden är fortfarande tom. Vi börjar lugnt, gärna med en måltid.',
+    },
     chat: {
       intro: 'Hej, jag är Nuppu! Fråga om mat, recepttips eller dina anteckningar. Jag är inte läkare, men jag hjälper gärna till med vardagens matfrågor.',
       thinking: 'Nuppu funderar…',
@@ -102,6 +107,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Ingen brådska. {recipe} är en liknande rätt, betyg {grade}.',
       tip: 'En tanke, inget krav: {tip}',
+    },
+    report: {
+      opening: 'Vi andas och ser tillbaka:',
+      suggest: 'Ett lugnt förslag: {tip}',
+      empty: 'Inget loggat än. Ingen fara, börja när det passar.',
     },
     chat: {
       intro: 'Hej, jag är Avo. Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men jag funderar gärna på vardagens matfrågor tillsammans med dig.',
@@ -157,6 +167,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Prova också den här: {recipe}, betyg {grade}. Läckert!',
       tip: 'Kökstips: {tip}',
     },
+    report: {
+      opening: 'Bravo, här är smakerna från din period:',
+      suggest: 'Köket rekommenderar: {tip}',
+      empty: 'Tallriken är fortfarande tom! Vi loggar den första godbiten.',
+    },
     chat: {
       intro: 'Hej, Tomo här! Fråga om recept, mat eller dina anteckningar. Jag är inte läkare, men i köket är jag en passionerad hjälpreda!',
       thinking: 'Tomo rör om i tankarna…',
@@ -210,6 +225,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Ett alternativ redo: {recipe}, betyg {grade}!',
       tip: 'Pepptips: {tip}',
+    },
+    report: {
+      opening: 'Nu kör vi igenom din period!',
+      suggest: 'Nästa mål: {tip}',
+      empty: 'En tom period – vi drar igång med första anteckningen!',
     },
     chat: {
       intro: 'Tjena, Karo här! Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men med vardagsmaten hjälper jag dig fullt ut!',
@@ -265,6 +285,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Fräsch idé: {recipe}, betyg {grade}!',
       tip: 'Ett nypressat tips: {tip}',
     },
+    report: {
+      opening: 'En nypressad sammanfattning:',
+      suggest: 'En fräsch idé: {tip}',
+      empty: 'Här är det tomt som ett citronskal. Vi loggar något!',
+    },
     chat: {
       intro: 'Hej, jag är Lemo! Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men fräscha matidéer har jag gott om!',
       thinking: 'Lemo pressar fram ett svar…',
@@ -318,6 +343,11 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Visste du? {recipe} är liknande och får betyget {grade}.',
       tip: 'Ett litet faktum: {tip}',
+    },
+    report: {
+      opening: 'Vi tar reda på vad perioden berättar:',
+      suggest: 'En iakttagelse att prova: {tip}',
+      empty: 'Inga data att utforska än. Första anteckningen startar berättelsen.',
     },
     chat: {
       intro: 'Hej, jag är Blu! Fråga om mat, näringsämnen eller dina anteckningar. Jag är inte läkare, men jag berättar gärna vad jag vet.',

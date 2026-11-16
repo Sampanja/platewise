@@ -122,4 +122,25 @@ export function rescheduleReminders(): void {
   const water = useWaterStore.getState().reminders;
   if (water.on) void scheduleWaterReminders(water);
   void syncExpiryReminders();
+  if (meals.weeklyReport) void scheduleWeeklyReport(true);
+}
+
+const REPORT_TAG = 'platepal-report';
+/** Expo weekly triggers count weekdays from Sunday = 1, so Monday is 2. */
+const MONDAY = 2;
+
+/** "Viikkoraportti valmis" on Monday mornings at 9, opening Päiväkirja → Raportit. Replaces any earlier one. */
+export async function scheduleWeeklyReport(on: boolean): Promise<boolean> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    scheduled.filter((n) => n.content.data?.tag === REPORT_TAG).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
+  if (!on) return false;
+  if (!(await ensurePermission())) return false;
+  const { voice } = currentCharacter();
+  await Notifications.scheduleNotificationAsync({
+    content: { title: voice.name, body: strings.reports.notifyBody, data: { tag: REPORT_TAG, url: '/diary?segment=reports' } },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday: MONDAY, hour: 9, minute: 0, channelId: CHANNEL },
+  });
+  return true;
 }

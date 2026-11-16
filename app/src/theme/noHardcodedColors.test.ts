@@ -17,7 +17,7 @@ const join = (...parts: string[]) => parts.join('/');
  * character artwork, which keeps its own look in every theme.
  */
 const SRC = __dirname.replace(/\\/g, '/').replace(/\/theme$/, '');
-const ALLOWED = new Set(['features/mascot/CharacterSvg.tsx']);
+const ALLOWED = new Set(['features/mascot/CharacterSvg.tsx', 'features/widget/mascotSvgs.generated.ts']);
 const COLOR_LITERAL = /['"`](#[0-9A-Fa-f]{3,8}|rgba?\()/;
 
 function files(dir: string): string[] {

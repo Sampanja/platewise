@@ -59,6 +59,12 @@ export type CharacterVoice = {
     better: string;
     tip: string;
   };
+  /** Viikko- ja kuukausiraportti: opening line, a frame for the suggestion ({tip}) and an empty period. */
+  report: {
+    opening: string;
+    suggest: string;
+    empty: string;
+  };
   chat: {
     intro: string;
     thinking: string;
@@ -115,6 +121,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Jos kaipaat vaihtelua, {recipe} on samaa henkeä ja saa arvion {grade}.',
       tip: 'Pieni vinkki rakkaudella: {tip}',
     },
+    report: {
+      opening: 'Katsotaan yhdessä, miten jakso meni:',
+      suggest: 'Pieni ajatus eteenpäin: {tip}',
+      empty: 'Tämä jakso on vielä tyhjä. Aloitetaan rauhassa, vaikka yhdestä ateriasta.',
+    },
     chat: {
       intro: 'Hei, olen Nuppu! Kysy ruoasta, reseptivinkeistä tai kirjauksistasi. En ole lääkäri, mutta autan mielelläni arjen ruokapulmissa.',
       thinking: 'Nuppu miettii…',
@@ -168,6 +179,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Rauhassa vain. {recipe} on samantyylinen, arvio {grade}.',
       tip: 'Ajatus, ei vaatimus: {tip}',
+    },
+    report: {
+      opening: 'Hengähdetään ja katsotaan jaksoa:',
+      suggest: 'Rauhallinen ehdotus: {tip}',
+      empty: 'Ei kirjauksia vielä. Ei hätää, aloitetaan kun sopii.',
     },
     chat: {
       intro: 'Hei, olen Avo. Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta pohdin kanssasi mielelläni arjen ruokakysymyksiä.',
@@ -223,6 +239,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Kokeilepa myös tätä: {recipe}, arvio {grade}. Herkkua!',
       tip: 'Keittiövinkki: {tip}',
     },
+    report: {
+      opening: 'Bravo, tässä jaksosi maut:',
+      suggest: 'Keittiön suositus: {tip}',
+      empty: 'Lautanen on vielä tyhjä! Kirjataan ensimmäinen herkku.',
+    },
     chat: {
       intro: 'Hei, Tomo täällä! Kysy resepteistä, ruoasta tai kirjauksistasi. En ole lääkäri, mutta keittiöasioissa olen intohimoinen apuri!',
       thinking: 'Tomo hämmentää ajatuksia…',
@@ -276,6 +297,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Vaihtoehto valmiina: {recipe}, arvio {grade}!',
       tip: 'Tsemppivinkki: {tip}',
+    },
+    report: {
+      opening: 'Mennään läpi, tässä jaksosi!',
+      suggest: 'Seuraava tavoite: {tip}',
+      empty: 'Tyhjä jakso – startataan heti ensimmäisellä kirjauksella!',
     },
     chat: {
       intro: 'Moi, Karo tässä! Kysy ruoasta, resepteistä tai kirjauksista. En ole lääkäri, mutta arjen ruokajutuissa autan täysillä!',
@@ -331,6 +357,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       better: 'Raikas idea: {recipe}, arvio {grade}!',
       tip: 'Puristettu vinkki: {tip}',
     },
+    report: {
+      opening: 'Puristettu yhteenveto:',
+      suggest: 'Raikas idea: {tip}',
+      empty: 'Täällä on vielä tyhjää kuin sitruunankuoressa. Kirjataan jotain!',
+    },
     chat: {
       intro: 'Hei, olen Lemo! Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta raikkaita ruokaideoita löytyy!',
       thinking: 'Lemo puristaa vastausta…',
@@ -384,6 +415,11 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
     quality: {
       better: 'Tiesitkö? {recipe} on samanlainen ja saa arvion {grade}.',
       tip: 'Pieni fakta: {tip}',
+    },
+    report: {
+      opening: 'Tutkitaan, mitä jakso kertoo:',
+      suggest: 'Kokeiltava havainto: {tip}',
+      empty: 'Ei vielä dataa tutkittavaksi. Ensimmäinen kirjaus aloittaa tarinan.',
     },
     chat: {
       intro: 'Hei, olen Blu! Kysy ruoasta, ravintoaineista tai kirjauksistasi. En ole lääkäri, mutta kerron mielelläni, mitä tiedän.',

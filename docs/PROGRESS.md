@@ -15,10 +15,10 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 | 5. Puhe- ja tekstikirjaus | valmis |
 | 6. Hivenaineet | valmis |
 | 7. Laatuarvio | valmis |
-| 8. Raportit | – |
-| 9. Reseptituonti (osa 10) | – |
-| 10. Widget (osa 9) | – |
-| 11. Dokumentaatio | – |
+| 8. Raportit | valmis |
+| 9. Reseptituonti (osa 10) | valmis |
+| 10. Widget (osa 9) | valmis (Android; iOS-suunnitelma PLAN.md 4.17) |
+| 11. Dokumentaatio | valmis |
 
 ## Mitä tehtiin
 
@@ -30,17 +30,24 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 - Osa 5 (puhe ja teksti): /log-text (Puhu: expo-speech-recognition laitteella sovelluksen kielellä, teksti näkyy reaaliajassa; Kirjoita: vapaa teksti). Tulkinta domain/foodText.ts (määrät, yksiköt, numerosanat ja koot fi/en/sv, adessiivi "juustolla" omana ruokana, with/med) + services/foodTextParser.ts (sumea haku ruokalistaan kaikilla kielillä, kokonainen fraasi ensin). Tulos samaan tarkistusnäkymään kuin kuva (photo.tsx source=text) aterian valinnalla.
 - Osa 6 (hivenaineet): Fineli-tuonti laajennettu (tyydyttynyt rasva, D, C, B12, folaatti, rauta, kalsium, kalium, magnesium, sinkki; scripts/fineli). Päiväkirjan testiruoille lähin Fineli-ruoka scripts/fineli/match-foods.mjs + food-overrides.json → foodFineli.generated.ts. Suositukset NNR2023 domain/nutrients.ts (testattu), Päiväkirjan Ravintoaineet-kortti, reseptin laajennettava osio, lähde Lähteet-sivulla.
 - Osa 7 (laatuarvio): domain/qualityScore.ts (Nutri-Scoren periaatteet, oma laskenta, testattu), data/catalog/quality.ts (reseptit, ruoat, kasvisosuuden lista), features/quality (merkki, Miksi tämä arvio? -arkki hahmon vinkillä tai paremmalla reseptillä, päivän arvio, kirjausten merkit). Open Food Factsin Nutri-Score tuotteille. docs/QUALITY_SCORE.md.
+- Osa 8 (raportit): Päiväkirja → Raportit (Viikko | Kuukausi, selaus taaksepäin), domain/periodReport.ts (testattu), hahmon yhteenveto services/insights.ts (sääntöpohjainen, testi kieltää kalori-, paino- ja laihdutussanat), jako kuvana (react-native-view-shot + expo-sharing), viikkoraportti-ilmoitus maanantaisin klo 9.
+- Osa 9 (widget): react-native-android-widget, index.js rekisteröi taustatehtävän, features/widget (tilannekuva, rengas-SVG, hahmojen SVG:t generoitu scripts/widget/generate-mascots.gen.tsx), pikanapit deep linkeillä, Profiilissa ohje ja Lisää kotinäytölle.
+- Osa 10 (reseptituonti): /import-recipe (linkki tai käsin), /import-review (yhdistäminen ainesosatauluun), /imported/[id]; JSON-LD-jäsennys domain/recipeImport.ts (testattu), services/recipeImport.ts, varoitus käyttäjän allergeeneista kaikilla kielillä. Allergeenien avainsanoihin lisättiin taivutusvartalot (maido-, pähkinö-, rukii-, lohta, sinapi-).
+- Osa 11 (dokumentaatio): PLAN.md (navigaatio ja 4.13–4.18, iOS-widgetin suunnitelma), DATA_MODEL.md (luku 7, app_config-avaimet, päätökset 27–33), GENERATION.md (kohdat 19–23), MASCOT.md, QUALITY_SCORE.md, CLAUDE.md.
 
 ## Kesken
 
-- Osa 8 (raportit) seuraavaksi.
+- Ei mitään. Laajennustehtävä on tehty.
 
 ## Seuraava askel
 
-- Raportit: Päiväkirja → Raportit, Viikko | Kuukausi, selaus, kaaviot, hahmon yhteenveto (services/insights.ts), viikkoraportti-ilmoitus, jako kuvana.
+- Puhelintestaus oikealla laitteella (puhe, kamera, widget, ilmoitukset), sitten backend-vaihe (GENERATION.md 19–22).
 
 ## Päätökset
 
+- Osat 8 ja 9 commitoitiin yhdessä, koska ne jakavat natiivipaketit ja sovelluksen entry-tiedoston (index.js).
+- Androidin share intent jätettiin pois (vaatisi lisänatiivilaajennuksen); linkin voi liittää leikepöydältä.
+- Raportin jakokuva sisältää vain raportin osan, ei navigaatiota.
 - Laatuarvion värit A vihreä → E harmaa, ei punaista. Kirjain aina päätekstivärillä kontrastin vuoksi. Piilota kalorit piilottaa myös kirjauskohtaiset merkit.
 - Hivenaineiden suositukset NNR2023: tuntematon sukupuoli käyttää korkeampaa arvoa, alle 18-vuotiaille 18–24-vuotiaiden arvot. Sokereille ei näytetä tavoitetta (luku sisältää luontaiset sokerit). Ravintoainekortti on oletuksena suljettu, jotta Päiväkirja pysyy selkeänä.
 - Puheentunnistus: expo-speech-recognition (Androidin ja iOS:n oma tunnistus, ei ääntä sovellukselle). expo-image-picker esti aiemmin RECORD_AUDIO-luvan (microphonePermission false), joten asetus vaihdettiin.

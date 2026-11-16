@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { PanResponder, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -65,6 +65,13 @@ function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
   const [segment, setSegment] = useState<Segment>('today');
+  // The weekly report notification opens Raportit directly.
+  const { segment: requested } = useLocalSearchParams<{ segment?: string }>();
+  const [seenRequest, setSeenRequest] = useState<string | undefined>(undefined);
+  if (requested !== seenRequest) {
+    setSeenRequest(requested);
+    if (requested === 'reports' || requested === 'today') setSegment(requested);
+  }
   const { voice } = useCharacter();
   const [menuFor, setMenuFor] = useState<DiaryMeal | null>(null);
   const [copyFor, setCopyFor] = useState<DiaryMeal | null>(null);
@@ -160,7 +167,7 @@ function DiaryScreen() {
         />
       </View>
       {segment === 'reports' ? (
-        <ReportsView date={date} bottomSpace={tabBarSpace} />
+        <ReportsView bottomSpace={tabBarSpace} />
       ) : (
       <>
       <View style={styles.dayBar}>
