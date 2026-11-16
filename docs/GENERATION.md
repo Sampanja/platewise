@@ -683,3 +683,129 @@ Käyttäjä kuvaa pakkauksen ravintoarvotaulukon, ja palvelu lukee 100 g -sarakk
 
 13. Avustajachat Haiku 5.5:llä, kaksikerroksinen sääntöpohjainen turvallisuus, konteksti vain luvalla, 20 viestiä päivässä.
 14. Ravintoarvotaulukon luku kuvamallilla, ja käyttäjä vahvistaa luvut. Viivakoodihaku käyttää Open Food Factsia ilman tekoälyä.
+
+## 19. Jääkaapin ja kaapin skannaus (Ruokavarasto)
+
+Käyttäjä kuvaa yhden tai useamman hyllyn (jääkaappi, pakastin, kuivakaappi). Tulos on aina **arvio**, ja tarkistusnäkymä on pakollinen ennen tallennusta (`app/pantry-review.tsx`). Sovelluksen rajapinta: `services/pantryRecognition.ts` (nyt testidatalla).
+
+### 19.1 Kulku
+
+1. Sovellus pienentää kuvat (pitkä sivu 1 280 px, JPEG 0,7) ja lähettää ne `recognize-pantry-photos`-Edge Functionille (enintään 6 kuvaa).
+2. Funktio tarkistaa rajat ja kustannuskaton (19.4), lähettää kuvat ja **suljetun ainesosalistan** (id + suomen-, englannin- ja ruotsinkielinen nimi, noin 240 riviä, välimuistissa prompt cachingilla) mallille.
+3. Malli palauttaa vain listan ainesosien tunnisteita, karkean määrän ja varmuuden. Tuntemattomat id:t pudotetaan (`parsePantryResponse`), saman ainesosan rivit yhdistetään.
+4. Sovellus näyttää rivit merkinnällä "arvio"; alle 0,6 varmuus näkyy "Tarkista". Käyttäjä poistaa, vaihtaa, säätää määrän ja lisää puuttuvat.
+
+### 19.2 Malli ja prompt
+
+- Malli: `app_config.pantry_model`, oletus **Haiku 5.5** (kuvasyöte), vertailukohtana Sonnet 5.5 testiaineistolla.
+- System prompt (luonnos): "Tunnistat kotona olevia raaka-aineita valokuvista. Valitse vain alla olevan listan tunnisteita. Älä arvaa merkkejä tai pakkauksen sisältöä, jota ei näy. Jos tuote ei ole listalla, jätä se pois. Arvioi määrä karkeasti: low (alle kolmannes pakkauksesta), half, plenty. Palauta vain JSON."
+- `output_config.effort = "low"`, rakenteinen tuloste (JSON-skeema alla).
+
+### 19.3 JSON-skeema (Zod)
+
+```ts
+z.object({
+  items: z.array(z.object({
+    ingredientId: z.string(),
+    level: z.enum(['low', 'half', 'plenty']),
+    confidence: z.number().min(0).max(1),
+  })).max(60),
+});
+```
+
+### 19.4 Rajat ja kustannus
+
+- `max_pantry_scans_per_day` = 5, `max_pantry_photos_per_scan` = 6. Arvioitu hinta Haiku 5.5:llä noin 0,4–0,8 senttiä per kuva (kuva + välimuistissa oleva lista).
+- Kustannus kirjataan `generation_runs`-tauluun (`kind = 'pantry_scan'`) ja lasketaan käyttäjän 30 päivän kattoon.
+
+### 19.5 Turvallisuus ja tietosuoja
+
+- Kuvia ei tallenneta (ei Storageen, ei lokeihin); vain kustannus kirjataan.
+- Ruokavarasto ei ole terveystietoa sellaisenaan, mutta sitä käsitellään yksityisenä (RLS, ei analytiikkaan).
+- Tunnistus ei koskaan lisää mitään suoraan varastoon: käyttäjä vahvistaa.
+
+## 20. Vapaan tekstin ja puheen tulkinta (päiväkirja)
+
+"Kaksi ruisleipää juustolla ja kahvi maidolla" → ruoat ja grammat. Puhe muutetaan tekstiksi **laitteella** (`expo-speech-recognition`, sovelluksen kieli), joten ääntä ei lähetetä palvelimelle. Sovelluksen rajapinta: `services/foodTextParser.ts`.
+
+### 20.1 Kerrokset
+
+1. **Paikallinen perustulkinta (nyt):** `domain/foodText.ts` jakaa tekstin ruoiksi ja lukee määrät, yksiköt, numerosanat ja koot kolmella kielellä; `services/foodTextParser.ts` yhdistää sanat ruokalistaan sumealla haulla (`data/catalog/search.ts`, kaikki kielet). Tunnistamattomat sanat näytetään käyttäjälle.
+2. **Tekoäly backend-vaiheessa:** jos paikallinen tulkinta jättää sanoja tunnistamatta tai varmuus on alle 0,7, teksti lähetetään `parse-food-text`-funktiolle. Paikallisesti varmat rivit pidetään; malli täydentää loput.
+
+### 20.2 Malli ja prompt
+
+- Malli: `app_config.text_model`, oletus **Haiku 5.5**, `effort = "low"`.
+- Syöte: käyttäjän teksti, kieli, aterian tyyppi ja suljettu ruokalista (id, nimet kolmella kielellä, annoskoot grammoina), välimuistissa.
+- System prompt (luonnos): "Muutat käyttäjän kuvauksen syömistään ruoista listan ruokiin ja grammoihin. Käytä vain listan tunnisteita. Käytä listan annoskokoja, kun määrä on kappaleina tai viipaleina. Jos et tunne ruokaa, palauta sana unmatched-listassa. Älä koskaan anna ravintoarvoja. Älä kommentoi syömistä."
+
+### 20.3 JSON-skeema (Zod)
+
+```ts
+z.object({
+  foods: z.array(z.object({
+    foodId: z.string(),
+    grams: z.number().min(1).max(3000),
+    confidence: z.number().min(0).max(1),
+    text: z.string(),
+  })).max(20),
+  unmatched: z.array(z.string()).max(20),
+});
+```
+
+Validointi `parseFoodTextResponse`: tuntemattomat id:t siirtyvät unmatched-listaan, grammat pyöristetään. Makrot ja hivenaineet lasketaan aina ruokataulusta (periaate 2).
+
+### 20.4 Rajat, kustannus ja turvallisuus
+
+- `max_text_parses_per_day` = 40; tyypillinen kutsu alle 0,1 senttiä (lyhyt syöte, välimuistissa lista).
+- Teksti on terveystietoa: sitä ei kirjata lokeihin, analytiikkaan eikä `generation_runs`-tauluun (vain kustannus ja pituus).
+- Tulos menee aina tarkistusnäkymään merkinnällä "arvio".
+
+## 21. Reseptin tuonti linkistä ja reseptin luonti varastosta
+
+### 21.1 Tuonti (`import-recipe`)
+
+1. **Laitteella (nyt):** sovellus hakee sivun ja lukee sen schema.org/Recipe JSON-LD -tiedot (`domain/recipeImport.ts`, testattu). Ainesrivit yhdistetään ainesosatauluun (`matchIngredientLines`), epävarmat käyttäjä vahvistaa.
+2. **Backend-vaiheessa:** jos sivulla ei ole JSON-LD:tä, sovellus lähettää osoitteen `import-recipe`-funktiolle. Funktio hakee sivun (palvelimelta, oma User-Agent, 3 Mt raja, vain `text/html`), poistaa skriptit ja navigaation ja pyytää mallia (**Haiku 5.5**, `effort = "low"`) palauttamaan saman luonnosmuodon kuin JSON-LD-lukija:
+
+```ts
+z.object({
+  title: z.string().min(1).max(120),
+  servings: z.number().int().min(1).max(50),
+  totalTimeMin: z.number().int().min(1).max(1440).nullable(),
+  activeTimeMin: z.number().int().min(1).max(1440).nullable(),
+  ingredientLines: z.array(z.string().max(200)).min(1).max(60),
+  steps: z.array(z.string().max(1000)).max(40),
+});
+```
+
+3. Ainesrivien yhdistäminen ainesosatauluun tehdään edelleen koodissa (sama `matchIngredientLines`); epävarmoille riveille malli voi ehdottaa ainesosan id:n suljetusta listasta toisessa, edullisessa kutsussa.
+
+**Säännöt:** tuodut reseptit ovat vain käyttäjän omia (`user_imported_recipes`, RLS), lähdelinkki näytetään, sivun kuvia tai tekstiä ei tallenneta (vain resepti), ja kuvana käytetään kategoriakuvitusta. Allergeenit lasketaan ainesosista ja **kaikista riveistä kaikilla kielillä avainsanoin** (`importWarnings`), ja käyttäjän allergeenit näytetään selvänä varoituksena. Jakovalikosta (Android share intent) tuonti lisätään, kun natiivi share-intent-laajennus otetaan käyttöön; nyt linkin voi liittää leikepöydältä.
+
+**Rajat:** `max_recipe_imports_per_day` = 10, kustannus noin 0,2–0,5 senttiä per sivu (`kind = 'recipe_import'`).
+
+### 21.2 Resepti varaston aineksista (`generate-recipe`)
+
+"Luo resepti näistä aineksista" (Reseptit → Varastosta), kun valmiita ehdotuksia on alle kolme. Sovelluksen rajapinta: `services/recipeGeneration.ts` (nyt testitilassa: kirjastosta resepti, joka käyttää eniten varaston aineksia).
+
+- Syöte: varaston ainesosat (vanhenevat ensin), käyttäjän allergiat ja ruokavalio, perusvarat, kieli.
+- Malli ja prompt kuten päivällisen generoinnissa (kohdat 4–6) yhdelle reseptille; ohje "käytä ensisijaisesti näitä aineksia, enintään kaksi muuta".
+- Sama allergiatarkistus (periaate 4), makrot, hivenaineet, laatuarvio ja hinta koodissa; hylätty resepti generoidaan uudelleen (enintään 2 kierrosta).
+- Ennen generointia etsitään tallennetuista resepteistä yhteensopiva (periaate 6). Raja `max_pantry_generations_per_day` = 3.
+
+## 22. Raporttien oivallukset (`report-insights`)
+
+Viikko- ja kuukausiraportin hahmon yhteenveto: 2–3 havaintoa ja yksi konkreettinen ehdotus. Sovelluksen rajapinta: `services/insights.ts` (nyt sääntöpohjainen, testattu kaikilla hahmoilla ja kielillä).
+
+- **Syöte vain koosteina:** kirjauspäivät, putki, juomatavoitepäivät, proteiinitavoitepäivät, kokkauskerrat, varastosta käytetyt ainekset, laatuarvioiden jakauma, hivenaineiden keskiarvot suhteessa suositukseen ja säästö. Ei yksittäisiä merkintöjä, ei painoa eikä kaloreita.
+- Malli: **Haiku 5.5**, `effort = "low"`; system prompt sisältää hahmon persoonan (MASCOT.md) ja säännöt: "Puhu vain tavoista. Älä koskaan kehu vähemmästä syömisestä, kaloreista tai painosta. Älä anna lääketieteellisiä neuvoja. Yksi ehdotus, joka on konkreettinen ja helppo."
+- JSON-skeema: `{ opening: string ≤ 120, observations: string[1–3] ≤ 140, suggestion: string ≤ 160 }`.
+- **Turvallisuus:** vastaus ajetaan saman sääntöpohjaisen tarkistuksen läpi kuin chat (`domain/assistantRules.ts`) ja lisäksi kieltolistan (kalori-, paino- ja laihdutussanat kaikilla kielillä). Hylätyssä tapauksessa näytetään sääntöpohjainen yhteenveto.
+- Kustannus: yksi kutsu viikossa käyttäjää kohden (välimuistissa jakson loppuun), alle 0,1 senttiä.
+
+## 23. Päätetty (2026-11-16)
+
+15. Uudet tekoälytoiminnot (jääkaappiskannaus, tekstin tulkinta, reseptin tuonti, varastoresepti ja raporttien oivallukset) ovat palvelukerroksen takana; nykyiset toteutukset ovat paikallisia tai testidataa, ja käyttöliittymä kertoo testitilasta.
+16. Kaikki uudet tulokset käyttävät suljettuja listoja (ainesosat, ruoat), ja ravintoarvot lasketaan aina koodissa.
+17. Mallit ovat `app_config`-asetuksia: `pantry_model`, `text_model`, `import_model`, `insights_model` (oletus Haiku 5.5); varastoreseptissä `generation_model`.

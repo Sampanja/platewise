@@ -2,7 +2,7 @@
 
 Maksullinen mobiilisovellus (iOS + Android), yksilösovellus: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Suunnitelman voi tehdä 1–6 syöjälle (oletus 1), ja määrä valitaan vain kyselyssä. Käyttäjä syöttää budjetin, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
 
-Suunnittelussa on yksi moottori: **N päivällistä + budjetti → yksi ostoslista**. Käyttäjä käy sen läpi yhdellä kyselyllä (Suunnittele-välilehti, kohta 4.3). Kyselyn ateriamäärä ratkaisee tilan:
+Suunnittelussa on yksi moottori: **N päivällistä + budjetti → yksi ostoslista**. Käyttäjä käy sen läpi yhdellä kyselyllä (＋ → Tee ruokalista, kohta 4.3). Kyselyn ateriamäärä ratkaisee tilan:
 
 - **Viikkosuunnitelma:** "Koko viikko" eli N = 7. Budjetiksi esitäytetään profiilin viikkobudjetti.
 - **Kauppareissu:** käyttäjä valitsee 2–6 ateriaa ja budjetin yhdelle ostoskerralle.
@@ -81,17 +81,19 @@ Kaikki näkymät käyttävät Iltapöytä-design-järjestelmää (värit, typogr
 
 ### 4.1 Navigaatio
 
-Alapalkissa viisi välilehteä:
+Alapalkissa neljä välilehteä ja keskellä ＋ (marraskuu 2026). Jokaisella ominaisuudella on yksi looginen paikka:
 
-| Välilehti | Sisältö |
+| Paikka | Sisältö |
 |---|---|
-| **Koti** | Yleiskatsaus |
-| **Reseptit** | Reseptikirjasto |
-| **Suunnittele** | Kysely → ehdotukset → ostoslista. Keskellä, korostettu painike. |
-| **Päiväkirja** | Kalorilaskuri |
-| **Profiili** | Asetukset ja tili |
+| **Koti** | Yleiskatsaus: tervehdys, ruokalista, päivän ravinto, Ruokavarasto-kortti, säästöt, suositukset |
+| **Reseptit** | Segmentit **Kirjasto** \| **Varastosta** ("mitä voin tehdä nyt") \| **Suosikit** \| **Omat** (tuodut ja omat reseptit, "Tuo linkistä") |
+| **＋** (keskellä) | Pikatoimintopaneeli: Kirjaa ateria (Kuva, Puhu, Kirjoita, Viivakoodi, Hae; ateria kellonajan mukaan), Skannaa jääkaappi tai kaappi, Tee ruokalista (kysely, `/plan`), Lisää paino |
+| **Päiväkirja** | Segmentit **Tänään** (ateriat, laatuarvio, Ravintoaineet, vesi, viikkokaavio) \| **Raportit** (viikko ja kuukausi) |
+| **Profiili** | Asetukset, tavoitteet, hahmo ja teema, kieli, yksiköt, widget-ohje, tietosuoja |
 
-Alapalkki kelluu näytön alareunassa (leveällä näytöllä enintään 520 dp ja keskitettynä). Viisi välilehteä on jaettu tasaisesti, ikonit ja tekstit keskitetty, ja kapealla näytöllä tekstit lyhenevät. Keskimmäinen Suunnittele-painike nousee pehmeästi palkista loveen, joka piirretään SVG:llä (geometria `tabBarShape.ts`, testattu). Värit tulevat valitun hahmon teemasta.
+**Perustelu:** Suunnittele oli aiemmin oma välilehti, mutta sitä käytetään kerran viikossa, kun taas kirjaaminen on päivittäistä. Keskimmäinen paikka on arvokkain, joten se annettiin kaikille lisäystoiminnoille; ruokalista on yksi niistä, ja keskeneräinen ehdotus ja nykyinen lista löytyvät myös Kodista. Ruokavarasto sijoitettiin Kotiin ja Reseptien Varastosta-segmenttiin, koska sitä käytetään reseptien löytämiseen; raportit Päiväkirjaan, koska ne kuvaavat kirjauksia.
+
+Alapalkki kelluu näytön alareunassa (leveällä näytöllä enintään 520 dp ja keskitettynä). Viisi paikkaa on jaettu tasaisesti, ja kapealla näytöllä tekstit lyhenevät. Keskimmäinen ＋ nousee pehmeästi palkista loveen, joka piirretään SVG:llä (geometria `tabBarShape.ts`, testattu); paneelin ollessa auki plus kääntyy ×:ksi. Värit tulevat valitun hahmon teemasta.
 
 **Järjestelmän navigointipalkki:**
 - **Android:** palkki piilotetaan immersiivisesti (`expo-navigation-bar`), ja se tulee esiin hetkeksi pyyhkäisemällä ylös näytön alareunasta. Sovelluksen oma alapalkki varaa tilan turva-alueen mukaan, joten sisältö ei jää eleen alle.
@@ -106,7 +108,7 @@ Alapalkki kelluu näytön alareunassa (leveällä näytöllä enintään 520 dp 
 - **Pääkehotus:** "Tee uusi lista" → Suunnittele. Tyhjä tila (ei suunnitelmaa): esittely ja sama kehotus.
 - **Nupun tervehdys** (kohta 4.9) tilanteen mukaan, putki, taso ja päivän tehtävät yhdellä rivillä (napautus avaa Edistymisen) sekä "Kysy Nupulta".
 
-### 4.3 Suunnittele (kysely)
+### 4.3 Ruokalista (kysely, ＋ → Tee ruokalista)
 
 Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa vaiheessa. Arvot esitäytetään edellisestä kyselystä tai profiilista, joten tavallisesti käyttäjä vain vahvistaa.
 
@@ -203,7 +205,7 @@ Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin 
 
 ### 4.9 Hahmot ja chat
 
-- **Kahdeksan hahmoa** ([MASCOT.md](MASCOT.md)), joista käyttäjä valitsee yhden ensikäynnistyksessä; valinta määrää väriteeman, äänen ja ulkonäön. Tilat perus, iloinen, miettivä, juhliva, kokkaava, uninen ja kannustava. Näkyy onboardingissa, tyhjissä tiloissa, juhlistuksissa, Kodin tervehdyksessä, muistutuksissa ja chatissa. Lopulliset kuvat vaihdetaan kansioon `assets/mascot`.
+- **Kuusi kansainvälisesti tunnettua hahmoa** (Nuppu, Avo, Tomo, Karo, Lemo, Blu; [MASCOT.md](MASCOT.md)), joista käyttäjä valitsee yhden ensikäynnistyksessä; valinta määrää väriteeman, äänen ja ulkonäön. Tilat perus, iloinen, miettivä, juhliva, kokkaava, uninen ja kannustava. Näkyy onboardingissa, tyhjissä tiloissa, juhlistuksissa, Kodin tervehdyksessä, muistutuksissa ja chatissa. Lopulliset kuvat vaihdetaan kansioon `assets/mascot`.
 - **Kysy hahmolta:** valmiit kysymysehdotukset. Reseptiehdotukset tulevat vain käyttäjälle sallituista resepteistä ja näkyvät napautettavina kortteina. Hahmo näkee päivän kirjaukset ja tavoitteet vain luvalla, jonka voi perua. Päiväraja 20 viestiä. Turvallisuus: ei diagnooseja, ohjaus ammattilaiselle, syömishäiriöherkkyys, ei äärimmäisiä dieettejä eikä neuvoja alle turvarajojen ([GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)).
 
 ### 4.10 Väriteema
@@ -232,6 +234,47 @@ Tavoite: jokainen napautus antaa visuaalisen palautteen alle 100 ms:ssa release-
 - **Käyttöliittymä ensin:** tila päivitetään heti (optimistinen päivitys), hidas työ (tallennus, haptiikka, ilmoitusten ajastus) sen jälkeen, ei `await`ia ennen päivitystä.
 - **Mittaa ensin:** muutokset perustellaan mittauksella (renderilaskurit, `performance.now()`, emulaattorin release-build), ja tulokset kirjataan commit-viestiin.
 
+### 4.13 Ruokavarasto ja jääkaappiskannaus
+
+- **Paikka:** Kodin kortti ("Varastossa X tuotetta, Y vanhenee pian") ja Reseptit → Varastosta → "Hallitse varastoa" avaavat näkymän `/pantry`. ＋-paneelissa "Skannaa jääkaappi tai kaappi".
+- **Varasto:** yksi rivi per ainesosa, ryhmiteltynä säilytyspaikan mukaan (jääkaappi, pakastin, kuivakaappi). Määrä karkeana (vähän / puolet / paljon) tai tarkkana, valinnainen parasta ennen -päivä. Lisäys skannaamalla, haulla (kaikki kielet, sumea) tai viivakoodilla (Open Food Facts → lähin ainesosa). Poisto kumottavissa.
+- **Skannaus:** kamera ohjeella "Kuvaa hyllyt niin, että tuotteet näkyvät", useita kuvia, tunnistusanimaatio hahmolla. **Tarkistusnäkymä on pakollinen:** poista, vaihda ainesosa, säädä määrä, lisää puuttuva; merkintä "arvio". Testitila kerrotaan selvästi.
+- **Mitä voin tehdä:** "Voit tehdä heti" ja "Puuttuu 1–2 ainesosaa" (puuttuvat näkyvät, ja ne voi lisätä ostoslistaan). Vanhenevia aineksia käyttävät ensin. Vain sallitut reseptit (`isRecipeAllowed`). Perusvarat lasketaan aina saatavilla oleviksi. Jos valmiita ehdotuksia on alle kolme, "Luo resepti näistä aineksista".
+- **Ostoslistalta varastoon:** rastitetut tuotteet yhdellä napautuksella (kokonaisina pakkauksina).
+- **Tein tämän:** reseptisivun kokkinappi vähentää käytetyt ainekset varastosta; käyttäjä näkee rivit ja voi poistaa niitä, ja toiminnon voi kumota.
+- **Muistutus:** paikallinen ilmoitus edellisenä aamuna klo 9 hahmon äänellä ja reseptiehdotuksella ("Kerma vanhenee huomenna, kokeile: …"). Napautus avaa Varastosta-näkymän. Kytkettävissä pois varastonäkymässä; ilmoituslupaa kysytään vasta ensimmäisen päivämäärän kohdalla.
+
+### 4.14 Puhe- ja tekstikirjaus
+
+- ＋ → Kirjaa ateria → **Puhu** tai **Kirjoita** (`/log-text`). Puhe muutetaan tekstiksi laitteella sovelluksen kielellä, ja teksti näkyy reaaliajassa; ääntä ei tallenneta.
+- Tulkinta tunnistaa määrät (myös numerosanat ja murtoluvut), yksiköt (g, kg, dl, ml, l, rkl, tl, kpl, viipale, lasi, kuppi, annos), koot ("iso", "small") ja lisukkeet ("juustolla", "with", "med") kolmella kielellä, ja yhdistää ruoat ruokalistaan sumealla haulla. Tunnistamattomat sanat näytetään.
+- Tulos avautuu samaan tarkistusnäkymään kuin kuvantunnistus (ruoat, grammat, kcal ja makrot, muokattavissa), ja ateria valitaan (oletus kellonajan mukaan).
+
+### 4.15 Ravintoaineet ja laatuarvio
+
+- **Ravintoaineet:** kuitu, sokerit, suola, tyydyttynyt rasva, D- ja C-vitamiini, B12, folaatti, rauta, kalsium, kalium, magnesium ja sinkki Finelistä. Päiväkirjan "Ravintoaineet"-kortti (oletuksena suljettu) näyttää palkit suhteessa pohjoismaisiin suosituksiin (NNR2023) iän, sukupuolen sekä raskauden ja imetyksen mukaan; reseptissä laajennettava osio (osuus päivän suosituksesta annoksessa). Sävy on informatiivinen: rivin napautus kertoo, mistä ravintoainetta saa. Lähde Lähteet-sivulla.
+- **Laatuarvio A–E** ([QUALITY_SCORE.md](QUALITY_SCORE.md)): reseptikortit, reseptisivu, jokainen kirjaus, päivän yhdistelmä, ruoka- ja kirjausnäkymä; viivakoodituotteilla Open Food Factsin Nutri-Score. "Miksi tämä arvio?" kertoo, mikä nostaa ja laskee, ja hahmo ehdottaa ystävällisesti samantyylistä parempaa reseptiä tai yhden vinkin. Ei punaista, ei arvostelua.
+
+### 4.16 Viikko- ja kuukausiraportit
+
+- Päiväkirja → **Raportit**: Viikko | Kuukausi ja selaus taaksepäin (52 viikkoa, 24 kuukautta).
+- Sisältö: hahmon yhteenveto (2–3 havaintoa ja yksi ehdotus), kirjauspäivät ja pisin putki, veden keskiarvo ja tavoitepäivät, kokatut reseptit, varastosta käytetyt ainekset (hävikin vähennys), ruokalistojen säästö, energian päiväkaavio tavoiteviivalla, makrojen keskiarvot tavoitteisiin, painon trendi (7 päivän liukuva keskiarvo), laatuarvioiden jakauma ja ravintoaineiden keskiarvot. Keskiarvot vain kirjatuista päivistä. "Piilota kalorit" piilottaa energian, makrot ja painon.
+- Valinnainen ilmoitus maanantaiaamuna klo 9 ("Viikkoraporttisi on valmis"), joka avaa Raportit.
+- **Jaa kuvana:** raportin näkyvä osa kuvana jakovalikkoon (`react-native-view-shot`, `expo-sharing`).
+
+### 4.17 Kotinäytön widget
+
+- **Android (tehty):** `react-native-android-widget` config pluginilla. Päivän kalorit rengasmittarina, makrot, hahmon pieni kuva ja teeman värit (vaalea ja tumma), pikanapit "Kirjaa kuvalla" ja "Puhu" (deep linkit `platepal:///camera?mode=photo` ja `platepal:///log-text?mode=speak`); muu alue avaa Päiväkirjan. Päivittyy, kun päiväkirja, tavoitteet, hahmo, teema tai kieli muuttuu, sekä 30 minuutin välein (päivän vaihtuminen). Sovellus tallentaa widgetille tilannekuvan, joten widget toimii sovelluksen ollessa kiinni. Profiilissa ohje ja "Lisää kotinäytölle" -nappi.
+- **iOS (suunnitelma):** WidgetKit-laajennus Swiftillä (`@bacons/apple-targets` tai vastaava config plugin). Tiedot App Groupin jaetun `UserDefaults`-avaimen kautta: sama tilannekuva kuin Androidilla JSONina, kirjoitetaan pienellä natiivimoduulilla (`expo-modules-core`). Koot: pieni (rengas + kcal) ja keskikokoinen (rengas, makrot, hahmo, kaksi `Link`-nappia deep linkeillä). Päivitys `WidgetCenter.shared.reloadAllTimelines()` aina kun tilannekuva kirjoitetaan, ja aikajana keskiyöllä (päivän vaihtuminen). Hahmo PNG-kuvana (kuvittajan `widget.png`, MASCOT.md). Lukitusnäytön widget (accessoryCircular: rengas) myöhemmin. Arvio 3–5 päivää.
+
+### 4.18 Reseptin tuonti linkistä
+
+- Reseptit → Omat → **Tuo linkistä**: osoite liitetään (myös leikepöydältä). Sivun schema.org/Recipe JSON-LD luetaan (nimi, annokset, ainekset, vaiheet, ajat). Jos sitä ei ole, selkeä viesti ja "Kirjoita resepti itse"; tekoälytulkinta tulee backend-vaiheessa.
+- Ainekset yhdistetään ainesosatauluun sumealla haulla; tarkistusnäkymässä epävarmat ja puuttuvat on merkitty, ja käyttäjä vahvistaa ainesosan ja grammat.
+- Makrot, ravintoaineet, laatuarvio, allergeenit ja hinta-arvio lasketaan kuten muissakin resepteissä. Käyttäjän allergeeneista ja ruokavaliosta varoitetaan selvästi (avainsanat luetaan kaikilla kielillä myös yhdistämättömistä riveistä).
+- Tuodut reseptit ovat vain käyttäjän omia, lähdelinkki näkyy, sivun kuvia ei tallenneta (kategoriakuvitus). Annoksen voi kirjata päiväkirjaan.
+- Androidin jakovalikko (share intent) vaatii natiivin laajennuksen (esim. `expo-share-intent`); se lisätään erikseen, kun sen ylläpidettävyys on arvioitu. Siihen asti linkki liitetään.
+
 ## 5. Vaiheittainen toteutussuunnitelma
 
 ### Vaihe 0: Validointi (1–2 viikkoa)
@@ -244,7 +287,7 @@ Tavoite: jokainen napautus antaa visuaalisen palautteen alle 100 ms:ssa release-
 Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmasta 6–8 viikosta.
 
 1. Projektipohja: Expo, Supabase (EU), CI ja EAS Build.
-2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen. Tehty: yksilösovellus (ei kotitalouden kokoa), 8 hahmoa teemoineen, alapalkki, Fineli-ainesosataulu (235 ainesosaa), 319 validoitua reseptiä, tiukka allergia- ja ruokavaliosuodatus, kuvantunnistuksen testitila ja vesitavoite.
+2. **Käyttöliittymä testidatalla** (nykyinen työvaihe): navigaatio ja Koti → Reseptit → Suunnittele → Päiväkirja → Profiili. Ei Supabasea eikä tekoälyä; testidata noudattaa [DATA_MODEL.md](DATA_MODEL.md):n rakennetta, jotta vaihto oikeaan dataan on suoraviivainen. Tehty: yksilösovellus (ei kotitalouden kokoa), 6 hahmoa teemoineen (marraskuu 2026: uusi piirrostyyli, räpytys ja hengitys), ＋-paneeli, Ruokavarasto ja skannaus, puhe- ja tekstikirjaus, ravintoaineet, laatuarvio, viikko- ja kuukausiraportit, Android-widget, reseptin tuonti linkistä, alapalkki, Fineli-ainesosataulu (235 ainesosaa), 319 validoitua reseptiä, tiukka allergia- ja ruokavaliosuodatus, kuvantunnistuksen testitila ja vesitavoite.
 3. Fineli-tuonti tauluihin: sovelluksen ainesosataulu on jo rakennettu Finelin avoimesta datasta (`scripts/fineli`); backendissä sama aineisto ja hinta-alueet (`price_regions`) tauluihin. Finelin annoskoot päiväkirjaa varten.
 4. Kirjautuminen (Apple, Google, sähköposti) ja ensikäynnistyksen perusasetukset (kieli, hahmo, allergiat, ruokavalio).
 5. `generate-plan`-funktio: Claude, allergiatarkistus, makrot, hinta ja budjettisilmukka. Ehdotus → hyväksyntä → ostoslista.
@@ -264,7 +307,7 @@ Päiväkirja ja reseptikirjasto lisäävät laajuutta, joten arvio nousi aiemmas
 - Hintataulun päivitysprosessi (esim. kuukausittainen tarkistus).
 
 ### Vaihe 3: Laajennukset
-- Ruokahävikin minimointi: "mitä jääkaapissa on" -syöte.
+- Ruokahävikki: Ruokavarasto ja "Mitä voin tehdä" ovat jo MVP:ssä (4.13); jatkossa kuittiskannauksesta suoraan varastoon.
 - Tarkemmat hinnat: maakohtainen hintatieto (`ingredient_region_prices`) ja kuittiskannaus (OCR).
 - Ostoslistan jakaminen toiselle sovelluksen käyttäjälle.
 - Lisää kieliä ja maita (esim. norja, tanska, saksa). Uusi kieli = käännöstiedostot ja reseptikäännökset; maakohtainen hintatieto ja ravintoarvolähteet (USDA FoodData Central, Open Food Facts) maan mukaan.

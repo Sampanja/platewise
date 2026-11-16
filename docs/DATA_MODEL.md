@@ -628,6 +628,14 @@ MVP:n avaimet ja oletusarvot:
 | `max_photo_recognitions_per_day` | `10` | Kuvantunnistukset käyttäjää kohden (kalenteripäivä, Suomen aikaa) |
 | `max_photo_recognitions_per_30_days` | `150` | Kuvantunnistukset käyttäjää kohden, liukuva 30 päivää |
 | `max_ai_cost_per_user_30_days_micro_usd` | `1500000` | Käyttäjän kaikkien tekoälykutsujen kustannuskatto (1,50 $ / 30 pv). Ylityksessä kuvantunnistus keskeytyy ensin; ks. GENERATION.md, kohta 11. |
+| `pantry_model` | `"claude-haiku-5-5"` | Jääkaapin ja kaapin skannaus (GENERATION.md, kohta 19) |
+| `text_model` | `"claude-haiku-5-5"` | Vapaan tekstin ja puheen tulkinta (kohta 20) |
+| `import_model` | `"claude-haiku-5-5"` | Reseptisivun tulkinta ilman JSON-LD:tä (kohta 21) |
+| `insights_model` | `"claude-haiku-5-5"` | Raporttien oivallukset (kohta 22) |
+| `max_pantry_scans_per_day` | `5` | Jääkaappiskannaukset käyttäjää kohden päivässä |
+| `max_text_parses_per_day` | `40` | Tekstitulkinnat (tekoäly) päivässä |
+| `max_recipe_imports_per_day` | `10` | Reseptituonnit (tekoäly) päivässä |
+| `max_pantry_generations_per_day` | `3` | Reseptin luonti varastosta päivässä |
 
 ---
 
@@ -766,6 +774,66 @@ Ensimmäisellä laskennalla olemassa oleva edistyminen merkitään nähdyksi ilm
 ### Chat
 MVP:ssä keskustelu tallennetaan **vain laitteelle** (viimeiset 100 viestiä), koska se voi sisältää terveysaiheita. Palvelin näkee viestit vain käsittelyn ajan (`assistant-chat`, [GENERATION.md, kohta 17](GENERATION.md#17-avustajachat-kysy-nupulta)); `generation_runs`-tauluun kirjataan kustannus (`kind = 'chat'`) ilman sisältöä. Päiväraja lasketaan `generation_runs`-riveistä.
 
+## 7. Ruokavarasto, tuodut reseptit, ravintoaineet ja laatuarvio (marraskuu 2026)
+
+Paikallisesti nämä ovat storeissa `stores/pantry.ts`, `stores/importedRecipes.ts` ja `stores/reminders.ts`; alla tuleva Supabase-rakenne.
+
+### `pantry_items`
+Kotona olevat raaka-aineet. Yksi rivi per ainesosa ja käyttäjä (lisäys yhdistää). Viittaa aina ainesosatauluun (suljettu lista).
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `user_id` | `uuid` FK → `auth.users` | RLS |
+| `ingredient_id` | `text` FK → `ingredients` | UNIQUE (`user_id`, `ingredient_id`) |
+| `amount_kind` | `text` CHECK (`level`, `grams`) | Karkea arvio tai tarkka määrä |
+| `amount_level` | `text` CHECK (`low`, `half`, `plenty`) NULL | Osuus pakkauksesta: 20 / 50 / 100 % |
+| `amount_grams` | `integer` NULL | Metrisenä aina |
+| `best_before` | `date` NULL | Valinnainen |
+| `location` | `text` CHECK (`fridge`, `freezer`, `cupboard`) | Oletus hyllyn mukaan |
+| `source` | `text` CHECK (`scan`, `barcode`, `search`, `shopping`, `recipe`) | |
+| `estimate` | `boolean` NOT NULL | Skannattu eikä vielä muokattu → "arvio" |
+| `added_at` | `timestamptz` | |
+
+### `cooked_recipes`
+"Tein tämän": mitä varastosta käytettiin (raporttien hävikkiluku ja kokkauskerrat).
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `user_id` | `uuid` | RLS |
+| `date` | `date` | |
+| `recipe_id` | `text` | Kirjaston resepti tai `imp:<id>` |
+| `servings` | `smallint` | |
+| `used_from_pantry` | `jsonb` | `[{ ingredient_id, grams }]` |
+
+### `user_imported_recipes` ja `user_imported_recipe_lines` *(käyttäjän oma, ei jaeta)*
+
+| Taulu | Kentät |
+|---|---|
+| `user_imported_recipes` | `id`, `user_id`, `title` (≤ 120), `source_url` NULL, `servings` (1–50), `total_time_min` NULL, `active_time_min` NULL, `steps` `text[]`, `created_at`, `updated_at` |
+| `user_imported_recipe_lines` | `recipe_id` FK ON DELETE CASCADE, `position`, `line` (alkuperäinen rivi), `ingredient_id` NULL FK → `ingredients`, `grams` NULL (koko resepti), `confidence` |
+
+Sivun kuvia tai muuta sisältöä ei tallenneta. Makrot, hivenaineet, laatuarvio, allergeenit ja hinta-arvio lasketaan yhdistetyistä riveistä kuten kirjaston resepteissä (`data/catalog/imported.ts`). Yhdistämättömät rivit eivät ole laskuissa, mutta ne luetaan allergeenien avainsanahaussa kaikilla kielillä.
+
+### Ravintoaineet `fineli_foods`-taulussa
+Lisäkentät 100 g kohden (Fineli, CC BY 4.0): `sat_fat_g` (FASAT), `vit_d_ug` (VITD), `vit_c_mg` (VITC), `b12_ug` (VITB12), `folate_ug` (FOL), `iron_mg` (FE), `calcium_mg` (CA), `potassium_mg` (K), `magnesium_mg` (MG), `zinc_mg` (ZN). Puuttuva arvo on NULL. Saantisuositukset (NNR2023) ovat koodissa (`domain/nutrients.ts`), eivät taulussa.
+
+### Laatuarvio
+Lasketaan, ei tallenneta (`domain/qualityScore.ts`, [QUALITY_SCORE.md](QUALITY_SCORE.md)). Viivakoodituotteelle tallennetaan Open Food Factsin virallinen `nutri_score` (`user_foods.nutri_score` CHECK A–E NULL).
+
+### `reminder_settings` (lisäkentät)
+
+| Kenttä | Tyyppi | Huom. |
+|---|---|---|
+| `weekly_report` | `boolean` NOT NULL DEFAULT false | Ilmoitus maanantaiaamuna klo 9 |
+| `pantry_expiry` | `boolean` NOT NULL DEFAULT true | Vanhenemismuistutus edellisenä aamuna klo 9 |
+
+### Kotinäytön widget
+Ei taulua. Sovellus kirjoittaa laitteelle tilannekuvan (`platepal:widget`: päivän luvut, tekstit aktiivisella kielellä, teeman värit), jonka widget lukee myös sovelluksen ollessa kiinni (`features/widget/`).
+
+---
+
 ## RLS-säännöt
 
 Merkinnät: **R** = select, **I** = insert, **U** = update, **D** = delete. `auth.uid()` = kirjautunut käyttäjä. Backend (`service_role`) ohittaa RLS:n kaikissa tauluissa.
@@ -870,6 +938,14 @@ Huomioita:
 24. **Teksti erillään rakenteesta:** reseptien, ainesosien ja ruokien tekstit ovat käännöstauluissa (`recipe_translations`, `ingredient_translations`, `food_translations`), rakenne ja laskettu data yhteisiä. Uusi kieli = käännösrivit kaikille + käyttöliittymän käännöstiedosto; mitään rakennetta ei kopioida.
 25. **Mittayksiköt:** metrinen tai imperiaalinen (`profiles.unit_system`). Kaikki tallennetaan metrisenä (grammat, millilitrat, kilot, senttimetrit); yksikkö vaikuttaa vain näyttöön ja syöttöön.
 26. **Ravintoarvot muissa maissa:** Fineli säilyy toistaiseksi kaikkien kielten ja maiden pohjana. Muihin maihin laajennettaessa `fineli_foods`-taulun rinnalle voidaan tuoda esim. USDA FoodData Central (Yhdysvallat) ja Open Food Facts (kauppatuotteet). Ainesosa viittaa silloin yhteen lähteeseen, ja lähde näytetään.
+
+27. **Ruokavarasto** (`pantry_items`) viittaa vain ainesosatauluun; skannaus on aina arvio ja käyttäjä vahvistaa. Perusvarat (`profile_pantry_items`) lasketaan aina saatavilla oleviksi "Mitä voin tehdä" -ehdotuksissa.
+28. **Tehty resepti** vähentää käytetyt ainekset varastosta (käyttäjä näkee ja voi poistaa rivejä, kumoa on mahdollinen) ja kirjataan `cooked_recipes`-tauluun.
+29. **Ravintoaineet** tulevat Finelistä samasta elintarvikkeesta kuin makrot; saantisuositukset (NNR2023) iän, sukupuolen sekä raskauden ja imetyksen mukaan ovat koodissa.
+30. **Laatuarvio A–E** on oma, dokumentoitu laskenta Nutri-Scoren periaatteilla; viivakoodituotteilla Open Food Factsin virallinen Nutri-Score.
+31. **Tuodut reseptit** ovat vain käyttäjän omia; lähdelinkki tallennetaan, sivun kuvat ja teksti eivät. Käyttäjän allergeeneista varoitetaan selvästi.
+32. **Raportit** lasketaan kirjatusta datasta (`domain/periodReport.ts`), keskiarvot vain kirjatuista päivistä. Hahmon yhteenveto puhuu vain tavoista.
+33. **Widget** näyttää vain käyttäjän omalla kotinäytöllä olevaa tietoa laitteen tilannekuvasta; "Piilota kalorit" piilottaa luvut myös widgetistä.
 
 ## Avoimet kysymykset
 
