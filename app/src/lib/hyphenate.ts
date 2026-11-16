@@ -1,7 +1,7 @@
 /** Soft hyphen: invisible unless the line breaks there, then shown as "-". */
 export const SOFT_HYPHEN = '­';
 
-// eslint-disable-next-line platewise/no-untranslated-text -- a set of letters for the syllable rule, not text
+// eslint-disable-next-line platepal/no-untranslated-text -- a set of letters for the syllable rule, not text
 const VOWELS = 'aeiouyäöå';
 const LETTER = /[a-zåäöé]/i;
 

@@ -2,12 +2,14 @@
 import { enDiary } from './enDiary';
 import { enFun } from './enFun';
 import { enGoals } from './enGoals';
+import { enKitchen } from './enKitchen';
 import type { Strings } from './types';
 
 export const en: Strings = {
   ...enDiary,
   ...enGoals,
   ...enFun,
+  ...enKitchen,
   common: {
     priceEstimate: 'price estimate',
     priceEstimateTitle: 'Price estimate',
@@ -77,7 +79,6 @@ export const en: Strings = {
   tabs: {
     home: 'Home',
     recipes: 'Recipes',
-    plan: 'Plan',
     diary: 'Diary',
     profile: 'Profile',
     a11yPosition: '{label}, tab {index} of {count}',
@@ -312,7 +313,7 @@ export const en: Strings = {
     favoritesEmptyBody: 'Tap a recipe’s heart and you’ll find it here.',
   },
   plan: {
-    hubTitle: 'Plan',
+    hubTitle: 'Meal plan',
     hubIntro: 'Tell us your budget and what you feel like. You’ll get dinner suggestions and one shopping list.',
     start: 'Make a meal plan',
     startNew: 'Make a new meal plan',
@@ -460,7 +461,7 @@ export const en: Strings = {
     share: 'Share',
     copy: 'Copy',
     copied: 'Shopping list copied to the clipboard',
-    shareTitle: 'Platewise shopping list',
+    shareTitle: 'PlatePal shopping list',
     clearChecked: 'Clear ticks',
     allDone: 'Everything bought!',
     packages: '{count} × {size}',
@@ -473,7 +474,7 @@ export const en: Strings = {
     itemA11y: '{name}, {amount}, {price}',
   },
   onboarding: {
-    welcomeTitle: 'Welcome to Platewise',
+    welcomeTitle: 'Welcome to PlatePal',
     welcomeBody: 'Dinners on a budget, one shopping list and calories in one place. Let’s set a few basics – you can change everything later.',
     welcomeCta: 'Let’s start',
     nameLabel: 'What should we call you?',
@@ -496,7 +497,7 @@ export const en: Strings = {
       eatingDisorder:
         'Thank you for telling me. It sounds like eating feels hard right now, and that’s important to take seriously. I’m not the right help for this, but you don’t have to deal with it alone: talk to a nurse or a doctor, or contact an eating disorder support line in your country. If you like, you can hide calories in your Profile – the diary works without numbers.',
       extremeDiet:
-        'I understand wanting to see results quickly, but very little energy or rapid weight loss is neither safe nor sustainable. Platewise doesn’t recommend less than 1,200 kcal (women) or 1,500 kcal (men) a day, and a pace of at most about 0.75 kg (1.5 lb) a week. Shall we make a calmer plan together that feels good in everyday life?',
+        'I understand wanting to see results quickly, but very little energy or rapid weight loss is neither safe nor sustainable. PlatePal doesn’t recommend less than 1,200 kcal (women) or 1,500 kcal (men) a day, and a pace of at most about 0.75 kg (1.5 lb) a week. Shall we make a calmer plan together that feels good in everyday life?',
       medical:
         'I can’t give a medical assessment here – I don’t know your health and I can’t make diagnoses. Please ask a doctor, nurse or dietitian. I’m happy to help with general food tips, choosing recipes and your shopping list, though!',
     },
@@ -505,7 +506,7 @@ export const en: Strings = {
     proteinFilter: 'The High-protein filter on the Recipes tab shows options that suit you.',
     orList: '{items} or {last}',
     weightSwings:
-      'It’s completely normal for your weight to go up and down from day to day – usually by 0.5–2 kg (1–4 lb). Fluids, salt, carbohydrates, what’s in your stomach and even how much you slept all play a part. That’s why Platewise shows a 7-day average: it shows the direction better than any single weigh-in. Look at the trend over weeks, not a single morning. 🌱',
+      'It’s completely normal for your weight to go up and down from day to day – usually by 0.5–2 kg (1–4 lb). Fluids, salt, carbohydrates, what’s in your stomach and even how much you slept all play a part. That’s why PlatePal shows a 7-day average: it shows the direction better than any single weigh-in. Look at the trend over weeks, not a single morning. 🌱',
     moreVeg:
       'Easy ways: add a handful of frozen vegetables to a soup or stew, keep carrots and cucumber as snacks, and now and then pick a recipe with legumes. One extra serving of vegetables a day is a great first goal!',
     leftovers:
@@ -708,7 +709,7 @@ export const en: Strings = {
     saved: 'Saved',
   },
   paywall: {
-    title: 'Platewise Plus',
+    title: 'PlatePal Plus',
     body: 'Unlimited meal plans, food photo recognition and the full recipe library.',
     feature1: 'Unlimited meal plans and swaps',
     feature2: 'Food from a photo to your diary',

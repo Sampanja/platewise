@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { Icon, PressableScale, Text, useReducedMotion, type IconName } from '@/components/ui';
+import { QuickActions } from '@/features/quick/QuickActions';
 import { format, strings } from '@/i18n';
 import { activeTheme, colors, fontFamilies, motion, radii, shadows, spacing, themedStyles } from '@/theme';
 
@@ -14,13 +15,20 @@ import { BAR_HEIGHT, barPath, MAX_BAR_WIDTH, PRIMARY_SIZE, RISE } from './tabBar
 const ICONS: Record<string, IconName> = {
   index: 'home',
   recipes: 'recipes',
-  plan: 'plus',
   diary: 'diary',
   profile: 'profile',
 };
 
-/** The centre tab is the app's main action and sits in the bar's notch. */
-const PRIMARY_ROUTE = 'plan';
+/**
+ * The centre slot is not a tab but the app's main action: ＋ opens the quick
+ * actions sheet. It sits in the bar's notch between the second and third tab.
+ */
+const PRIMARY_SLOT = 2;
+
+/** Slot of a tab route: the tabs after the centre button move one slot right. */
+function slotOf(routeIndex: number): number {
+  return routeIndex >= PRIMARY_SLOT ? routeIndex + 1 : routeIndex;
+}
 
 /** Tab labels may grow with the system text size, but only this much, so five still fit. */
 const MAX_LABEL_SCALE = 1.25;
@@ -59,32 +67,22 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
   const reducedMotion = useReducedMotion();
   const [barWidth, setBarWidth] = useState(0);
   const [pillX] = useState(() => new Animated.Value(0));
-  const [pillOpacity] = useState(() => new Animated.Value(1));
+  const [quickOpen, setQuickOpen] = useState(false);
 
-  const slotWidth = barWidth / state.routes.length;
+  const slotWidth = barWidth / (state.routes.length + 1);
   const pillWidth = Math.min(slotWidth - PILL_INSET * 2, PILL_MAX);
-  // Narrow phones (about 360 dp) get a slightly smaller label so "Suunnittele" fits its slot.
+  // Narrow phones (about 360 dp) get a slightly smaller label so every label fits its slot.
   const compact = slotWidth > 0 && slotWidth < COMPACT_SLOT;
-  const focusedRoute = state.routes[state.index]?.name;
-  const primaryFocused = focusedRoute === PRIMARY_ROUTE;
 
   useEffect(() => {
     if (barWidth === 0) return;
-    const toX = state.index * slotWidth + (slotWidth - pillWidth) / 2;
-    const animations = [
-      reducedMotion
-        ? Animated.timing(pillX, { toValue: toX, duration: 0, useNativeDriver: true })
-        : Animated.spring(pillX, { toValue: toX, useNativeDriver: true, speed: 18, bounciness: 7 }),
-      Animated.timing(pillOpacity, {
-        toValue: primaryFocused ? 0 : 1,
-        duration: reducedMotion ? 0 : motion.durationFast,
-        useNativeDriver: true,
-      }),
-    ];
-    const animation = Animated.parallel(animations);
+    const toX = slotOf(state.index) * slotWidth + (slotWidth - pillWidth) / 2;
+    const animation = reducedMotion
+      ? Animated.timing(pillX, { toValue: toX, duration: 0, useNativeDriver: true })
+      : Animated.spring(pillX, { toValue: toX, useNativeDriver: true, speed: 18, bounciness: 7 });
     animation.start();
     return () => animation.stop();
-  }, [state.index, barWidth, slotWidth, pillWidth, primaryFocused, pillX, pillOpacity, reducedMotion]);
+  }, [state.index, barWidth, slotWidth, pillWidth, pillX, reducedMotion]);
 
   const onBarLayout = (event: LayoutChangeEvent) => setBarWidth(event.nativeEvent.layout.width);
   const dark = activeTheme() === 'dark';
@@ -108,9 +106,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
                   strokeWidth={StyleSheet.hairlineWidth * 2}
                 />
               </Svg>
-              <Animated.View
-                style={[styles.pill, { width: pillWidth, opacity: pillOpacity, transform: [{ translateX: pillX }] }]}
-              />
+              <Animated.View style={[styles.pill, { width: pillWidth, transform: [{ translateX: pillX }] }]} />
             </>
           ) : null}
         </View>
@@ -137,17 +133,7 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
               }),
             };
 
-            return route.name === PRIMARY_ROUTE ? (
-              <PrimaryTab
-                key={route.key}
-                compact={compact}
-                label={label}
-                focused={focused}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                {...a11y}
-              />
-            ) : (
+            const tab = (
               <Tab
                 key={route.key}
                 compact={compact}
@@ -159,9 +145,15 @@ export function TabBar({ state, descriptors, emitter, navigateToTab }: BottomTab
                 {...a11y}
               />
             );
+            if (index !== PRIMARY_SLOT) return tab;
+            return [
+              <PrimaryAction key="quick" compact={compact} open={quickOpen} onPress={() => setQuickOpen(true)} />,
+              tab,
+            ];
           })}
         </View>
       </View>
+      <QuickActions visible={quickOpen} onClose={() => setQuickOpen(false)} />
     </View>
   );
 }
@@ -226,41 +218,50 @@ function Tab({ icon, label, focused, compact, ...pressable }: TabProps & { icon:
   );
 }
 
-function PrimaryTab({ label, focused, compact, ...pressable }: TabProps) {
+type PrimaryActionProps = { compact: boolean; open: boolean; onPress: () => void };
+
+/** The centre ＋ opens the quick actions; while the sheet is open the plus turns into a ×. */
+function PrimaryAction({ compact, open, onPress }: PrimaryActionProps) {
   const reducedMotion = useReducedMotion();
-  const [rotation] = useState(() => new Animated.Value(focused ? 1 : 0));
+  const [rotation] = useState(() => new Animated.Value(open ? 1 : 0));
 
   useEffect(() => {
     const animation = Animated.timing(rotation, {
-      toValue: focused ? 1 : 0,
+      toValue: open ? 1 : 0,
       duration: reducedMotion ? 0 : motion.durationBase,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     });
     animation.start();
     return () => animation.stop();
-  }, [focused, reducedMotion, rotation]);
+  }, [open, reducedMotion, rotation]);
 
   return (
-    <PressableScale haptic="tap" style={styles.primaryTab} {...pressable}>
-      <View style={[styles.primaryButton, focused && styles.primaryButtonFocused]}>
-        {/* A quarter turn of the plus marks the active state without changing the shape. */}
+    <PressableScale
+      haptic="tap"
+      style={styles.primaryTab}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={strings.quick.a11y}
+      accessibilityState={{ expanded: open }}
+    >
+      <View style={[styles.primaryButton, open && styles.primaryButtonFocused]}>
         <Animated.View
           style={{
-            transform: [{ rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) }],
+            transform: [{ rotate: rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) }],
           }}
         >
-          <Icon name="plus" size={28} color="textOnAccent" strokeWidth={2.6} />
+          <Icon name="plus" size={30} color="textOnAccent" strokeWidth={2.6} />
         </Animated.View>
       </View>
       <Text
         variant="tabLabel"
-        color={focused ? 'accentText' : 'textMuted'}
+        color="textMuted"
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_LABEL_SCALE}
         style={[styles.label, styles.labelFocused, compact && styles.labelCompact]}
       >
-        {label}
+        {strings.quick.tabLabel}
       </Text>
     </PressableScale>
   );

@@ -17,7 +17,7 @@ import { reminderHours } from '@/domain/hydration';
  */
 
 const CHANNEL = 'meal-reminders';
-const TAG = 'platewise-meal';
+const TAG = 'platepal-meal';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -74,7 +74,7 @@ export async function scheduleMealReminders(
   return entries.length;
 }
 
-const WATER_TAG = 'platewise-water';
+const WATER_TAG = 'platepal-water';
 
 /**
  * Gentle drink reminders through the day, in the character's voice. The text

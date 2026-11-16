@@ -15,7 +15,7 @@ import type { PersistStorage, StorageValue } from 'zustand/middleware';
  */
 
 /** Key prefix, so "Nollaa sovelluksen tiedot" can clear exactly our keys. */
-export const STORAGE_PREFIX = 'platewise:';
+export const STORAGE_PREFIX = 'platepal:';
 
 export const WRITE_DELAY_MS = 400;
 

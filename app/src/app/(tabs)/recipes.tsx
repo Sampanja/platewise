@@ -11,6 +11,7 @@ import {
   Icon,
   IconButton,
   PressableScale,
+  Segmented,
   SelectChip,
   Skeleton,
   Text,
@@ -21,6 +22,7 @@ import { useServingPrice, useUserRules } from '@/data/hooks';
 import { useAllowedRecipesQuery } from '@/data/queries';
 import type { Recipe } from '@/data/types';
 import { useFavoritesStore } from '@/data/stores/favorites';
+import { MyRecipesList } from '@/features/recipe/MyRecipesList';
 import {
   filterRecipes,
   MEAL_CHOICES,
@@ -34,6 +36,12 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.recipes;
 const SORTS: readonly RecipeSort[] = ['recommended', 'price', 'time', 'kcal'];
+/** Favourites have their own segment, so the library's chips leave them out. */
+const LIBRARY_FILTERS = RECIPE_FILTERS.filter((filter) => filter !== 'favorites');
+const FAVORITES_ONLY: RecipeFilter[] = ['favorites'];
+
+type Segment = 'library' | 'favorites' | 'mine';
+const SEGMENTS: readonly Segment[] = ['library', 'favorites', 'mine'];
 
 function RecipesScreen() {
   const tabBarSpace = useTabBarSpace();
@@ -53,10 +61,17 @@ function RecipesScreen() {
   const [meal, setMeal] = useState<MealChoice>('all');
   const [filters, setFilters] = useState<RecipeFilter[]>([]);
   const [sort, setSort] = useState<RecipeSort>('recommended');
+  const [segment, setSegment] = useState<Segment>('library');
+  const favoritesView = segment === 'favorites';
+  const shownFilters = favoritesView ? FAVORITES_ONLY : filters;
+  const shownMeal: MealChoice = favoritesView ? 'all' : meal;
 
   // The chips update at once; the list follows in an interruptible render, so a
   // tap never waits for dozens of cards to re-render.
-  const criteria = useDeferredValue(useMemo(() => ({ query, meal, filters, sort }), [query, meal, filters, sort]));
+  const criteria = useDeferredValue(useMemo(
+      () => ({ query, meal: shownMeal, filters: shownFilters, sort }),
+      [query, shownMeal, shownFilters, sort],
+    ));
   const visible = useMemo(
     () =>
       filterRecipes(recipesQuery.data ?? [], {
@@ -76,7 +91,8 @@ function RecipesScreen() {
     setMeal('all');
     setFilters([]);
   };
-  const onlyFavorites = filters.length === 1 && filters[0] === 'favorites' && query === '' && meal === 'all';
+  const onlyFavorites = favoritesView && query === '';
+  const segments = SEGMENTS.map((value) => ({ value, label: strings.recipeSegments[value] }));
 
   const header = (
     <View style={styles.header}>
@@ -90,6 +106,8 @@ function RecipesScreen() {
           </Text>
         ) : null}
       </View>
+
+      <Segmented value={segment} options={segments} onChange={setSegment} accessibilityLabel={strings.recipeSegments.a11y} />
 
       <TextField
         icon="search"
@@ -112,6 +130,8 @@ function RecipesScreen() {
         }
       />
 
+      {favoritesView ? null : (
+      <>
       <View style={styles.meals} accessibilityRole="radiogroup">
         {MEAL_CHOICES.map((value) => {
           const selected = meal === value;
@@ -139,11 +159,10 @@ function RecipesScreen() {
         contentContainerStyle={styles.chips}
         style={styles.bleed}
       >
-        {RECIPE_FILTERS.map((filter) => (
+        {LIBRARY_FILTERS.map((filter) => (
           <SelectChip
             key={filter}
             label={t.filters[filter]}
-            icon={filter === 'favorites' ? 'heart' : undefined}
             selected={filters.includes(filter)}
             onPress={() => toggleFilter(filter)}
           />
@@ -171,6 +190,8 @@ function RecipesScreen() {
           );
         })}
       </View>
+      </>
+      )}
 
       {hasRules ? (
         <PressableScale
@@ -190,7 +211,19 @@ function RecipesScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {recipesQuery.isPending ? (
+      {segment === 'mine' ? (
+        <MyRecipesList
+          header={
+            <View style={styles.header}>
+              <Text variant="displayLarge" accessibilityRole="header" style={styles.titleRow}>
+                {t.title}
+              </Text>
+              <Segmented value={segment} options={segments} onChange={setSegment} accessibilityLabel={strings.recipeSegments.a11y} />
+            </View>
+          }
+          bottomSpace={tabBarSpace}
+        />
+      ) : recipesQuery.isPending ? (
         <ScrollView contentContainerStyle={styles.list}>
           {header}
           <View style={styles.skeletonGrid} accessible accessibilityLabel={strings.common.loading}>

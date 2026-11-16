@@ -25,7 +25,7 @@ const FIELDS = [
 ].join(',');
 const TIMEOUT_MS = 10_000;
 /** OFF asks API clients to identify themselves. */
-const USER_AGENT = 'Platewise/1.0 (Android; test build)';
+const USER_AGENT = 'PlatePal/1.0 (Android; test build)';
 
 export type BarcodeResult = ParsedProduct | { status: 'offline' };
 

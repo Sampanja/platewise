@@ -2,10 +2,9 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { openRecipe } from '@/components/RecipeCard';
 import { RecipeImage } from '@/components/RecipeImage';
-import { useTabBarSpace } from '@/components/TabBar';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, FadeInView, Icon, PressableScale, Text } from '@/components/ui';
 import { INGREDIENTS_BY_ID, RECIPES, RECIPES_BY_ID } from '@/data/catalog';
 import { useActivePlan, useUserRules } from '@/data/hooks';
@@ -22,9 +21,8 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.plan;
 
-/** Suunnittele tab: start the questionnaire, continue a proposal or look at the current plan. */
-function PlanScreen() {
-  const tabBarSpace = useTabBarSpace();
+/** Ruokalista: start the questionnaire, continue a proposal or look at the current plan. Opened from ＋ and Koti. */
+export default function PlanScreen() {
   const plan = useActivePlan();
   const proposal = usePlansStore((s) => s.proposal);
   const pinned = usePlansStore((s) => s.pinnedRecipeIds);
@@ -59,8 +57,9 @@ function PlanScreen() {
     .map((recipe) => recipe.title);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <ScreenHeader />
+      <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text variant="displayLarge" accessibilityRole="header">
             {t.hubTitle}
@@ -222,6 +221,7 @@ const styles = themedStyles(() =>
     content: {
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.sm,
+      paddingBottom: spacing.xxl,
       gap: spacing.xl,
     },
     header: {
@@ -277,4 +277,3 @@ const styles = themedStyles(() =>
   }),
 );
 
-export default withFreezeOnBlur(PlanScreen);

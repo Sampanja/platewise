@@ -15,7 +15,7 @@ function isObject(value: unknown): value is Loose {
 }
 
 /**
- * Platewise is a single-person app: the household size was removed from the
+ * PlatePal is a single-person app: the household size was removed from the
  * profile (v5). The number of eaters is chosen per plan in the questionnaire.
  */
 export function dropHouseholdSize<T>(profile: T): T {

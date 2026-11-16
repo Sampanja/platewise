@@ -9,7 +9,7 @@
  * Text belongs in src/i18n/<lang>*.ts (UI) or src/data/catalog/text/<lang>/
  * (recipes, ingredients, foods). Units and symbols such as "g", "%" or "×"
  * have no letters and pass. A deliberate exception takes an inline
- * `// eslint-disable-next-line platewise/no-untranslated-text -- why`.
+ * `// eslint-disable-next-line platepal/no-untranslated-text -- why`.
  */
 const VISIBLE_PROPS = new Set([
   'label',

@@ -1,9 +1,6 @@
-import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { Card, EmptyState, FadeInView, PressableScale, ProgressMeter, Text } from '@/components/ui';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
@@ -14,16 +11,20 @@ import { dayReport, REFERENCE, weekReport } from '@/domain/report';
 import { BarChart } from '@/features/diary/BarChart';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
 import { formatWater } from '@/lib/amounts';
-import { diaryDayLabel, today, weekdayShort, type LocalDate } from '@/lib/dates';
+import { diaryDayLabel, weekdayShort, type LocalDate } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles, type ColorToken } from '@/theme';
 
 const t = strings.report;
 type View_ = 'day' | 'week';
 
-/** Day and week reports. Describes what was logged; never judges it. */
-export default function ReportScreen() {
-  const params = useLocalSearchParams<{ date?: string }>();
-  const date: LocalDate = params.date || today();
+export type ReportsViewProps = {
+  /** The day the diary shows; the week ends on it. */
+  date: LocalDate;
+  bottomSpace: number;
+};
+
+/** Päiväkirja → Raportit: day and week reports. Describes what was logged; never judges it. */
+export function ReportsView({ date, bottomSpace }: ReportsViewProps) {
   const [view, setView] = useState<View_>('day');
   const entries = useDiaryStore((s) => s.entries);
   const goals = useProfileStore((s) => s.goals);
@@ -37,8 +38,7 @@ export default function ReportScreen() {
   const weekday = (d: LocalDate) => weekdayShort(d);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScreenHeader title={t.title} />
+    <View style={styles.safe}>
       <View style={styles.tabs} accessibilityRole="tablist">
         {(['day', 'week'] as const).map((value) => {
           const selected = view === value;
@@ -59,7 +59,7 @@ export default function ReportScreen() {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         {view === 'day' ? (
           <FadeInView key="day" style={styles.gap}>
             <Text variant="title" accessibilityRole="header">
@@ -200,7 +200,7 @@ export default function ReportScreen() {
           {t.neutral}
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -252,11 +252,11 @@ const styles = themedStyles(() =>
   StyleSheet.create({
     safe: {
       flex: 1,
-      backgroundColor: colors.bg,
     },
     tabs: {
       flexDirection: 'row',
       marginHorizontal: spacing.lg,
+      marginTop: spacing.md,
       padding: spacing.xs,
       gap: spacing.xs,
       borderRadius: radii.pill,

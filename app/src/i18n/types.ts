@@ -3,6 +3,7 @@ import type { fiCharacters } from './fiCharacters';
 import type { fiDiary } from './fiDiary';
 import type { fiFun } from './fiFun';
 import type { fiGoals } from './fiGoals';
+import type { fiKitchen } from './fiKitchen';
 
 /**
  * The shape of a string table with every literal widened to `string`, so a
@@ -21,4 +22,5 @@ export type Strings = Widen<typeof fi>;
 export type DiaryStrings = Widen<typeof fiDiary>;
 export type FunStrings = Widen<typeof fiFun>;
 export type GoalStrings = Widen<typeof fiGoals>;
+export type KitchenStrings = Widen<typeof fiKitchen>;
 export type CharacterVoices = typeof fiCharacters;

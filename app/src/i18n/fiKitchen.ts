@@ -1,0 +1,42 @@
+/** Finnish strings for the quick actions, the pantry, text and voice logging and recipe import. */
+export const fiKitchen = {
+  quick: {
+    tabLabel: 'Lisää',
+    a11y: 'Pikatoiminnot',
+    title: 'Mitä tehdään?',
+    logMeal: 'Kirjaa ateria',
+    logMealTo: 'Kirjataan: {meal}',
+    photo: 'Kuva',
+    speak: 'Puhu',
+    write: 'Kirjoita',
+    barcode: 'Viivakoodi',
+    search: 'Hae',
+    scanPantry: 'Skannaa jääkaappi tai kaappi',
+    scanPantryHint: 'Kuvaa hyllyt, niin ruokavarasto päivittyy',
+    makePlan: 'Tee ruokalista',
+    makePlanHint: 'Päivälliset ja ostoslista budjettiin',
+    addWeight: 'Lisää paino',
+    addWeightHint: 'Päivän punnitus ja painon trendi',
+  },
+  recipeSegments: {
+    library: 'Kirjasto',
+    pantry: 'Varastosta',
+    favorites: 'Suosikit',
+    mine: 'Omat',
+    a11y: 'Reseptien näkymä',
+  },
+  diarySegments: {
+    today: 'Tänään',
+    reports: 'Raportit',
+    a11y: 'Päiväkirjan näkymä',
+  },
+  myRecipes: {
+    title: 'Omat reseptit',
+    intro: 'Omat ja tuodut reseptisi näkyvät vain sinulle.',
+    create: 'Luo oma resepti',
+    emptyTitle: 'Ei vielä omia reseptejä',
+    emptyBody: 'Kokoa resepti ainesosista, niin voit kirjata sen päiväkirjaan annos kerrallaan.',
+    servings: '{count} annosta',
+    perServing: '{kcal} kcal / annos',
+  },
+};

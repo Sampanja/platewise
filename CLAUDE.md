@@ -1,4 +1,4 @@
-# Platewise
+# PlatePal
 
 Lue docs/PROGRESS.md jokaisen keskustelun alussa ja päivitä se ennen jokaista committia (mitä tehtiin, mikä on kesken, seuraava askel).
 
@@ -40,7 +40,7 @@ Näistä ei poiketa ilman erillistä päätöstä:
 - TypeScript strict-tilassa kaikkialla, ei `any`-tyyppiä ilman perusteltua kommenttia.
 - Tekoälyn JSON-vastaukset validoidaan skeemalla (esim. Zod) ennen käyttöä.
 - Tietokantamuutokset tehdään vain Supabase-migraatioina. RLS on päällä jokaisessa käyttäjädataa sisältävässä taulussa.
-- Koodi, tunnisteet ja commit-viestit englanniksi. Käyttäjälle näkyvät tekstit käännöstiedostoissa, ei koskaan kovakoodattuina: käyttöliittymä `src/i18n/<kieli>*.ts` (suomi `fi.ts` on avainten lähde), hahmot `<kieli>Characters.ts`, reseptit, ainesosat ja ruoat `src/data/catalog/text/<kieli>/`. Lint-sääntö `platewise/no-untranslated-text` estää kovakoodatut tekstit, ja `keys.test.ts`, `characterVoices.test.ts` ja `text.test.ts` vaativat jokaisen avaimen, repliikin ja reseptin jokaisella kielellä. Uusi kieli = käännöstiedostot + rivi rekistereihin (`i18n/languages.ts`, `i18n/registry.ts`, `data/catalog/text/index.ts`).
+- Koodi, tunnisteet ja commit-viestit englanniksi. Käyttäjälle näkyvät tekstit käännöstiedostoissa, ei koskaan kovakoodattuina: käyttöliittymä `src/i18n/<kieli>*.ts` (suomi `fi.ts` on avainten lähde), hahmot `<kieli>Characters.ts`, reseptit, ainesosat ja ruoat `src/data/catalog/text/<kieli>/`. Lint-sääntö `platepal/no-untranslated-text` estää kovakoodatut tekstit, ja `keys.test.ts`, `characterVoices.test.ts` ja `text.test.ts` vaativat jokaisen avaimen, repliikin ja reseptin jokaisella kielellä. Uusi kieli = käännöstiedostot + rivi rekistereihin (`i18n/languages.ts`, `i18n/registry.ts`, `data/catalog/text/index.ts`).
 - Kielen vaihto ei käynnistä sovellusta uudelleen: `strings` lukee aktiivisen kielen renderöinnin aikana, ja juurilayout remountaa näkymät. Moduulitasolla saa ottaa `const t = strings.osio`, mutta ei valmiita merkkijonoja (`format(…)`) tai taulukoita, koska ne jäisivät vanhalle kielelle. Katalogin tekstit luetaan gettereillä samoista olioista.
 - Muotoilu aina apufunktioilla (`formatMoney`, `formatDecimal`, `lib/dates.ts`, `lib/amounts.ts`), ei `toFixed`/`'fi-FI'`-kovakoodausta. Hermes tuntee vain oikeat lokaalit (`intlLocale`), ja valuutan lyhyt symboli korvaa ISO-koodin. Määrät, paino, pituus ja vesi tallennetaan metrisinä ja näytetään käyttäjän yksiköillä.
 - Allergeenien avainsanatarkistus lukee reseptin suomenkielisen lähdetekstin (`sourceText`); käännökset tarkistetaan oman kielensä sanoilla (`text/allergenKeywords.ts`). Chatin turvaluokitus kattaa kaikki kielet riippumatta käyttöliittymän kielestä.

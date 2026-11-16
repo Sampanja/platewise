@@ -19,6 +19,7 @@ import {
   PressableScale,
   ProgressMeter,
   Ring,
+  Segmented,
   Text,
   TextField,
 } from '@/components/ui';
@@ -43,6 +44,7 @@ import { entryAmount } from '@/features/diary/entryAmount';
 import { WaterCard } from '@/features/diary/WaterCard';
 import { WeekChart } from '@/features/diary/WeekChart';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
+import { ReportsView } from '@/features/reports/ReportsView';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
 import { addDays, diaryDayLabel, today, type LocalDate } from '@/lib/dates';
@@ -53,9 +55,13 @@ const t = strings.diary;
 /** Days a meal can be copied to, relative to the shown day. */
 const COPY_OFFSETS = [-1, 1, 2, 3, 4, 5, 6, 7];
 
+type Segment = 'today' | 'reports';
+const SEGMENTS: readonly Segment[] = ['today', 'reports'];
+
 function DiaryScreen() {
   const tabBarSpace = useTabBarSpace();
   const [date, setDate] = useState<LocalDate>(today());
+  const [segment, setSegment] = useState<Segment>('today');
   const { voice } = useCharacter();
   const [menuFor, setMenuFor] = useState<DiaryMeal | null>(null);
   const [copyFor, setCopyFor] = useState<DiaryMeal | null>(null);
@@ -142,6 +148,18 @@ function DiaryScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.segments}>
+        <Segmented
+          value={segment}
+          options={SEGMENTS.map((value) => ({ value, label: strings.diarySegments[value] }))}
+          onChange={setSegment}
+          accessibilityLabel={strings.diarySegments.a11y}
+        />
+      </View>
+      {segment === 'reports' ? (
+        <ReportsView date={date} bottomSpace={tabBarSpace} />
+      ) : (
+      <>
       <View style={styles.dayBar}>
         <IconButton icon="chevronLeft" accessibilityLabel={t.prevDay} onPress={() => changeDay(-1)} haptic="none" />
         <View style={styles.dayTitle}>
@@ -200,14 +218,6 @@ function DiaryScreen() {
           )}
 
           <View style={styles.tools}>
-            <Button
-              label={strings.report.title}
-              variant="secondary"
-              size="compact"
-              icon={<Icon name="chart" size={18} />}
-              accessibilityLabel={strings.report.open}
-              onPress={() => router.push({ pathname: '/report', params: { date } })}
-            />
             <Button
               label={strings.copyDay.action}
               variant="secondary"
@@ -305,6 +315,8 @@ function DiaryScreen() {
           )}
         </View>
       </ScrollView>
+      </>
+      )}
 
       <Sheet
         visible={menuFor !== null}
@@ -440,6 +452,10 @@ function MacroBar({ label, value, goal }: { label: string; value: number; goal: 
 
 const styles = themedStyles(() =>
   StyleSheet.create({
+    segments: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+    },
     safe: {
       flex: 1,
       backgroundColor: colors.bg,

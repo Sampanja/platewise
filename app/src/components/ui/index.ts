@@ -21,3 +21,4 @@ export { SwitchRow, type SwitchRowProps } from './SwitchRow';
 export { TextField, type TextFieldProps } from './TextField';
 export { AnimatedNumber, type AnimatedNumberProps } from './AnimatedNumber';
 export { Slider, type SliderProps } from './Slider';
+export { Segmented, type SegmentedProps } from './Segmented';

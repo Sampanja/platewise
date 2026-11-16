@@ -1,4 +1,4 @@
-# Platewise – reseptien generointi
+# PlatePal – reseptien generointi
 
 Miten ateriasuunnitelma generoidaan Claude API:lla: mallin asetukset, system prompt, JSON-skeema (Zod), allergiatarkistuksen kulku ja budjetin korjaussilmukka. Lisäksi reseptikirjaston esitäyttö (kohta 10) ja päiväkirjan ruokakuvan tunnistus kustannusrajoineen (kohta 11). Pohjana [PLAN.md](PLAN.md), [DATA_MODEL.md](DATA_MODEL.md) ja [CLAUDE.md](../CLAUDE.md):n arkkitehtuuriperiaatteet. Tämä on suunnitelma; koodi kirjoitetaan myöhemmin Edge Functioneihin (TypeScript, `@anthropic-ai/sdk`).
 
@@ -99,7 +99,7 @@ Muuttuu joka pyynnöllä, eikä siksi ole välimuistissa:
 Versio `plan-v2` (v1 → v2: 1–6 syöjää, toiveet, `cuisine` ja `main_protein`). Kirjoitettu suomeksi, koska tuotos on suomeksi ja tiimi ylläpitää sitä.
 
 ```text
-Olet Platewisen ruokasuunnittelija. Suunnittelet arkipäivällisiä 1–6 hengen
+Olet PlatePalin ruokasuunnittelija. Suunnittelet arkipäivällisiä 1–6 hengen
 talouksille Suomessa. Kaikki ainesosat ostetaan yhdellä kauppareissulla tavallisesta
 suomalaisesta ruokakaupasta, ja ateriat syödään peräkkäisinä päivinä.
 
@@ -551,7 +551,7 @@ Kustannukset kirjataan jokaisesta kutsusta `generation_runs`-tauluun (`input_tok
 ## 15. Tietosuoja
 
 - Anthropicille lähetetään vain katalogi, syöjien määrä, budjetti, aterioiden määrä, toiveet, perusvarat ja kielletyt slugit ilman syytä. Allergia- ja ruokavaliotietoja ei lähetetä, eivät myöskään kyselyssä lisätyt.
-- **Ruokakuva** lähetetään Anthropicille tunnistusta varten, mutta sitä ei tallenneta Platewisen järjestelmiin. Kuva pienennetään ja uudelleenkoodataan laitteella, jolloin EXIF- ja sijaintitiedot poistuvat. Tietosuojaselosteessa ja ensimmäisellä käyttökerralla kerrotaan, että kuva käsitellään tekoälypalvelussa.
+- **Ruokakuva** lähetetään Anthropicille tunnistusta varten, mutta sitä ei tallenneta PlatePalin järjestelmiin. Kuva pienennetään ja uudelleenkoodataan laitteella, jolloin EXIF- ja sijaintitiedot poistuvat. Tietosuojaselosteessa ja ensimmäisellä käyttökerralla kerrotaan, että kuva käsitellään tekoälypalvelussa.
 - Tunnistuksen tulos (mitä käyttäjä söi) on päiväkirjatietoa ja siten terveystietoa: sitä ei lokiteta, ei lähetetä analytiikkaan eikä Sentryyn.
 - Anthropic on henkilötietojen käsittelijä (DPA ja tietosuojaselosteeseen maininta). Pyyntöihin ei liitetä käyttäjän nimeä tai sähköpostia.
 - Lokeihin ja Sentryyn ei kirjata promptteja eikä mallin vastauksia sellaisenaan, koska "Älä käytä" -listasta voi päätellä allergioita. Vianselvitykseen tallennetaan vain `generation_runs`-rivin metatiedot.
@@ -626,7 +626,7 @@ Sovellus ──► Edge Function `assistant-chat`
 ### 17.3 System prompt (luonnos)
 
 ```
-Olet Nuppu, Platewise-sovelluksen ystävällinen nauris-hahmo. Puhut suomea,
+Olet Nuppu, PlatePal-sovelluksen ystävällinen nauris-hahmo. Puhut suomea,
 sinuttelet, olet lämmin, lyhytsanainen ja vähän hassu. Autat arjen ruoassa:
 reseptivinkit, kasvikset, ylijäämät, ostoslista, kirjaaminen ja juominen.
 

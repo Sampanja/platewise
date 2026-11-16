@@ -2,11 +2,13 @@
 import { fiDiary } from './fiDiary';
 import { fiFun } from './fiFun';
 import { fiGoals } from './fiGoals';
+import { fiKitchen } from './fiKitchen';
 
 export const fi = {
   ...fiDiary,
   ...fiGoals,
   ...fiFun,
+  ...fiKitchen,
   common: {
     priceEstimate: 'hinta-arvio',
     priceEstimateTitle: 'Hinta-arvio',
@@ -76,7 +78,6 @@ export const fi = {
   tabs: {
     home: 'Koti',
     recipes: 'Reseptit',
-    plan: 'Suunnittele',
     diary: 'Päiväkirja',
     profile: 'Profiili',
     a11yPosition: '{label}, välilehti {index}/{count}',
@@ -311,7 +312,7 @@ export const fi = {
     favoritesEmptyBody: 'Napauta reseptin sydäntä, niin löydät sen täältä.',
   },
   plan: {
-    hubTitle: 'Suunnittele',
+    hubTitle: 'Ruokalista',
     hubIntro: 'Kerro budjetti ja mitä tekee mieli. Saat päivällisehdotukset ja yhden ostoslistan.',
     start: 'Tee ruokalista',
     startNew: 'Tee uusi ruokalista',
@@ -459,7 +460,7 @@ export const fi = {
     share: 'Jaa',
     copy: 'Kopioi',
     copied: 'Ostoslista kopioitu leikepöydälle',
-    shareTitle: 'Platewise-ostoslista',
+    shareTitle: 'PlatePal-ostoslista',
     clearChecked: 'Poista rastit',
     allDone: 'Kaikki ostettu!',
     packages: '{count} × {size}',
@@ -472,7 +473,7 @@ export const fi = {
     itemA11y: '{name}, {amount}, {price}',
   },
   onboarding: {
-    welcomeTitle: 'Tervetuloa Platewiseen',
+    welcomeTitle: 'Tervetuloa PlatePaliin',
     welcomeBody: 'Päivälliset budjetilla, yksi ostoslista ja kalorit samassa paikassa. Asetetaan muutama perustieto – kaiken voi muuttaa myöhemmin.',
     welcomeCta: 'Aloitetaan',
     nameLabel: 'Mitä nimeä käytämme?',
@@ -662,7 +663,7 @@ export const fi = {
     saved: 'Tallennettu',
   },
   paywall: {
-    title: 'Platewise Plus',
+    title: 'PlatePal Plus',
     body: 'Rajattomasti ruokalistoja, ruokakuvan tunnistus ja koko reseptikirjasto.',
     feature1: 'Rajattomasti ruokalistoja ja vaihtoja',
     feature2: 'Ruoka kuvasta päiväkirjaan',
@@ -841,7 +842,7 @@ export const fi = {
       eatingDisorder:
         'Kiitos, että kerroit. Kuulostaa siltä, että syöminen tuntuu nyt raskaalta, ja se on tärkeää ottaa vakavasti. En ole oikea apu tähän, mutta sinun ei tarvitse olla asian kanssa yksin: juttele terveydenhoitajan tai lääkärin kanssa, tai soita Syömishäiriöliiton SYLIn tukipuhelimeen. Voit halutessasi ottaa kalorit piiloon Profiilista – päiväkirjaa voi käyttää ilman numeroita.',
       extremeDiet:
-        'Ymmärrän halun nähdä tuloksia nopeasti, mutta hyvin pieni energiamäärä tai nopea pudotus ei ole turvallista eikä kestävää. Platewise ei suosittele alle 1 200 kcal (naiset) tai 1 500 kcal (miehet) päivässä, ja vauhti on enintään noin 0,75 kg viikossa. Tehdäänkö yhdessä rauhallisempi suunnitelma, joka tuntuu hyvältä arjessa?',
+        'Ymmärrän halun nähdä tuloksia nopeasti, mutta hyvin pieni energiamäärä tai nopea pudotus ei ole turvallista eikä kestävää. PlatePal ei suosittele alle 1 200 kcal (naiset) tai 1 500 kcal (miehet) päivässä, ja vauhti on enintään noin 0,75 kg viikossa. Tehdäänkö yhdessä rauhallisempi suunnitelma, joka tuntuu hyvältä arjessa?',
       medical:
         'Tähän en voi antaa lääketieteellistä arviota – en tunne terveydentilaasi enkä voi tehdä diagnooseja. Kysy asiasta lääkäriltä, terveydenhoitajalta tai ravitsemusterapeutilta. Voin kyllä auttaa yleisissä ruokavinkeissä, reseptien valinnassa ja ostoslistassa!',
     },
@@ -850,7 +851,7 @@ export const fi = {
     proteinFilter: 'Reseptit-välilehden Proteiinipitoinen-suodatin näyttää sinulle sopivat vaihtoehdot.',
     orList: '{items} tai {last}',
     weightSwings:
-      'Paino heiluu päivästä toiseen ihan normaalisti – yleensä 0,5–2 kg. Syynä ovat nesteet, suola, hiilihydraatit, vatsan sisältö ja vaikka unen määrä. Siksi Platewise näyttää 7 päivän keskiarvon: se kertoo suunnan paremmin kuin yksittäinen punnitus. Katso viikkojen trendiä, älä yksittäistä aamua. 🌱',
+      'Paino heiluu päivästä toiseen ihan normaalisti – yleensä 0,5–2 kg. Syynä ovat nesteet, suola, hiilihydraatit, vatsan sisältö ja vaikka unen määrä. Siksi PlatePal näyttää 7 päivän keskiarvon: se kertoo suunnan paremmin kuin yksittäinen punnitus. Katso viikkojen trendiä, älä yksittäistä aamua. 🌱',
     moreVeg:
       'Helppoja tapoja: lisää kourallinen pakastekasviksia keittoon tai pataan, pidä porkkanaa ja kurkkua välipalana ja valitse välillä resepti, jossa on palkokasveja. Tavoitteeksi riittää aluksi yksi kasvisannos lisää päivään!',
     leftovers:

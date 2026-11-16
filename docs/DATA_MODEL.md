@@ -1,4 +1,4 @@
-# Platewise – tietomalli
+# PlatePal – tietomalli
 
 Postgres-tietomalli (Supabase) MVP:lle. Pohjana [PLAN.md](PLAN.md) ja [CLAUDE.md](../CLAUDE.md):n arkkitehtuuriperiaatteet. Tämä on suunnitelma; varsinainen toteutus tehdään Supabase-migraatioina.
 
@@ -363,7 +363,7 @@ Tilauksen tila. Kirjoittaa vain RevenueCat-webhookin Edge Function.
 |---|---|---|
 | `user_id` | `uuid` PK, FK → `profiles` ON DELETE CASCADE | RevenueCatin `app_user_id` = tämä |
 | `status` | enum `subscription_status` NOT NULL | `trialing`, `active`, `in_grace_period`, `expired`, `cancelled`, `billing_issue` |
-| `product_id` | `text` NOT NULL | Esim. `platewise_monthly`, `platewise_yearly` |
+| `product_id` | `text` NOT NULL | Esim. `platepal_monthly`, `platepal_yearly` |
 | `store` | enum `app_store` NOT NULL | `app_store`, `play_store` |
 | `current_period_ends_at` | `timestamptz` NOT NULL | |
 | `will_renew` | `boolean` NOT NULL | |
@@ -873,6 +873,6 @@ Huomioita:
 
 ## Avoimet kysymykset
 
-1. **Suunnitelman jakaminen toiselle** (vaihe 3): Platewise on yksilösovellus, mutta valmiin ostoslistan voi jakaa tekstinä. Varsinainen jaettu suunnitelma vaatisi oman taulun, eikä sitä suunnitella nyt.
+1. **Suunnitelman jakaminen toiselle** (vaihe 3): PlatePal on yksilösovellus, mutta valmiin ostoslistan voi jakaa tekstinä. Varsinainen jaettu suunnitelma vaatisi oman taulun, eikä sitä suunnitella nyt.
 2. **Hintojen korjausehdotukset** (vaihe 2): uusi taulu `price_reports` (käyttäjä, ainesosa, hinta-alue, havaittu hinta).
 3. **Viivakoodituotteiden jakaminen käyttäjien kesken:** nyt jokaisella on oma välimuistinsa (`user_foods`). Yhteinen, tarkistettu tuotetaulu vähentäisi hakuja ja virheitä, mutta vaatii moderoinnin.

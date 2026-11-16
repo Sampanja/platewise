@@ -2,12 +2,14 @@
 import { svDiary } from './svDiary';
 import { svFun } from './svFun';
 import { svGoals } from './svGoals';
+import { svKitchen } from './svKitchen';
 import type { Strings } from './types';
 
 export const sv: Strings = {
   ...svDiary,
   ...svGoals,
   ...svFun,
+  ...svKitchen,
   common: {
     priceEstimate: 'prisuppskattning',
     priceEstimateTitle: 'Prisuppskattning',
@@ -77,7 +79,6 @@ export const sv: Strings = {
   tabs: {
     home: 'Hem',
     recipes: 'Recept',
-    plan: 'Planera',
     diary: 'Dagbok',
     profile: 'Profil',
     a11yPosition: '{label}, flik {index}/{count}',
@@ -312,7 +313,7 @@ export const sv: Strings = {
     favoritesEmptyBody: 'Tryck på receptets hjärta så hittar du det här.',
   },
   plan: {
-    hubTitle: 'Planera',
+    hubTitle: 'Matsedel',
     hubIntro: 'Berätta om budgeten och vad du är sugen på. Du får middagsförslag och en inköpslista.',
     start: 'Gör en matsedel',
     startNew: 'Gör en ny matsedel',
@@ -460,7 +461,7 @@ export const sv: Strings = {
     share: 'Dela',
     copy: 'Kopiera',
     copied: 'Inköpslistan kopierad till urklipp',
-    shareTitle: 'Inköpslista från Platewise',
+    shareTitle: 'Inköpslista från PlatePal',
     clearChecked: 'Ta bort bockarna',
     allDone: 'Allt köpt!',
     packages: '{count} × {size}',
@@ -473,7 +474,7 @@ export const sv: Strings = {
     itemA11y: '{name}, {amount}, {price}',
   },
   onboarding: {
-    welcomeTitle: 'Välkommen till Platewise',
+    welcomeTitle: 'Välkommen till PlatePal',
     welcomeBody: 'Middagar efter budget, en inköpslista och kalorier på samma ställe. Vi ställer in några grunduppgifter – allt kan ändras senare.',
     welcomeCta: 'Nu kör vi',
     nameLabel: 'Vad ska vi kalla dig?',
@@ -663,7 +664,7 @@ export const sv: Strings = {
     saved: 'Sparat',
   },
   paywall: {
-    title: 'Platewise Plus',
+    title: 'PlatePal Plus',
     body: 'Obegränsat med matsedlar, igenkänning av matfoton och hela receptbiblioteket.',
     feature1: 'Obegränsat med matsedlar och byten',
     feature2: 'Mat från foto till dagboken',
@@ -842,7 +843,7 @@ export const sv: Strings = {
       eatingDisorder:
         'Tack för att du berättar. Det låter som att det känns tungt att äta just nu, och det är viktigt att ta på allvar. Jag är inte rätt hjälp för det här, men du behöver inte vara ensam med det: prata med en sjuksköterska eller läkare, eller kontakta en stödlinje för ätstörningar där du bor. Om du vill kan du dölja kalorierna i Profil – dagboken fungerar utan siffror.',
       extremeDiet:
-        'Jag förstår att du vill se resultat snabbt, men väldigt lite energi eller en snabb viktnedgång är varken säkert eller hållbart. Platewise rekommenderar inte under 1 200 kcal (kvinnor) eller 1 500 kcal (män) om dagen, och takten är högst cirka 0,75 kg i veckan. Ska vi göra en lugnare plan tillsammans som känns bra i vardagen?',
+        'Jag förstår att du vill se resultat snabbt, men väldigt lite energi eller en snabb viktnedgång är varken säkert eller hållbart. PlatePal rekommenderar inte under 1 200 kcal (kvinnor) eller 1 500 kcal (män) om dagen, och takten är högst cirka 0,75 kg i veckan. Ska vi göra en lugnare plan tillsammans som känns bra i vardagen?',
       medical:
         'Här kan jag inte ge någon medicinsk bedömning – jag känner inte till din hälsa och kan inte ställa diagnoser. Fråga en läkare, sjuksköterska eller dietist. Jag hjälper gärna till med allmänna mattips, att välja recept och med inköpslistan!',
     },
@@ -851,7 +852,7 @@ export const sv: Strings = {
     proteinFilter: 'Filtret Proteinrikt på fliken Recept visar alternativ som passar dig.',
     orList: '{items} eller {last}',
     weightSwings:
-      'Det är helt normalt att vikten svänger från dag till dag – oftast 0,5–2 kg. Det beror på vätska, salt, kolhydrater, magens innehåll och till och med hur mycket du har sovit. Därför visar Platewise ett genomsnitt för 7 dagar: det visar riktningen bättre än en enskild vägning. Titta på trenden över veckor, inte på en enskild morgon. 🌱',
+      'Det är helt normalt att vikten svänger från dag till dag – oftast 0,5–2 kg. Det beror på vätska, salt, kolhydrater, magens innehåll och till och med hur mycket du har sovit. Därför visar PlatePal ett genomsnitt för 7 dagar: det visar riktningen bättre än en enskild vägning. Titta på trenden över veckor, inte på en enskild morgon. 🌱',
     moreVeg:
       'Enkla sätt: lägg en näve frysta grönsaker i soppan eller grytan, ha morötter och gurka som mellanmål och välj ibland ett recept med baljväxter. Som första mål räcker det med en portion grönsaker till om dagen!',
     leftovers:

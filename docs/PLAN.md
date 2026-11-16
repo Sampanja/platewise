@@ -1,4 +1,4 @@
-# Platewise – suunnitelma
+# PlatePal – suunnitelma
 
 Maksullinen mobiilisovellus (iOS + Android), yksilösovellus: profiili, tavoitteet ja päiväkirja ovat yhden ihmisen. Suunnitelman voi tehdä 1–6 syöjälle (oletus 1), ja määrä valitaan vain kyselyssä. Käyttäjä syöttää budjetin, allergiat ja ruokavalion. Tekoäly generoi annoksia, joissa on ainesosat, makrot, hinta-arvio ja kuva ruoasta. Lisäksi sovelluksessa on kalorilaskuri (päiväkirja). Sovelluksen pitää olla todella selkeä ja helppokäyttöinen.
 
@@ -160,7 +160,7 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 
 ### 4.6 Profiili
 
-- Profiilin tiedot (nimi, viikkobudjetti). Platewise on yksilösovellus: syöjien määrä valitaan vain kyselyssä suunnitelmakohtaisesti.
+- Profiilin tiedot (nimi, viikkobudjetti). PlatePal on yksilösovellus: syöjien määrä valitaan vain kyselyssä suunnitelmakohtaisesti.
 - Allergiat ja ruokavalio (terveystietosuostumus)
 - Perusvarat
 - Hinta-alue (oletuksena puhelimen alue; Suomi oikeaa hintatietoa, muut maat karkea arvio)
@@ -214,7 +214,7 @@ Hahmokohtainen paletti vaaleana ja tummana ([MASCOT.md](MASCOT.md)). Käyttäjä
 
 - **Kielet:** suomi, englanti ja ruotsi. Ensikäynnistyksen ensimmäinen näkymä on kielen valinta; oletuksena puhelimen kieli (`expo-localization`), muuten englanti. Kieli vaihtuu heti ilman uudelleenkäynnistystä, ja sen voi vaihtaa Profiilissa. Aiemmat käyttäjät pitävät suomen.
 - **Kaikki teksti käännetään:** valikot, painikkeet, virheet, ilmoitukset, onboarding, saavutukset, tehtävät, chatin vastaukset ja jokaisen hahmon repliikit omalla puhetyylillään. Hahmojen nimet ovat samat kaikilla kielillä. Reseptien nimet, kuvaukset, vaiheet, vinkit ja säilytysohjeet sekä ainesosien ja päiväkirjan ruokien nimet ovat käännöstiedostoissa erillään rakenteesta.
-- **Uusi kieli** = käyttöliittymän käännöstiedostot (`i18n/<kieli>*.ts`), katalogin tekstit (`data/catalog/text/<kieli>/`) ja rivi kahteen rekisteriin. Testit kaatuvat, kunnes jokainen avain, hahmon repliikki, resepti, ainesosa ja ruoka on käännetty (`keys.test.ts`, `characterVoices.test.ts`, `text.test.ts`). Lint-sääntö `platewise/no-untranslated-text` estää kovakoodatut tekstit.
+- **Uusi kieli** = käyttöliittymän käännöstiedostot (`i18n/<kieli>*.ts`), katalogin tekstit (`data/catalog/text/<kieli>/`) ja rivi kahteen rekisteriin. Testit kaatuvat, kunnes jokainen avain, hahmon repliikki, resepti, ainesosa ja ruoka on käännetty (`keys.test.ts`, `characterVoices.test.ts`, `text.test.ts`). Lint-sääntö `platepal/no-untranslated-text` estää kovakoodatut tekstit.
 - **Muotoilu Intl-rajapinnalla:** numerot, desimaalit, päivämäärät, viikonpäivät ja valuutta kielen ja alueen mukaan. Viikon ensimmäinen päivä tulee puhelimesta (Yhdysvalloissa sunnuntai). Hermes tuntee vain oikeat lokaalit (`fi-FI`, `sv-SE`, `en-GB`, `en-US`), joten kieli ja alue yhdistetään niihin.
 - **Hinta-alueet** (maa → valuutta ja hintataso) ilman kauppoja: Suomi on oikeaa hintatietoa, muut tuetut maat (SE, NO, DK, EE, DE, NL, FR, IE, GB, US) karkea arvio hintatasokertoimella, ja käyttöliittymä sanoo sen.
 - **Mittayksiköt:** metrinen (g, kg, ml, dl, l, cm) tai imperiaalinen (oz, lb, fl oz, cups, ft ja in). Oletus puhelimen mittajärjestelmästä tai alueesta; paino- ja pituusyksiköt tulevat samasta asetuksesta. Kaikki tallennetaan ja lasketaan metrisenä.

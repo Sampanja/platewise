@@ -85,7 +85,12 @@ import {
   ChartLine,
   CalendarCheck,
   Globe,
+  Keyboard,
   Languages,
+  Link,
+  Mic,
+  PenLine,
+  Refrigerator,
   Ruler,
   type LucideIcon,
 } from 'lucide-react-native';
@@ -187,6 +192,11 @@ const ICONS = {
   globe: Globe,
   language: Languages,
   ruler: Ruler,
+  mic: Mic,
+  keyboard: Keyboard,
+  write: PenLine,
+  fridge: Refrigerator,
+  link: Link,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
