@@ -1,4 +1,6 @@
 import { Image } from 'expo-image';
+import { foodQuality } from '@/data/catalog/quality';
+import { QualityButton } from '@/features/quality/QualityButton';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
@@ -9,7 +11,7 @@ import { Button, Chip, EmptyState, haptics, Icon, IconButton, Text } from '@/com
 import { useFood } from '@/data/foods';
 import { useCustomFoodsStore } from '@/data/stores/customFoods';
 import { useDiaryStore } from '@/data/stores/diary';
-import type { DiaryMeal } from '@/data/types';
+import type { DiaryMeal, Food } from '@/data/types';
 import { entryMacros } from '@/domain/diary';
 import { AmountEditor } from '@/features/diary/AmountEditor';
 import { NutrientTable } from '@/features/diary/NutrientTable';
@@ -119,6 +121,7 @@ export default function FoodScreen() {
           <Text variant="display" accessibilityRole="header">
             {food.name}
           </Text>
+          <FoodQuality food={food} />
           {food.brand ? (
             <Text variant="body" color="textMuted">
               {food.brand}
@@ -156,6 +159,13 @@ export default function FoodScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+/** The food's grade: Open Food Facts' Nutri-Score for products that have one, otherwise PlatePal's own. */
+function FoodQuality({ food }: { food: Food }) {
+  if (food.nutriScore) return <QualityButton title={food.name} grade={food.nutriScore} score={null} />;
+  const score = foodQuality(food);
+  return <QualityButton title={food.name} grade={score.grade} score={score} />;
 }
 
 const styles = themedStyles(() =>

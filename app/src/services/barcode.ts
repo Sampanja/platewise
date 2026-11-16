@@ -22,6 +22,7 @@ const FIELDS = [
   'product_quantity',
   'categories_tags',
   'nutriments',
+  'nutriscore_grade',
 ].join(',');
 const TIMEOUT_MS = 10_000;
 /** OFF asks API clients to identify themselves. */

@@ -45,6 +45,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} would love to be used by tomorrow. Let’s see what it can become.',
       suggest: 'There’s already so much good food at home. Let’s see what it can become.',
     },
+    quality: {
+      better: 'If you fancy a change, {recipe} has the same spirit and scores {grade}.',
+      tip: 'A little tip with love: {tip}',
+    },
     chat: {
       intro: 'Hello, I’m Nuppu! Ask me about food, recipe ideas or your entries. I’m not a doctor, but I’m happy to help with everyday food questions.',
       thinking: 'Nuppu is thinking…',
@@ -94,6 +98,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} expires tomorrow. No rush: {recipe} would suit it.',
       expiringPlain: '{item} expires tomorrow. Let’s calmly see what to make of it.',
       suggest: 'Everything you need may already be at home. Let’s look together.',
+    },
+    quality: {
+      better: 'No rush. {recipe} is a similar dish, score {grade}.',
+      tip: 'A thought, not a rule: {tip}',
     },
     chat: {
       intro: 'Hello, I’m Avo. Ask me about food, recipes or your entries. I’m not a doctor, but I’m glad to think through everyday food questions with you.',
@@ -145,6 +153,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} expires tomorrow. To the kitchen – it’s going to be delicious!',
       suggest: 'Your pantry has the makings of something tasty. Bravo!',
     },
+    quality: {
+      better: 'Try this one too: {recipe}, score {grade}. Delicious!',
+      tip: 'Kitchen tip: {tip}',
+    },
     chat: {
       intro: 'Hello, Tomo here! Ask me about recipes, food or your entries. I’m not a doctor, but in the kitchen I’m a passionate helper!',
       thinking: 'Tomo is stirring up some thoughts…',
@@ -194,6 +206,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} expires tomorrow! Let’s go: {recipe}!',
       expiringPlain: '{item} expires tomorrow! Let’s put it to use!',
       suggest: 'A cupboard full of possibilities – let’s go!',
+    },
+    quality: {
+      better: 'Alternative ready: {recipe}, score {grade}!',
+      tip: 'Cheer-up tip: {tip}',
     },
     chat: {
       intro: 'Hey, Karo here! Ask about food, recipes or your entries. I’m not a doctor, but with everyday food stuff I’ve got your back!',
@@ -245,6 +261,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} expires tomorrow. Let’s squeeze every bit out of it!',
       suggest: 'Your pantry is full of fresh ideas!',
     },
+    quality: {
+      better: 'Fresh idea: {recipe}, score {grade}!',
+      tip: 'A freshly squeezed tip: {tip}',
+    },
     chat: {
       intro: 'Hi, I’m Lemo! Ask about food, recipes or your entries. I’m not a doctor, but I’ve got plenty of fresh food ideas!',
       thinking: 'Lemo is squeezing out an answer…',
@@ -294,6 +314,10 @@ export const enCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} expires tomorrow. Did you know? It can become: {recipe}.',
       expiringPlain: '{item} expires tomorrow. A little fact: food that gets used is the best food.',
       suggest: 'Let’s find out what your ingredients at home can become!',
+    },
+    quality: {
+      better: 'Did you know? {recipe} is similar and scores {grade}.',
+      tip: 'A little fact: {tip}',
     },
     chat: {
       intro: 'Hello, I’m Blu! Ask about food, nutrients or your entries. I’m not a doctor, but I’m glad to share what I know.',

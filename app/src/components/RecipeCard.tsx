@@ -3,8 +3,10 @@ import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { HeartButton } from '@/components/HeartButton';
+import { QualityBadge } from '@/components/QualityBadge';
 import { RecipeImage } from '@/components/RecipeImage';
 import { Icon, PressableScale, Text } from '@/components/ui';
+import { recipeQuality } from '@/data/catalog/quality';
 import { useServingPrice } from '@/data/hooks';
 import type { Recipe } from '@/data/types';
 import { format, formatMoney, formatInteger, strings } from '@/i18n';
@@ -29,13 +31,14 @@ export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart
   const price = formatMoney(servingPrice(recipe));
   const time = format(strings.common.minutes, { count: recipe.totalTimeMin });
   const kcal = format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) });
+  const grade = recipeQuality(recipe)?.grade;
 
   return (
     <View style={[styles.card, style]}>
       <PressableScale
         onPress={onPress ?? (() => openRecipe(recipe.id))}
         accessibilityRole="button"
-        accessibilityLabel={[overline, recipe.title, `${strings.common.priceEstimate} ${price} ${strings.common.perServing}`, time, kcal]
+        accessibilityLabel={[overline, recipe.title, `${strings.common.priceEstimate} ${price} ${strings.common.perServing}`, time, kcal, grade ? format(strings.quality.badgeA11y, { grade }) : '']
           .filter(Boolean)
           .join(', ')}
       >
@@ -68,6 +71,11 @@ export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart
           </View>
         </View>
       </PressableScale>
+      {grade ? (
+        <View style={styles.grade} pointerEvents="none">
+          <QualityBadge grade={grade} />
+        </View>
+      ) : null}
       {showHeart ? (
         <View style={styles.heart}>
           <HeartButton recipeId={recipe.id} size={36} />
@@ -79,6 +87,11 @@ export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart
 
 const styles = themedStyles(() =>
   StyleSheet.create({
+    grade: {
+      position: 'absolute',
+      top: spacing.sm,
+      left: spacing.sm,
+    },
     card: {
       backgroundColor: colors.surface,
       borderRadius: radii.lg,

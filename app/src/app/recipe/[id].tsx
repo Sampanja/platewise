@@ -24,6 +24,7 @@ import { isRoughEstimate } from '@/domain/priceRegion';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS, mealForHour } from '@/domain/diary';
 import { RecipeNutrients } from '@/features/nutrients/RecipeNutrients';
+import { RecipeQualityBadge } from '@/features/quality/RecipeQualityBadge';
 import { MacroBars } from '@/features/recipe/MacroBars';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
@@ -141,6 +142,7 @@ export default function RecipeScreen() {
               {recipe.description}
             </Text>
             <View style={styles.chips}>
+              <RecipeQualityBadge recipe={recipe} />
               <Chip label={t.categories[recipe.dishType]} />
               <Chip label={t.difficulty[recipe.difficulty]} />
               <View

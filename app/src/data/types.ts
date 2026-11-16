@@ -293,6 +293,8 @@ export type Food = {
   brand?: string;
   barcode?: string;
   imageUrl?: string;
+  /** Open Food Facts' official Nutri-Score letter, when the product has one. */
+  nutriScore?: 'A' | 'B' | 'C' | 'D' | 'E';
 };
 
 export type FoodCategory =

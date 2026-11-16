@@ -54,6 +54,11 @@ export type CharacterVoice = {
     expiringPlain: string;
     suggest: string;
   };
+  /** Laatuarvio: a friendly alternative ({recipe}, {grade}) and a frame for a tip ({tip}). */
+  quality: {
+    better: string;
+    tip: string;
+  };
   chat: {
     intro: string;
     thinking: string;
@@ -106,6 +111,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} kaipaa käyttöä huomiseen mennessä. Katsotaan, mitä siitä syntyy.',
       suggest: 'Kotona on jo paljon hyvää. Katsotaan, mitä siitä syntyy.',
     },
+    quality: {
+      better: 'Jos kaipaat vaihtelua, {recipe} on samaa henkeä ja saa arvion {grade}.',
+      tip: 'Pieni vinkki rakkaudella: {tip}',
+    },
     chat: {
       intro: 'Hei, olen Nuppu! Kysy ruoasta, reseptivinkeistä tai kirjauksistasi. En ole lääkäri, mutta autan mielelläni arjen ruokapulmissa.',
       thinking: 'Nuppu miettii…',
@@ -155,6 +164,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} vanhenee huomenna. Rauhassa: {recipe} sopisi tähän.',
       expiringPlain: '{item} vanhenee huomenna. Katsotaan rauhassa, mitä siitä tehdään.',
       suggest: 'Kaikki tarvittava voi jo olla kotona. Katsotaan yhdessä.',
+    },
+    quality: {
+      better: 'Rauhassa vain. {recipe} on samantyylinen, arvio {grade}.',
+      tip: 'Ajatus, ei vaatimus: {tip}',
     },
     chat: {
       intro: 'Hei, olen Avo. Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta pohdin kanssasi mielelläni arjen ruokakysymyksiä.',
@@ -206,6 +219,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} vanhenee huomenna. Keittiöön, siitä tulee jotain herkullista!',
       suggest: 'Varastossa on aineksia herkkuihin. Bravo!',
     },
+    quality: {
+      better: 'Kokeilepa myös tätä: {recipe}, arvio {grade}. Herkkua!',
+      tip: 'Keittiövinkki: {tip}',
+    },
     chat: {
       intro: 'Hei, Tomo täällä! Kysy resepteistä, ruoasta tai kirjauksistasi. En ole lääkäri, mutta keittiöasioissa olen intohimoinen apuri!',
       thinking: 'Tomo hämmentää ajatuksia…',
@@ -255,6 +272,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} vanhenee huomenna! Mennään: {recipe}!',
       expiringPlain: '{item} vanhenee huomenna! Napataan se käyttöön!',
       suggest: 'Kaappi täynnä mahdollisuuksia – mennään!',
+    },
+    quality: {
+      better: 'Vaihtoehto valmiina: {recipe}, arvio {grade}!',
+      tip: 'Tsemppivinkki: {tip}',
     },
     chat: {
       intro: 'Moi, Karo tässä! Kysy ruoasta, resepteistä tai kirjauksista. En ole lääkäri, mutta arjen ruokajutuissa autan täysillä!',
@@ -306,6 +327,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} vanhenee huomenna. Puristetaan siitä kaikki irti!',
       suggest: 'Varastosi on täynnä raikkaita ideoita!',
     },
+    quality: {
+      better: 'Raikas idea: {recipe}, arvio {grade}!',
+      tip: 'Puristettu vinkki: {tip}',
+    },
     chat: {
       intro: 'Hei, olen Lemo! Kysy ruoasta, resepteistä tai kirjauksistasi. En ole lääkäri, mutta raikkaita ruokaideoita löytyy!',
       thinking: 'Lemo puristaa vastausta…',
@@ -355,6 +380,10 @@ export const fiCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} vanhenee huomenna. Tiesitkö? Siitä syntyy: {recipe}.',
       expiringPlain: '{item} vanhenee huomenna. Pieni fakta: käytetty ruoka on paras ruoka.',
       suggest: 'Tutkitaan, mitä kotona olevista aineksista voi tehdä!',
+    },
+    quality: {
+      better: 'Tiesitkö? {recipe} on samanlainen ja saa arvion {grade}.',
+      tip: 'Pieni fakta: {tip}',
     },
     chat: {
       intro: 'Hei, olen Blu! Kysy ruoasta, ravintoaineista tai kirjauksistasi. En ole lääkäri, mutta kerron mielelläni, mitä tiedän.',

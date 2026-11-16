@@ -554,7 +554,7 @@ export const fi = {
     save: 'Tallenna muutokset',
     delete: 'Poista merkintä',
     servings: 'Annokset',
-    estimateNote: 'Arvio kuvasta. Tarkista määrät.',
+    estimateNote: 'Määrä on arvio. Tarkista se tarvittaessa.',
   },
   photo: {
     title: 'Ruoka kuvasta',

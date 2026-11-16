@@ -600,7 +600,7 @@ export const en: Strings = {
     save: 'Save changes',
     delete: 'Delete entry',
     servings: 'Servings',
-    estimateNote: 'Estimated from the photo. Check the amounts.',
+    estimateNote: 'The amount is an estimate. Check it if needed.',
   },
   photo: {
     title: 'Food from a photo',

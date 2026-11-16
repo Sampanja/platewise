@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import type { Food, FoodCategory, FoodPortion, Macros } from '@/data/types';
 
+import { parseNutriScore } from './qualityScore';
+
 /**
  * Open Food Facts product → a diary food. The API is open data (ODbL) and
  * crowd-sourced, so every value is validated and the food is marked as a
@@ -23,6 +25,7 @@ const nutrimentsSchema = z
     fiber_100g: optionalNum,
     sugars_100g: optionalNum,
     salt_100g: optionalNum,
+    'saturated-fat_100g': optionalNum,
   })
   .passthrough();
 
@@ -38,6 +41,7 @@ const productSchema = z
     product_quantity: optionalNum,
     categories_tags: z.array(z.string()).optional().catch(undefined),
     nutriments: nutrimentsSchema.optional().catch(undefined),
+    nutriscore_grade: z.string().optional().catch(undefined),
   })
   .passthrough();
 
@@ -115,6 +119,8 @@ export function parseOffProduct(json: unknown, barcode: string, labels: PortionL
   if (n.fiber_100g !== undefined) per100g.fiberG = round1(n.fiber_100g);
   if (n.sugars_100g !== undefined) per100g.sugarG = round1(n.sugars_100g);
   if (n.salt_100g !== undefined) per100g.saltG = round1(n.salt_100g);
+  if (n['saturated-fat_100g'] !== undefined) per100g.satFatG = round1(n['saturated-fat_100g']);
+  const nutriScore = parseNutriScore(p.nutriscore_grade);
 
   const portions: FoodPortion[] = [];
   if (p.serving_quantity && p.serving_quantity > 0 && p.serving_quantity <= 2000) {
@@ -136,6 +142,7 @@ export function parseOffProduct(json: unknown, barcode: string, labels: PortionL
       brand,
       barcode,
       imageUrl,
+      ...(nutriScore ? { nutriScore } : {}),
     },
   };
 }

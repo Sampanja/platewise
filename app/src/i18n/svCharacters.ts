@@ -45,6 +45,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} vill gärna användas senast imorgon. Vi ser vad det kan bli.',
       suggest: 'Det finns redan mycket gott hemma. Vi ser vad det kan bli.',
     },
+    quality: {
+      better: 'Om du vill ha omväxling har {recipe} samma känsla och får betyget {grade}.',
+      tip: 'Ett litet tips med värme: {tip}',
+    },
     chat: {
       intro: 'Hej, jag är Nuppu! Fråga om mat, recepttips eller dina anteckningar. Jag är inte läkare, men jag hjälper gärna till med vardagens matfrågor.',
       thinking: 'Nuppu funderar…',
@@ -94,6 +98,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} går ut imorgon. Ingen brådska: {recipe} skulle passa.',
       expiringPlain: '{item} går ut imorgon. Vi ser i lugn och ro vad vi gör av det.',
       suggest: 'Allt du behöver kanske redan finns hemma. Vi tittar tillsammans.',
+    },
+    quality: {
+      better: 'Ingen brådska. {recipe} är en liknande rätt, betyg {grade}.',
+      tip: 'En tanke, inget krav: {tip}',
     },
     chat: {
       intro: 'Hej, jag är Avo. Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men jag funderar gärna på vardagens matfrågor tillsammans med dig.',
@@ -145,6 +153,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} går ut imorgon. In i köket – det blir något läckert!',
       suggest: 'Förrådet har allt för något gott. Bravo!',
     },
+    quality: {
+      better: 'Prova också den här: {recipe}, betyg {grade}. Läckert!',
+      tip: 'Kökstips: {tip}',
+    },
     chat: {
       intro: 'Hej, Tomo här! Fråga om recept, mat eller dina anteckningar. Jag är inte läkare, men i köket är jag en passionerad hjälpreda!',
       thinking: 'Tomo rör om i tankarna…',
@@ -194,6 +206,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} går ut imorgon! Nu kör vi: {recipe}!',
       expiringPlain: '{item} går ut imorgon! Vi använder det direkt!',
       suggest: 'Ett skafferi fullt av möjligheter – nu kör vi!',
+    },
+    quality: {
+      better: 'Ett alternativ redo: {recipe}, betyg {grade}!',
+      tip: 'Pepptips: {tip}',
     },
     chat: {
       intro: 'Tjena, Karo här! Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men med vardagsmaten hjälper jag dig fullt ut!',
@@ -245,6 +261,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiringPlain: '{item} går ut imorgon. Vi pressar ut allt ur det!',
       suggest: 'Ditt förråd är fullt av fräscha idéer!',
     },
+    quality: {
+      better: 'Fräsch idé: {recipe}, betyg {grade}!',
+      tip: 'Ett nypressat tips: {tip}',
+    },
     chat: {
       intro: 'Hej, jag är Lemo! Fråga om mat, recept eller dina anteckningar. Jag är inte läkare, men fräscha matidéer har jag gott om!',
       thinking: 'Lemo pressar fram ett svar…',
@@ -294,6 +314,10 @@ export const svCharacters: Record<CharacterId, CharacterVoice> = {
       expiring: '{item} går ut imorgon. Visste du? Det kan bli: {recipe}.',
       expiringPlain: '{item} går ut imorgon. Ett litet faktum: mat som används är den bästa maten.',
       suggest: 'Vi tar reda på vad råvarorna hemma kan bli!',
+    },
+    quality: {
+      better: 'Visste du? {recipe} är liknande och får betyget {grade}.',
+      tip: 'Ett litet faktum: {tip}',
     },
     chat: {
       intro: 'Hej, jag är Blu! Fråga om mat, näringsämnen eller dina anteckningar. Jag är inte läkare, men jag berättar gärna vad jag vet.',

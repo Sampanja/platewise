@@ -555,7 +555,7 @@ export const sv: Strings = {
     save: 'Spara ändringarna',
     delete: 'Ta bort anteckningen',
     servings: 'Portioner',
-    estimateNote: 'Uppskattning från foto. Kontrollera mängderna.',
+    estimateNote: 'Mängden är en uppskattning. Kontrollera den vid behov.',
   },
   photo: {
     title: 'Mat från foto',

@@ -4,6 +4,7 @@ import { PanResponder, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { withFreezeOnBlur } from '@/components/freezeOnBlur';
+import { QualityBadge } from '@/components/QualityBadge';
 import { Sheet } from '@/components/Sheet';
 import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -42,6 +43,8 @@ import {
 import { entryAmount } from '@/features/diary/entryAmount';
 import { WaterCard } from '@/features/diary/WaterCard';
 import { DayNutrientsCard } from '@/features/nutrients/DayNutrientsCard';
+import { DayQualityRow } from '@/features/quality/DayQualityRow';
+import { entryQuality } from '@/features/quality/entryQuality';
 import { WeekChart } from '@/features/diary/WeekChart';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { ReportsView } from '@/features/reports/ReportsView';
@@ -224,6 +227,8 @@ function DiaryScreen() {
             />
           </View>
 
+          <DayQualityRow entries={dayEntries} />
+
           {dayEntries.length === 0 ? <MascotSays state="encouraging" message={voice.empty.diary} size={60} /> : null}
 
           {DIARY_MEALS.map((meal) => {
@@ -287,6 +292,7 @@ function DiaryScreen() {
                                 {entryAmount(entry)}
                               </Text>
                               {entry.estimate ? <Chip label={strings.common.estimate} tone="accent" /> : null}
+                              {hideCalories ? null : <EntryGrade entry={entry} />}
                             </View>
                           </View>
                           {hideCalories ? null : (
@@ -431,6 +437,12 @@ function MacroBar({ label, value, goal }: { label: string; value: number; goal: 
       {goal ? <ProgressMeter value={value / goal} size="thin" accessibilityLabel={`${label} ${text}`} /> : null}
     </View>
   );
+}
+
+/** A small grade next to a logged food (not for quick entries). */
+function EntryGrade({ entry }: { entry: DiaryEntry }) {
+  const quality = useMemo(() => entryQuality(entry), [entry]);
+  return quality ? <QualityBadge grade={quality.grade} /> : null;
 }
 
 const styles = themedStyles(() =>

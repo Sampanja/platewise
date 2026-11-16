@@ -1,4 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { entryQuality } from '@/features/quality/entryQuality';
+import { QualityButton } from '@/features/quality/QualityButton';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +9,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Chip, EmptyState, haptics, Icon, Text } from '@/components/ui';
 import { catalogName, FOODS_BY_ID } from '@/data/catalog';
 import { useDiaryStore } from '@/data/stores/diary';
-import type { DiaryMeal } from '@/data/types';
+import type { DiaryEntry, DiaryMeal } from '@/data/types';
 import { entryMacros } from '@/domain/diary';
 import { AmountEditor } from '@/features/diary/AmountEditor';
 import { strings } from '@/i18n';
@@ -56,6 +58,7 @@ export default function EntryScreen() {
           <Text variant="display" accessibilityRole="header">
             {catalogName(entry.basis, entry.name)}
           </Text>
+          <EntryQualityButton entry={entry} />
           {entry.estimate ? (
             <View style={styles.estimate}>
               <Chip tone="accent" label={strings.common.estimate} />
@@ -108,6 +111,11 @@ export default function EntryScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+function EntryQualityButton({ entry }: { entry: DiaryEntry }) {
+  const quality = entryQuality(entry);
+  return quality ? <QualityButton title={catalogName(entry.basis, entry.name)} grade={quality.grade} score={quality.score} /> : null;
 }
 
 const styles = themedStyles(() =>
