@@ -5,16 +5,8 @@ import { DEFAULT_GOALS, MIN_KCAL_GOAL } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
 import { dropHouseholdSize, profileWithoutStore, withLanguageSettings, withUnitPrefs } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
-import {
-  DEFAULT_CYCLING,
-  type ActivityLevel,
-  type Cycling,
-  type DietStyle,
-  type GoalType,
-  type PregnancyStatus,
-  type Sex,
-  type Workout,
-} from '@/domain/energy';
+import { DEFAULT_ACTIVITY_ANSWERS, migrateActivityAnswers, type ActivityAnswers } from '@/domain/activity';
+import { DEFAULT_CYCLING, type Cycling, type DietStyle, type GoalType, type PregnancyStatus, type Sex } from '@/domain/energy';
 import { migrateCharacter } from '@/domain/characterMigration';
 import { convertBudget, DEFAULT_PRICE_REGION, type PriceRegionCode } from '@/domain/priceRegion';
 import { defaultUnits, type UnitPrefs } from '@/domain/units';
@@ -30,23 +22,20 @@ import type { AllergenCode, DietCode, NutritionGoals } from '../types';
  * `profile_pantry_items`, `profile_nutrition_goals`). Allergies, diets, goals
  * and the diary are health data: they never go to logs or analytics.
  */
-/** Body details for the calorie calculator. Health data, stored on the device only. */
-export type BodyProfile = {
+/**
+ * Body details and the three activity answers (work or school, everyday
+ * movement, workouts; domain/activity.ts) for the calorie calculator.
+ * Health data, stored on the device only.
+ */
+export type BodyProfile = ActivityAnswers & {
   sex: Sex | null;
   birthYear: number | null;
   heightCm: number | null;
   /** Weight the current goal was calculated with. */
   weightKg: number | null;
-  activity: ActivityLevel;
-  exercisePerWeek: number;
   pregnancy: PregnancyStatus;
   /** Optional, enables the Katch–McArdle formula. */
   bodyFatPct: number | null;
-  /** How everyday activity is given: type of work or average steps. */
-  everydayMode: 'job' | 'steps';
-  steps: number;
-  /** Workouts by type; when empty, exercisePerWeek is used. */
-  workouts: Workout[];
 };
 
 export type WeightGoal = {
@@ -67,18 +56,23 @@ export type WeightGoal = {
 };
 
 export const DEFAULT_BODY: BodyProfile = {
+  ...DEFAULT_ACTIVITY_ANSWERS,
   sex: null,
   birthYear: null,
   heightCm: null,
   weightKg: null,
-  activity: 2,
-  exercisePerWeek: 2,
   pregnancy: 'none',
   bodyFatPct: null,
-  everydayMode: 'job',
-  steps: 7000,
-  workouts: [],
 };
+
+/** The saved body with its activity answers in the current shape (profile v11). */
+function migrateBody(saved: unknown): BodyProfile {
+  const body = (typeof saved === 'object' && saved !== null ? saved : {}) as Record<string, unknown>;
+  const { exercisePerWeek: _sessions, everydayMode: _mode, steps: _steps, ...rest } = body;
+  // The old default (2 sessions a week) was never an answer unless the calculator was used (sex is set then).
+  const answered = body.sex === 'female' || body.sex === 'male';
+  return { ...DEFAULT_BODY, ...(rest as Partial<BodyProfile>), ...migrateActivityAnswers(answered ? body : { ...body, exercisePerWeek: 0 }) };
+}
 
 export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
   type: 'maintain',
@@ -219,7 +213,7 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 10,
+      version: 11,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
       // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
@@ -227,6 +221,7 @@ export const useProfileStore = create<ProfileState>()(
       // v8: language and units; earlier users keep Finnish and skip the language picker.
       // v9: the cast was renewed (six international characters); retired ids map to the closest one.
       // v10: units are chosen one by one; the old metric/imperial setting (or the region's) becomes the user's own.
+      // v11: activity in three answers (work or school, everyday movement, workouts with intensity).
       migrate: (persisted, version) => {
         const device = deviceLocale();
         const saved = withUnitPrefs(
@@ -242,7 +237,7 @@ export const useProfileStore = create<ProfileState>()(
           characterRenewed: character.changed || (saved.characterRenewed ?? false),
           // People who already finished onboarding are not sent back to the picker.
           characterChosen: saved.characterChosen ?? saved.onboardingCompleted ?? false,
-          body: { ...DEFAULT_BODY, ...saved.body },
+          body: migrateBody(saved.body),
           weightGoal: { ...DEFAULT_WEIGHT_GOAL, ...saved.weightGoal },
         };
       },

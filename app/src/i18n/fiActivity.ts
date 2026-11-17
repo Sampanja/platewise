@@ -36,7 +36,6 @@ export const fiActivity = {
     searchLabel: 'Kirjoita ammattisi tai tilanteesi',
     searchPlaceholder: 'Esim. sairaanhoitaja, opiskelija, kokki',
     searchNoMatch: 'Ei osumaa. Valitse lähin kuvaus yltä.',
-    searchA11y: '{name}, taso {level}',
     chosenOccupation: 'Valittu: {name}',
     skip: 'En tiedä tai haluan ohittaa',
     skipUses: 'Käytämme tasoa ”{level}”, joka on tavallisin arkipäivä. Voit tarkentaa myöhemmin.',
@@ -116,7 +115,6 @@ export const fiActivity = {
       parts: '{bmr} + {everyday} + {workouts}',
     },
     defaultsTitle: 'Ohitetut kohdat',
-    profileRow: 'Aktiivisuus',
   },
   /**
    * Occupation search: the first name is shown, the rest are search words.

@@ -50,8 +50,8 @@ describe('precise expenditure', () => {
 
   it('adds workouts by type, frequency and duration (net MET)', () => {
     // 3 × 60 min gym for 75 kg: (5 − 1) × 75 × 1 h × 3 / 7 ≈ 128.6 kcal/day.
-    expect(workoutKcalPerDay([{ type: 'gym', perWeek: 3, minutes: 60 }], 75)).toBeCloseTo(128.57, 1);
-    const result = expenditure({ ...woman, workouts: [{ type: 'run', perWeek: 2, minutes: 30 }] });
+    expect(workoutKcalPerDay([{ type: 'gym', perWeek: 3, minutes: 60, intensity: 'moderate' }], 75)).toBeCloseTo(128.57, 1);
+    const result = expenditure({ ...woman, workouts: [{ type: 'run', perWeek: 2, minutes: 30, intensity: 'moderate' }] });
     expect(result.tdee).toBeCloseTo(result.bmr * result.everydayFactor + result.exerciseKcal, 5);
     expect(result.exerciseKcal).toBeCloseTo(((9 - 1) * 75 * 0.5 * 2) / 7, 5);
   });

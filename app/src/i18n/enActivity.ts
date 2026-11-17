@@ -38,7 +38,6 @@ export const enActivity: ActivityStrings = {
     searchLabel: 'Type your job or situation',
     searchPlaceholder: 'E.g. nurse, student, chef',
     searchNoMatch: 'No match. Pick the closest description above.',
-    searchA11y: '{name}, level {level}',
     chosenOccupation: 'Chosen: {name}',
     skip: 'I don’t know or want to skip',
     skipUses: 'We use “{level}”, the most common weekday. You can change it later.',
@@ -118,7 +117,6 @@ export const enActivity: ActivityStrings = {
       parts: '{bmr} + {everyday} + {workouts}',
     },
     defaultsTitle: 'Skipped questions',
-    profileRow: 'Activity',
   },
   occupations: {
     pupil: 'Pupil|school pupil|high school student|secondary school',

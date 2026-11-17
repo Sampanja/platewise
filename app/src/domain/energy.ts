@@ -1,5 +1,28 @@
 import type { Macros } from '@/data/types';
 
+import {
+  ACTIVITY_FACTORS,
+  commuteKcalPerDay,
+  everydayFactor,
+  leisureKcalPerDay,
+  stepBandFor,
+  workoutKcalPerDay,
+  type ActivityLevel,
+  type Commute,
+  type Leisure,
+  type Workout,
+} from './activity';
+
+export {
+  ACTIVITY_FACTORS,
+  stepsFactor,
+  WORKOUT_MET,
+  workoutKcalPerDay,
+  type ActivityLevel,
+  type Workout,
+  type WorkoutType,
+} from './activity';
+
 /**
  * Energy need and weight goal calculations. Pure functions; every safety rule
  * lives here so it is unit tested and cannot be bypassed by the UI.
@@ -8,9 +31,6 @@ import type { Macros } from '@/data/types';
 /** Biological sex, used only because the BMR formula differs. */
 export type Sex = 'female' | 'male';
 
-/** Everyday activity outside planned exercise, 1 (least) … 5 (most). Described as the type of work. */
-export type ActivityLevel = 1 | 2 | 3 | 4 | 5;
-
 /**
  * lose = weight loss, maintain, gain = muscle gain with a moderate surplus,
  * recomp = body recomposition (a small deficit with high protein and strength training).
@@ -18,9 +38,6 @@ export type ActivityLevel = 1 | 2 | 3 | 4 | 5;
 export type GoalType = 'lose' | 'maintain' | 'gain' | 'recomp';
 
 export type PregnancyStatus = 'none' | 'pregnant' | 'breastfeeding';
-
-export type WorkoutType = 'walk' | 'run' | 'cycle' | 'gym' | 'swim' | 'ball' | 'yoga' | 'other';
-export type Workout = { type: WorkoutType; perWeek: number; minutes: number };
 
 export type BodyInfo = {
   sex: Sex;
@@ -33,10 +50,14 @@ export type BodyInfo = {
   pregnancy: PregnancyStatus;
   /** Optional body fat %: enables the Katch–McArdle formula. */
   bodyFatPct?: number | null;
-  /** Optional average daily steps: replaces the work-type level for everyday activity. */
+  /** Optional average daily steps: raise the everyday level when they tell of a more active day. */
   steps?: number | null;
-  /** Optional workouts by type, frequency and duration: replaces exercisePerWeek. */
+  /** Optional workouts by type, frequency, duration and intensity: replaces exercisePerWeek. */
   workouts?: readonly Workout[];
+  /** Trip to work or school (domain/activity.ts). */
+  commute?: Commute;
+  /** Everyday chores and leisure movement (domain/activity.ts). */
+  leisure?: readonly Leisure[];
 };
 
 export type GoalChoice = {
@@ -47,14 +68,6 @@ export type GoalChoice = {
   targetWeightKg: number;
 };
 
-/** Everyday activity factors (physical activity level without exercise). */
-export const ACTIVITY_FACTORS: Record<ActivityLevel, number> = {
-  1: 1.2,
-  2: 1.3,
-  3: 1.4,
-  4: 1.55,
-  5: 1.7,
-};
 /** Each weekly exercise session adds this to the activity factor. */
 export const EXERCISE_FACTOR_PER_SESSION = 0.035;
 export const MAX_ACTIVITY_FACTOR = 2.0;
@@ -108,42 +121,15 @@ export function activityFactor(activity: ActivityLevel, exercisePerWeek: number)
   return Math.min(MAX_ACTIVITY_FACTOR, ACTIVITY_FACTORS[activity] + sessions * EXERCISE_FACTOR_PER_SESSION);
 }
 
-/** Everyday activity factor from average daily steps (exercise excluded). */
-export function stepsFactor(steps: number): number {
-  if (steps < 4000) return 1.2;
-  if (steps < 7000) return 1.3;
-  if (steps < 10000) return 1.4;
-  if (steps < 13000) return 1.5;
-  return 1.6;
-}
-
-/** Metabolic equivalents (MET) for common workouts at a moderate effort. */
-export const WORKOUT_MET: Record<WorkoutType, number> = {
-  walk: 4.3,
-  run: 9.0,
-  cycle: 7.0,
-  gym: 5.0,
-  swim: 7.0,
-  ball: 7.0,
-  yoga: 2.5,
-  other: 5.0,
-};
-
-/** Extra energy from workouts per day: net MET (above rest) × kg × hours, averaged over the week. */
-export function workoutKcalPerDay(workouts: readonly Workout[], weightKg: number): number {
-  const weekly = workouts.reduce((sum, w) => {
-    const perWeek = Math.max(0, Math.min(14, w.perWeek));
-    const hours = Math.max(0, Math.min(240, w.minutes)) / 60;
-    return sum + (WORKOUT_MET[w.type] - 1) * weightKg * hours * perWeek;
-  }, 0);
-  return weekly / 7;
-}
-
 export type Expenditure = {
   bmr: number;
   formula: BmrFormula;
-  /** Everyday activity factor (work type or steps). */
+  /** Everyday activity factor (work or school level, raised by steps). */
   everydayFactor: number;
+  /** Everyday activity above BMR: the factor's share, the commute and chores. */
+  everydayKcal: number;
+  commuteKcal: number;
+  leisureKcal: number;
   /** Average extra energy from exercise per day. */
   exerciseKcal: number;
   tdee: number;
@@ -152,19 +138,33 @@ export type Expenditure = {
 /** Total daily energy expenditure, broken down so the UI can explain it. */
 export function expenditure(body: BodyInfo): Expenditure {
   const base = bmr(body);
-  const everydayFactor = body.steps != null && body.steps > 0 ? stepsFactor(body.steps) : ACTIVITY_FACTORS[body.activity];
+  const stepBand = stepBandFor(body.steps);
+  const stepsKnown = stepBand !== 'unknown';
+  const factor = everydayFactor(body.activity, stepBand);
+  const commuteKcal = body.commute ? commuteKcalPerDay(body.commute, body.weightKg, stepsKnown) : 0;
+  const leisureKcal = body.leisure ? leisureKcalPerDay(body.leisure, body.weightKg, stepsKnown) : 0;
+  const everyday = base.kcal * factor + commuteKcal + leisureKcal;
   let exerciseKcal: number;
-  let total: number;
   if (body.workouts && body.workouts.length > 0) {
     exerciseKcal = workoutKcalPerDay(body.workouts, body.weightKg);
-    total = Math.min(base.kcal * MAX_TOTAL_FACTOR, base.kcal * everydayFactor + exerciseKcal);
   } else {
+    // Older profiles without listed workouts: sessions per week raise the factor.
     const sessions = Math.max(0, Math.min(14, body.exercisePerWeek));
-    const factor = Math.min(MAX_ACTIVITY_FACTOR, everydayFactor + sessions * EXERCISE_FACTOR_PER_SESSION);
-    total = base.kcal * factor;
-    exerciseKcal = total - base.kcal * everydayFactor;
+    exerciseKcal = Math.max(0, base.kcal * (Math.min(MAX_ACTIVITY_FACTOR, factor + sessions * EXERCISE_FACTOR_PER_SESSION) - factor));
   }
-  return { bmr: base.kcal, formula: base.formula, everydayFactor, exerciseKcal, tdee: total };
+  // Very active people (athletes, heavy jobs plus training) are capped at 2.5 × BMR.
+  const total = Math.min(base.kcal * MAX_TOTAL_FACTOR, everyday + exerciseKcal);
+  const shownExercise = Math.max(0, Math.min(exerciseKcal, total - everyday));
+  return {
+    bmr: base.kcal,
+    formula: base.formula,
+    everydayFactor: factor,
+    everydayKcal: total - base.kcal - shownExercise,
+    commuteKcal,
+    leisureKcal,
+    exerciseKcal: shownExercise,
+    tdee: total,
+  };
 }
 
 /** Total daily energy expenditure. */

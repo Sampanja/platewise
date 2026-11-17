@@ -9,7 +9,7 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 | Osa | Tila |
 | --- | --- |
 | 1. Yksiköt | valmis |
-| 2. Aktiivisuus | aloittamatta |
+| 2. Aktiivisuus | valmis |
 | 3. Makrot ja ruokavaliotyylit | aloittamatta |
 | 4. Widget | aloittamatta |
 | 5. Dokumentaatio | aloittamatta |
@@ -17,6 +17,7 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 ### Mitä tehtiin (2026-11-17)
 
 - Osa 1 (yksiköt): käyttäjä valitsee kuusi yksikköä erikseen: paino kg / lb / st+lb, pituus cm / ft+in, ruoan määrät g / oz, nesteet ml-dl-l / fl oz ja kupit, energia kcal / kJ, lämpötila °C / °F (`domain/units.ts`: muunnokset, pyöristykset, esiasetukset, alueen oletus, testattu). Muotoilu yhdessä paikassa `lib/amounts.ts` (formatEnergy, formatGrams, formatBodyWeight, formatTemperature, localizeTemperatures, kenttien muunnokset). Onboardingissa kielen jälkeen Yksiköt-näkymä (`features/settings/UnitsStep.tsx`): Metrinen / Imperiaalinen ja Mukauta, jokaisessa esimerkki; sama editori Profiili → Yksiköt (`UnitsEditor.tsx`). Painon ja pituuden syötössä kertakäyttöinen yksikkökytkin (`components/ui/UnitToggle.tsx`), energiakentät kcal/kJ (`features/shared/EnergyField.tsx`), määräkentät g/oz (oma ruoka, oma ateria, varasto, reseptituonti). Reseptien lämpötilat kirjoitettu muotoon "200 °C" (fi "°C:ssa", sv "°C"); ohjeiden lämpötilat ja määrät näytetään valituilla yksiköillä (`localizeRecipeText`: "2 dl" → "¾ kuppia", "200 °C" → "400 °F"). Puhekirjaus ymmärtää myös oz ja lb. Profiili v10: vanha metric/imperial (tai alueen automaattinen valinta) muuttuu käyttäjän omaksi asetukseksi (`withUnitPrefs`, testattu). Lint-sääntö `platepal/no-hardcoded-units` ja `i18n/units.test.ts` estävät kovakoodatut yksiköt koodissa ja käännöksissä.
+- Osa 2 (aktiivisuus): kolme kysymystä laskurissa (`features/calculator/ActivitySteps.tsx`, laskenta `domain/activity.ts`, testattu). 1) Työ tai koulu: viisi tasoa arkiesimerkein (koululainen ja opiskelija ensimmäisessä), tilanteet (kotona lasten kanssa, eläkkeellä, työtön, vuorotyö) ja haku noin 107 ammatista ja tilanteesta kaikilla kielillä (`domain/occupations.ts`, nimet `i18n/<kieli>Activity.ts`, `features/calculator/occupationSearch.ts`). 2) Arkiliikunta: työ- ja koulumatka (tapa ja kesto), askeleet viitenä vaihtoehtona, vapaa-ajan liike (koira, piha, kotityöt, lapset, remontti). 3) Treenit: 10 lajia, kerrat, kesto ja teho (kevyt / kohtalainen / rankka esimerkein, MET lajin ja tehon mukaan). Jokaisessa kysymyksessä "En tiedä tai haluan ohittaa" ja käytetty oletus näkyy. Yhteenveto "Arvioitu kulutuksesi on noin X päivässä" ja napautuksella erittely (perusaineenvaihdunta + arkiaktiivisuus + treenit, ohitetut kohdat). Profiili v11 siirtää vanhat tiedot (työtaso, askeleet → askelväli, treenit ilman tehoa → kohtalainen, viikkokerrat → "muu laji" vain jos laskuria on käytetty).
 
 ## Edellinen tehtävä (valmis)
 
@@ -65,6 +66,8 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 - (2026-11-17) Iso-Britannian oletus: grammat ja millilitrat, mutta paino stoneina ja pituus jalkoina. Yhdysvallat imperiaalinen, muut metrinen. Imperiaalinenkin pikavalinta käyttää kilokaloreita (myös USA:n merkinnöissä).
 - (2026-11-17) °F-pyöristys: uunilämmöt (≥ 100 °C) lähimpään 25 °F (200 °C → 400 °F), ruoan sisälämmöt lähimpään 5 °F (75 °C → 165 °F), jotta ruokaturvallisuusrajat pysyvät oikeina.
 - (2026-11-17) Yksikön vaihto profiilissa tallentuu heti ja päivittää koko sovelluksen samalla tavalla kuin kielen vaihto (näkymät renderöidään uudelleen).
+- (2026-11-17) Kulutus = BMR × arkitaso + työmatka + vapaa-ajan liike + treenit (net MET), enintään 2,5 × BMR. Askeleet nostavat arkitasoa mutta eivät laske raskaan työn tasoa; kun askeleet tiedetään, kävelymatkoja ja koiralenkkejä ei lisätä erikseen (pyöräily lisätään). Työmatka 5 päivänä viikossa. Ohitettu työkysymys = "Istuen ja välillä liikkuen".
+- (2026-11-17) Tilanteiden tasot: kotona lasten kanssa ja vuorotyö = paljon seisten ja kävellen, eläkkeellä ja työtön = istuen ja välillä liikkuen; käyttäjä näkee tason ja voi vaihtaa sen.
 - (2026-11-17) Reseptituonnin tarkistusnäkymä näyttää nyt unssit oz-käyttäjille (edellisen tehtävän avoin kysymys).
 
 - Osat 8 ja 9 commitoitiin yhdessä, koska ne jakavat natiivipaketit ja sovelluksen entry-tiedoston (index.js).

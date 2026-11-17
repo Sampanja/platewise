@@ -38,7 +38,6 @@ export const svActivity: ActivityStrings = {
     searchLabel: 'Skriv ditt yrke eller din situation',
     searchPlaceholder: 'T.ex. sjuksköterska, studerande, kock',
     searchNoMatch: 'Ingen träff. Välj den närmaste beskrivningen ovan.',
-    searchA11y: '{name}, nivå {level}',
     chosenOccupation: 'Valt: {name}',
     skip: 'Jag vet inte eller vill hoppa över',
     skipUses: 'Vi använder ”{level}”, den vanligaste vardagen. Du kan ändra det senare.',
@@ -118,7 +117,6 @@ export const svActivity: ActivityStrings = {
       parts: '{bmr} + {everyday} + {workouts}',
     },
     defaultsTitle: 'Överhoppade frågor',
-    profileRow: 'Aktivitet',
   },
   occupations: {
     pupil: 'Skolelev|elev|grundskola|gymnasieelev|gymnasium',

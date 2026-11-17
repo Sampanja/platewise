@@ -6,6 +6,7 @@ import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore, type BodyProfile } from '@/data/stores/profile';
 import { useWeightStore } from '@/data/stores/weight';
 import { sumEntries } from '@/domain/diary';
+import { activityInputs } from '@/domain/activity';
 import {
   adaptiveExpenditure,
   ageFromBirthYear,
@@ -30,12 +31,9 @@ export function bodyInfoOf(body: BodyProfile, weightKg: number, now: Date): Body
     ageYears: ageFromBirthYear(body.birthYear, now),
     heightCm: body.heightCm,
     weightKg,
-    activity: body.activity,
-    exercisePerWeek: body.exercisePerWeek,
     pregnancy: body.pregnancy,
     bodyFatPct: body.bodyFatPct,
-    steps: body.everydayMode === 'steps' ? body.steps : null,
-    workouts: body.workouts,
+    ...activityInputs(body),
   };
 }
 

@@ -4,11 +4,21 @@ import { StyleSheet, View } from 'react-native';
 
 import { WizardFrame } from '@/components/WizardFrame';
 import {
+  EverydayStep,
+  ExpenditureSummary,
+  WorkoutsStep,
+  WorkStep,
+  type EverydayAnswer,
+  type WorkAnswer,
+  type WorkoutsAnswer,
+} from '@/features/calculator/ActivitySteps';
+import { activityInputs, DEFAULT_ACTIVITY_LEVEL, type ActivityAnswers } from '@/domain/activity';
+import { isOccupationId } from '@/domain/occupations';
+import {
   Button,
   Card,
   haptics,
   Icon,
-  IconButton,
   OptionRow,
   SelectChip,
   Slider,
@@ -33,7 +43,6 @@ import {
   minHealthyWeightKg,
   planEnergy,
   RATE_OPTIONS,
-  type ActivityLevel,
   type Adjustment,
   type BodyInfo,
   type Cycling,
@@ -42,11 +51,9 @@ import {
   type PregnancyStatus,
   type Sex,
   type Weekday,
-  type Workout,
-  type WorkoutType,
 } from '@/domain/energy';
 import { CM_PER_INCH, KG_PER_POUND, type HeightUnit, type WeightUnit } from '@/domain/units';
-import { format, formatDecimal, formatInteger, strings } from '@/i18n';
+import { format, formatInteger, strings } from '@/i18n';
 import { activeUnits } from '@/i18n/locale';
 import {
   formatBodyWeight,
@@ -64,10 +71,10 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.calculator;
 const g = strings.goals2;
-const STEPS = ['body', 'activity', 'result', 'goal', 'style', 'cycling'] as const;
+const a = strings.activity;
+const STEPS = ['body', 'work', 'everyday', 'workouts', 'result', 'goal', 'style', 'cycling'] as const;
 type Step = (typeof STEPS)[number];
 const GOALS: readonly GoalType[] = ['lose', 'maintain', 'gain', 'recomp'];
-const WORKOUT_TYPES: readonly WorkoutType[] = ['walk', 'run', 'cycle', 'gym', 'swim', 'ball', 'yoga', 'other'];
 
 const kg = (value: number) => formatBodyWeight(value);
 
@@ -101,16 +108,20 @@ export default function CalculatorScreen() {
   const [weight, setWeight] = useState(latestWeight ?? saved.weightKg ?? 75);
   const [pregnancy, setPregnancy] = useState<PregnancyStatus>(saved.pregnancy);
   const [bodyFat, setBodyFat] = useState<number | null>(saved.bodyFatPct);
-  const [everydayMode, setEverydayMode] = useState(saved.everydayMode);
-  const [activity, setActivity] = useState<ActivityLevel>(saved.activity);
-  const [steps, setSteps] = useState(saved.steps);
-  const [workouts, setWorkouts] = useState<Workout[]>(() =>
-    saved.workouts.length > 0
-      ? saved.workouts
-      : saved.exercisePerWeek > 0
-        ? [{ type: 'other', perWeek: saved.exercisePerWeek, minutes: 45 }]
-        : [],
-  );
+  // The three activity questions (domain/activity.ts).
+  const [work, setWork] = useState<WorkAnswer>({
+    level: saved.activity,
+    occupation: isOccupationId(saved.occupation) ? saved.occupation : null,
+    situation: saved.situation,
+    skipped: saved.skipped.work,
+  });
+  const [everyday, setEveryday] = useState<EverydayAnswer>({
+    commute: saved.commute,
+    stepBand: saved.stepBand,
+    leisure: saved.leisure,
+    skipped: saved.skipped.everyday,
+  });
+  const [training, setTraining] = useState<WorkoutsAnswer>({ workouts: saved.workouts, skipped: saved.skipped.workouts });
   const [goalType, setGoalType] = useState<GoalType>(profile.weightGoal.type);
   const [rate, setRate] = useState(profile.weightGoal.rateKgPerWeek);
   const [target, setTarget] = useState(profile.weightGoal.targetWeightKg ?? weight - 5);
@@ -120,17 +131,24 @@ export default function CalculatorScreen() {
   const [cycling, setCycling] = useState<Cycling>(profile.weightGoal.cycling);
 
   const step: Step = STEPS[index];
+  const answers: ActivityAnswers = {
+    activity: work.level,
+    occupation: work.occupation,
+    situation: work.situation,
+    commute: everyday.commute,
+    stepBand: everyday.stepBand,
+    leisure: everyday.leisure,
+    workouts: training.workouts,
+    skipped: { work: work.skipped, everyday: everyday.skipped, workouts: training.skipped },
+  };
   const body: BodyInfo = {
     sex: sex ?? 'female',
     ageYears: age,
     heightCm: height,
     weightKg: weight,
-    activity,
-    exercisePerWeek: 0,
     pregnancy: sex === 'female' ? pregnancy : 'none',
     bodyFatPct: bodyFat,
-    steps: everydayMode === 'steps' ? steps : null,
-    workouts,
+    ...activityInputs(answers),
   };
   const spend = expenditure(body);
   const plan = planEnergy(body, { type: goalType, rateKgPerWeek: rate, targetWeightKg: target });
@@ -165,8 +183,12 @@ export default function CalculatorScreen() {
     if (type === 'recomp' && style === 'balanced') setStyle('highProtein');
   };
 
-  const updateWorkout = (i: number, patch: Partial<Workout>) =>
-    setWorkouts((list) => list.map((w, j) => (j === i ? { ...w, ...patch } : w)));
+  // What the summary says about skipped questions (and the default used).
+  const skippedNotes = [
+    work.skipped ? format(a.skipUses, { level: a.levels[DEFAULT_ACTIVITY_LEVEL].title }) : null,
+    everyday.skipped ? a.everydaySkipUses : null,
+    training.skipped ? a.workoutsSkipUses : null,
+  ].filter((note): note is string => note !== null);
 
   const save = () => {
     update({
@@ -175,13 +197,9 @@ export default function CalculatorScreen() {
         birthYear: now.getFullYear() - age,
         heightCm: height,
         weightKg: weight,
-        activity,
-        exercisePerWeek: 0,
         pregnancy: body.pregnancy,
         bodyFatPct: bodyFat,
-        everydayMode,
-        steps,
-        workouts,
+        ...answers,
       },
       weightGoal: {
         type: plan.goal,
@@ -311,122 +329,32 @@ export default function CalculatorScreen() {
         </View>
       ),
     },
-    activity: {
-      title: g.everydayTitle,
-      body: g.everydayBody,
-      node: (
-        <View style={styles.gap}>
-          <View style={styles.chips} accessibilityRole="radiogroup">
-            <SelectChip role="radio" label={g.modeJob} selected={everydayMode === 'job'} onPress={() => setEverydayMode('job')} />
-            <SelectChip role="radio" label={g.modeSteps} selected={everydayMode === 'steps'} onPress={() => setEverydayMode('steps')} />
-          </View>
-          {everydayMode === 'job' ? (
-            <View style={styles.gapSm} accessibilityRole="radiogroup">
-              {([1, 2, 3, 4, 5] as const).map((level) => (
-                <OptionRow
-                  key={level}
-                  title={t[`activity${level}`]}
-                  hint={t[`activity${level}Hint`]}
-                  selected={activity === level}
-                  onPress={() => setActivity(level)}
-                />
-              ))}
-            </View>
-          ) : (
-            <Card style={styles.gapSm}>
-              <View style={styles.spread}>
-                <Text variant="bodyStrong">{g.steps}</Text>
-                <Text variant="heading" color="accentText" style={styles.tabular}>
-                  {format(g.stepsValue, { value: formatInteger(steps) })}
-                </Text>
-              </View>
-              <Slider
-                value={steps}
-                min={1000}
-                max={25000}
-                step={500}
-                onChange={setSteps}
-                accessibilityLabel={g.steps}
-                accessibilityValueText={format(g.stepsValue, { value: formatInteger(steps) })}
-              />
-              <Text variant="caption" color="textSubtle">
-                {g.stepsHint}
-              </Text>
-            </Card>
-          )}
-
-          <View style={styles.gapSm}>
-            <Text variant="overline" color="textSubtle" accessibilityRole="header">
-              {g.workoutsTitle}
-            </Text>
-            <Text variant="caption" color="textSubtle">
-              {g.workoutsBody}
-            </Text>
-            {workouts.length === 0 ? (
-              <Text variant="body" color="textMuted">
-                {g.noWorkouts}
-              </Text>
-            ) : (
-              workouts.map((workout, i) => (
-                <Card key={`${workout.type}-${i}`} style={styles.gapSm}>
-                  <View style={styles.noteHeader}>
-                    <Icon name="dumbbell" size={20} color="accentText" />
-                    <Text variant="bodyStrong" style={styles.flex}>
-                      {g.workoutTypes[workout.type]}
-                    </Text>
-                    <IconButton
-                      icon="close"
-                      variant="plain"
-                      size={40}
-                      accessibilityLabel={format(g.removeWorkout, { type: g.workoutTypes[workout.type] })}
-                      onPress={() => setWorkouts((list) => list.filter((_, j) => j !== i))}
-                    />
-                  </View>
-                  <NumberRow label={g.workoutPerWeek}>
-                    <Stepper value={workout.perWeek} min={1} max={14} onChange={(perWeek) => updateWorkout(i, { perWeek })} accessibilityLabel={g.workoutPerWeek} />
-                  </NumberRow>
-                  <NumberRow label={g.workoutMinutes}>
-                    <Stepper
-                      value={workout.minutes}
-                      min={10}
-                      max={240}
-                      step={5}
-                      onChange={(minutes) => updateWorkout(i, { minutes })}
-                      format={(v) => format(g.minutesValue, { value: v })}
-                      accessibilityLabel={g.workoutMinutes}
-                    />
-                  </NumberRow>
-                </Card>
-              ))
-            )}
-            <Text variant="label" color="textMuted">
-              {g.addWorkout}
-            </Text>
-            <View style={styles.chips}>
-              {WORKOUT_TYPES.filter((type) => !workouts.some((w) => w.type === type)).map((type) => (
-                <SelectChip
-                  key={type}
-                  icon="plus"
-                  label={g.workoutTypes[type]}
-                  selected={false}
-                  onPress={() => setWorkouts((list) => [...list, { type, perWeek: 2, minutes: 45 }])}
-                />
-              ))}
-            </View>
-          </View>
-        </View>
-      ),
+    work: {
+      title: a.workTitle,
+      body: a.workBody,
+      node: <WorkStep value={work} onChange={setWork} />,
+    },
+    everyday: {
+      title: a.everydayTitle,
+      body: a.everydayBody,
+      node: <EverydayStep value={everyday} onChange={setEveryday} />,
+    },
+    workouts: {
+      title: a.workoutsTitle,
+      body: a.workoutsBody,
+      node: <WorkoutsStep value={training} onChange={setTraining} />,
     },
     result: {
       title: t.resultTitle,
       body: t.resultBody,
       node: (
         <View style={styles.gap}>
+          <ExpenditureSummary spend={spend} skippedNotes={skippedNotes} />
           <Card style={styles.gapSm}>
             <Text variant="overline" color="textSubtle">
               {t.bmr}
             </Text>
-            <Text variant="display" style={styles.tabular}>
+            <Text variant="heading" style={styles.tabular}>
               {format(t.kcalPerDay, { value: formatEnergy(spend.bmr) })}
             </Text>
             <Text variant="body" color="textMuted">
@@ -434,31 +362,6 @@ export default function CalculatorScreen() {
             </Text>
             <Text variant="caption" color="textSubtle">
               {spend.formula === 'katch' ? g.formulaKatch : g.formulaMifflin}
-            </Text>
-          </Card>
-          <Card style={styles.gapSm}>
-            <View style={styles.spread}>
-              <Text variant="body" color="textMuted">
-                {g.everyday}
-              </Text>
-              <Text variant="bodyStrong">{format(g.everydayValue, { factor: formatDecimal(spend.everydayFactor, 2) })}</Text>
-            </View>
-            <View style={styles.spread}>
-              <Text variant="body" color="textMuted">
-                {g.exercise}
-              </Text>
-              <Text variant="bodyStrong">{format(g.exerciseValue, { value: formatEnergy(spend.exerciseKcal) })}</Text>
-            </View>
-          </Card>
-          <Card style={[styles.gapSm, styles.highlight]}>
-            <Text variant="overline" color="accentText">
-              {t.tdee}
-            </Text>
-            <Text variant="display" color="accentText" style={styles.tabular}>
-              {format(t.kcalPerDay, { value: formatEnergy(spend.tdee) })}
-            </Text>
-            <Text variant="body" color="textMuted">
-              {format(t.tdeeExplain, { factor: formatDecimal(spend.tdee / spend.bmr, 2) })}
             </Text>
           </Card>
         </View>
