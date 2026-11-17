@@ -25,7 +25,7 @@ module.exports = defineConfig([
     ignores: [
       'src/i18n/**',
       'src/data/catalog/text/**',
-      'src/data/catalog/*.generated.ts',
+      'src/**/*.generated.ts',
       'src/lib/amounts.ts',
       'src/domain/units.ts',
       'src/domain/foodText.ts',

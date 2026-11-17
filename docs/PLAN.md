@@ -178,10 +178,19 @@ Yksi kysymys per näkymä, edistymispalkki ylhäällä, "Takaisin" jokaisessa va
 
 Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin on osa ensikäynnistystä (ohitettavissa) ja löytyy Profiilista.
 
-- **Tiedot:** biologinen sukupuoli (vain kaavaa varten), syntymävuosi, pituus, paino, raskaus tai imetys, aktiivisuustaso viidellä arkisella kuvauksella (esim. "Istumatyö, vähän liikuntaa") ja liikuntakerrat viikossa.
-- **Laskenta:** perusaineenvaihdunta Mifflin–St Jeor -kaavalla × aktiivisuuskerroin = kokonaiskulutus. Luvut näytetään ja selitetään selkokielellä.
+- **Tiedot:** biologinen sukupuoli (vain kaavaa varten), syntymävuosi, pituus, paino (kertakäyttöinen yksikkökytkin kg | lb | st ja cm | ft+in), raskaus tai imetys sekä aktiivisuus kolmena kysymyksenä (marraskuu 2026):
+  1. **Päivän pääasiallinen tekeminen (työ tai koulu):** viisi tasoa, joista jokaisessa 4–6 arkiesimerkkiä (pääosin istuen: koululainen tai opiskelija, toimistotyö, etätyö, IT, asiakaspalvelu puhelimessa, kuljettaja; istuen ja välillä liikkuen; paljon seisten ja kävellen; fyysisesti raskas; erittäin raskas), erilliset tilanteet (kotona lasten kanssa, eläkkeellä, työtön tai työnhakija, vuorotyö) ja haku "Kirjoita ammattisi tai tilanteesi" noin sadasta ammatista ja tilanteesta kaikilla kielillä.
+  2. **Arkiliikunta:** koulu- ja työmatka (tapa ja kesto), päivittäiset askeleet viitenä vaihtoehtona (en tiedä / alle 5 000 / 5 000–8 000 / 8 000–12 000 / yli 12 000) ja vapaa-ajan liike (koiran ulkoilutus, pihatyöt, kotityöt, leikit lasten kanssa, remontointi).
+  3. **Treenit:** kymmenen lajia, kerrat viikossa, kesto ja teho (kevyt / kohtalainen / rankka arkikielisin esimerkein, esim. "hengästyt, mutta pystyt puhumaan").
+  Jokaisessa kysymyksessä on "En tiedä tai haluan ohittaa", jonka oletus kerrotaan. Lopuksi yhteenveto "Arvioitu kulutuksesi on noin X päivässä" ja napautuksella erittely: perusaineenvaihdunta + arkiaktiivisuus + treenit.
+- **Laskenta:** perusaineenvaihdunta Mifflin–St Jeor -kaavalla × arkikerroin (työn tai koulun taso, jota askeleet voivat nostaa) + työmatka + vapaa-ajan liike + treenit (net MET) = kokonaiskulutus, enintään 2,5 × perusaineenvaihdunta. Kävelyä ei lasketa kahteen kertaan, kun askeleet tiedetään. Luvut näytetään ja selitetään selkokielellä (`domain/activity.ts`).
 - **Tavoite:** laihdutus, ylläpito tai painonnousu. Tavoitepaino liukusäätimellä ja vauhti 0,25 / 0,5 / 0,75 kg viikossa. Näytetään päivittäinen kalorimäärä ja arvioitu tavoitepäivä (1 kg ≈ 7 700 kcal).
-- **Makrot:** proteiini g/kg (laihdutus 1,8, ylläpito 1,4, nousu 1,6), rasva vähintään 25 % energiasta, hiilihydraatit loput. Käyttäjä voi säätää käsin.
+- **Makrot (marraskuu 2026, `domain/macros.ts`):**
+  - **Ruokavaliotyylit** esiasetetuin makroin ja "kenelle sopii" -kuvauksin: tasapainoinen, korkea proteiini, lihasmassan kasvatus, kestävyysurheilija, Välimeren ruokavalio, vähähiilihydraattinen, ketogeeninen (selvä huomautus: sopii vain osalle, keskustele ammattilaisen kanssa), kasvis, vegaani ja oma.
+  - **Proteiinitaso** perus 1,0 / kohtalainen 1,4 / korkea 1,8 g/kg viitepainosta (kasvistyyleissä +10 %); laihdutuksessa, lihaskasvussa ja rekompositiossa suositus on korkea.
+  - **Käsisäätö** prosentteina tai grammoina: kun yhtä muuttaa, lukitsemattomat mukautuvat ja päivän energia pysyy. Varoitukset: rasva alle 20 % energiasta, proteiini yli 2,2 g/kg.
+  - **Aterioiden jako (valinnainen):** 2–6 ateriaa, tasainen / isompi aamiainen / isompi päivällinen. Päiväkirja näyttää aterioittaiset tavoitteet.
+  - Esikatselu näyttää vaikutuksen energiaan ja makroihin heti.
 - **Turvarajat (pakolliset, koodissa ja yksikkötestattu):** vähintään 1 200 kcal (naiset) / 1 500 kcal (miehet), vaje enintään 25 % kokonaiskulutuksesta. Alle 18-vuotiaille sekä raskaana oleville ja imettäville ei lasketa vajetta, vaan ohjataan terveydenhoitajalle tai lääkärille. Alipainon puolelle (BMI < 18,5) jäävää tavoitepainoa ei hyväksytä. Jos valinta ylittäisi rajan, sovellus säätää sen turvalliseksi ja kertoo ystävällisesti miksi.
 - **Painonseuranta:** painon kirjaus, kaavio 7 päivän liukuvalla keskiarvolla ja edistyminen kohti tavoitetta. Kun keskiarvo muuttuu yli 2 kg, sovellus ehdottaa tavoitteen päivittämistä.
 - **Terveystieto:** pituus, ikä, paino, raskaus/imetys, tavoite ja painokirjaukset kuuluvat samaan terveystietosuostumukseen kuin allergiat. Ei lokeihin eikä analytiikkaan.
@@ -189,8 +198,8 @@ Peruskäyttäjä ei tiedä kalorintarvettaan, joten sovellus laskee sen. Laskin 
 **Edistynyt versio (marraskuu 2026)**, turvarajat ennallaan:
 
 - **Tavoitetyypit:** laihdutus, ylläpito, lihasmassan kasvatus (maltillinen ylijäämä, 0,1–0,4 kg/vko, enintään 15 % kulutuksesta) ja kehonkoostumuksen muutos (10 % vaje, paljon proteiinia, ei tavoitepainoa). Rekompositiokaan ei tee vajetta alle 18-vuotiaille, raskaana oleville tai imettäville.
-- **Tarkempi kulutus:** valinnainen rasvaprosentti → Katch–McArdle. Arkiaktiivisuus työn tyypistä tai askelista, treenit lajeittain (kerrat ja kesto, MET-arvot).
-- **Ruokavaliotyylit:** tasapainoinen, korkea proteiini, vähähiilihydraattinen (25 % energiasta, vähintään 100 g, ei ketogeeninen) sekä kasvis/vegaani (+10 % proteiinia). Rasva vähintään 25 % kaikissa. Käsin säädettävissä.
+- **Tarkempi kulutus:** valinnainen rasvaprosentti → Katch–McArdle. Aktiivisuus kolmena kysymyksenä (ks. Tiedot yllä), treenit lajeittain kerroin, keston ja tehon mukaan (MET-arvot).
+- **Ruokavaliotyylit:** kymmenen tyyliä (ks. Makrot yllä). Rasva vähintään 20 % energiasta kaikissa esiasetuksissa.
 - **Kalorien jaksotus:** sama viikkokokonaisuus, valittuina päivinä enemmän. Pienet päivät eivät koskaan alita kalorilattiaa. Koti ja Päiväkirja näyttävät päivän tavoitteen.
 - **Mukautuva kulutusarvio ja viikkotarkistus:** 2–4 viikon punnituksista ja kirjauksista lasketaan todellinen kulutus (syöty energia − painotrendi × 7 700). Tarkistus selittää laskennan selkokielellä ja ehdottaa tavoitteen päivitystä. Mitään ei muuteta automaattisesti. Jos arvio poikkeaa kaavasta yli 35 %, se merkitään epäluotettavaksi (todennäköisesti kirjaamatta jääneitä aterioita).
 - **Välitavoitteet ja ennuste:** 25 / 50 / 75 / 100 % -merkit, ennuste nykyisellä tahdilla ja suunnitelman mukainen päivä.
@@ -219,7 +228,11 @@ Hahmokohtainen paletti vaaleana ja tummana ([MASCOT.md](MASCOT.md)). Käyttäjä
 - **Uusi kieli** = käyttöliittymän käännöstiedostot (`i18n/<kieli>*.ts`), katalogin tekstit (`data/catalog/text/<kieli>/`) ja rivi kahteen rekisteriin. Testit kaatuvat, kunnes jokainen avain, hahmon repliikki, resepti, ainesosa ja ruoka on käännetty (`keys.test.ts`, `characterVoices.test.ts`, `text.test.ts`). Lint-sääntö `platepal/no-untranslated-text` estää kovakoodatut tekstit.
 - **Muotoilu Intl-rajapinnalla:** numerot, desimaalit, päivämäärät, viikonpäivät ja valuutta kielen ja alueen mukaan. Viikon ensimmäinen päivä tulee puhelimesta (Yhdysvalloissa sunnuntai). Hermes tuntee vain oikeat lokaalit (`fi-FI`, `sv-SE`, `en-GB`, `en-US`), joten kieli ja alue yhdistetään niihin.
 - **Hinta-alueet** (maa → valuutta ja hintataso) ilman kauppoja: Suomi on oikeaa hintatietoa, muut tuetut maat (SE, NO, DK, EE, DE, NL, FR, IE, GB, US) karkea arvio hintatasokertoimella, ja käyttöliittymä sanoo sen.
-- **Mittayksiköt:** metrinen (g, kg, ml, dl, l, cm) tai imperiaalinen (oz, lb, fl oz, cups, ft ja in). Oletus puhelimen mittajärjestelmästä tai alueesta; paino- ja pituusyksiköt tulevat samasta asetuksesta. Kaikki tallennetaan ja lasketaan metrisenä.
+- **Mittayksiköt (marraskuu 2026):** käyttäjä valitsee jokaisen yksikön itse: paino kg / lb / st+lb, pituus cm / ft+in, ruoan määrät g ja kg / oz ja lb, nesteet ml, dl ja l / fl oz ja kupit, energia kcal / kJ, reseptien lämpötila °C / °F. Onboardingissa heti kielen jälkeen oma Yksiköt-näkymä: pikavalinnat Metrinen ja Imperiaalinen sekä Mukauta, jokaisessa esimerkki (esim. "70 kg" / "154,3 lb"). Oletus on alueen ehdotus (Yhdysvallat imperiaalinen, Iso-Britannia stonet ja jalat, muut metrinen), mutta käyttäjä näkee ja vahvistaa sen aina. Samat valinnat Profiili → Yksiköt.
+  - **Sisäisesti metrinen:** kaikki tallennetaan ja lasketaan metrisenä (g, ml, kg, cm, kcal, °C). Muunnos tehdään vain näytettäessä ja syötettäessä yhdessä paikassa (`domain/units.ts` muunnokset ja pyöristykset, `lib/amounts.ts` muotoilu): paino 0,1, energia kokonaisina, reseptimäärät käytännöllisinä (½ kuppia), uunilämmöt lähimpään 25 °F ja ruoan sisälämmöt lähimpään 5 °F.
+  - **Syöttökentät:** yksikkö näkyy aina kentän vieressä. Painon ja pituuden syötössä on kertakäyttöinen yksikkökytkin (esim. kg | lb), joka ei muuta asetusta. Energiakentät hyväksyvät kcal tai kJ, määräkentät g tai oz.
+  - **Reseptit:** katalogin tekstit kirjoitetaan metrisinä ("200 °C", "2 dl"), ja vaiheet näytetään käyttäjän yksiköillä ("400 °F", "¾ kuppia").
+  - **Ei kovakoodattuja yksiköitä:** lint-sääntö `platepal/no-hardcoded-units` estää yksiköt koodissa ja `i18n/units.test.ts` käännöksissä. Ravintoaineet ja makrot ovat aina grammoina, kuten ravintoarvomerkinnöissä.
 - **Ravintoarvot:** Fineli säilyy toistaiseksi pohjana kaikilla kielillä ja kaikissa maissa. Muihin maihin laajennettaessa voidaan ottaa lisäksi käyttöön esim. USDA FoodData Central ja Open Food Facts (ks. DATA_MODEL.md, päätös 26).
 
 ### 4.12 Suorituskyky
@@ -264,7 +277,17 @@ Tavoite: jokainen napautus antaa visuaalisen palautteen alle 100 ms:ssa release-
 
 ### 4.17 Kotinäytön widget
 
-- **Android (tehty):** `react-native-android-widget` config pluginilla. Päivän kalorit rengasmittarina, makrot, hahmon pieni kuva ja teeman värit (vaalea ja tumma), pikanapit "Kirjaa kuvalla" ja "Puhu" (deep linkit `platepal:///camera?mode=photo` ja `platepal:///log-text?mode=speak`); muu alue avaa Päiväkirjan. Päivittyy, kun päiväkirja, tavoitteet, hahmo, teema tai kieli muuttuu, sekä 30 minuutin välein (päivän vaihtuminen). Sovellus tallentaa widgetille tilannekuvan, joten widget toimii sovelluksen ollessa kiinni. Profiilissa ohje ja "Lisää kotinäytölle" -nappi.
+- **Android (marraskuu 2026, uusittu):** `react-native-android-widget` config pluginilla, kolme kokoa omilla asetteluillaan (`features/widget/widgets.tsx`):
+  - **Pieni (2 × 2):** jäljellä oleva energia isona rengasmittarina, hahmo renkaan sisällä ja kamerapikanappi kulmassa.
+  - **Keskikokoinen (4 × 2):** rengas (syöty / tavoite), jäljellä oleva energia, proteiini, hiilihydraatit ja rasva palkkeina grammoineen, hahmo jonka ilme vaihtuu päivän tilanteen mukaan, ja pikanapit kamera, puhe, viivakoodi ja vesi +1.
+  - **Iso (4 × 4):** lisäksi hahmon päivän viesti omalla puhetyylillään, vesilasit, putki ja päivän tehtävät sekä seuraava suunniteltu päivällinen (kuva tai kuvitus ja nimi).
+  - **Ulkoasu:** hahmon teemavärit, vaalea ja tumma tila puhelimen (tai sovelluksen) asetuksen mukaan, 28 dp kulmat, koko mitoitetaan käynnistimen ilmoittaman koon mukaan (renkaan koko lasketaan jäljelle jäävästä tilasta), joten asettelu toimii eri ruudukoissa.
+  - **Tyhjä päivä:** hahmo tervehtii kellonajan mukaan ("Huomenta! … Mitä aamupalaksi?"), ja pikanapit ovat korostettuina.
+  - **Pikanapit:** deep linkit `platepal:///camera?mode=photo`, `/log-text?mode=speak`, `/camera?mode=barcode`; vesi +1 lisää lasillisen suoraan widgetistä sovellusta avaamatta (taustatehtävä lataa tallennetun vesistoren, lisää ja piirtää kaikki widgetit). Muu alue avaa Päiväkirjan, seuraava ateria reseptin tai ruokalistan.
+  - **Päivitys:** sovellus kirjoittaa tilannekuvan raakaluvuin, kielen ja yksiköiden kera, kun päiväkirja, vesi, tavoitteet, ruokalista, hahmo, teema, kieli tai yksiköt muuttuvat (koottuna 0,8 s:n viiveellä, ei turhia päivityksiä). Widget muotoilee tekstit piirrettäessä, joten päivän vaihtuminen ja kellonajan tervehdys näkyvät oikein myös sovelluksen ollessa kiinni; Android päivittää widgetin 30 minuutin välein (keskiyön vaihtuminen).
+  - **Esikatselukuvat** widget-valikkoon jokaisesta koosta englanniksi, suomeksi ja ruotsiksi (`assets/widget/`, kieliversiot `plugins/withWidgetTranslations.js`), samoin valikon kuvaukset.
+  - Profiilin widgettiohje näyttää jokaisen koon esikatseluna käyttäjän omilla tiedoilla, ja "Lisää kotinäytölle" -nappi pyytää käynnistintä sijoittamaan valitun koon.
+  - Hahmojen ilmeet ja pikanappien kuvakkeet SVG:nä generoidaan `scripts/widget/generate-widget-art.gen.tsx`:llä.
 - **iOS (suunnitelma):** WidgetKit-laajennus Swiftillä (`@bacons/apple-targets` tai vastaava config plugin). Tiedot App Groupin jaetun `UserDefaults`-avaimen kautta: sama tilannekuva kuin Androidilla JSONina, kirjoitetaan pienellä natiivimoduulilla (`expo-modules-core`). Koot: pieni (rengas + kcal) ja keskikokoinen (rengas, makrot, hahmo, kaksi `Link`-nappia deep linkeillä). Päivitys `WidgetCenter.shared.reloadAllTimelines()` aina kun tilannekuva kirjoitetaan, ja aikajana keskiyöllä (päivän vaihtuminen). Hahmo PNG-kuvana (kuvittajan `widget.png`, MASCOT.md). Lukitusnäytön widget (accessoryCircular: rengas) myöhemmin. Arvio 3–5 päivää.
 
 ### 4.18 Reseptin tuonti linkistä

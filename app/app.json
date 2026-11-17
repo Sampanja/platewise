@@ -75,17 +75,71 @@
         {
           "widgets": [
             {
+              "name": "TodaySmall",
+              "label": "PlatePal",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000,
+              "description": "Energy left today and a camera button",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "previewImage": "./assets/widget/preview-small.png"
+            },
+            {
               "name": "Today",
               "label": "PlatePal",
-              "description": "Päivän kalorit ja makrot sekä pikakirjaus kuvalla tai puheella",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000,
+              "description": "Today’s energy and macros with quick logging: photo, voice, barcode and water",
               "minWidth": "250dp",
               "minHeight": "110dp",
               "targetCellWidth": 4,
               "targetCellHeight": 2,
+              "previewImage": "./assets/widget/preview-medium.png"
+            },
+            {
+              "name": "TodayLarge",
+              "label": "PlatePal",
               "resizeMode": "horizontal|vertical",
-              "updatePeriodMillis": 1800000
+              "updatePeriodMillis": 1800000,
+              "description": "Your day at a glance: energy, macros, water, streak, next meal and quick logging",
+              "minWidth": "250dp",
+              "minHeight": "250dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
+              "previewImage": "./assets/widget/preview-large.png"
             }
           ]
+        }
+      ],
+      [
+        "./plugins/withWidgetTranslations",
+        {
+          "descriptions": {
+            "fi": {
+              "TodaySmall": "Päivän jäljellä oleva energia ja kamerapikanappi",
+              "Today": "Päivän energia ja makrot sekä pikakirjaus: kuva, puhe, viivakoodi ja vesi",
+              "TodayLarge": "Päivä yhdellä silmäyksellä: energia, makrot, vesi, putki, seuraava ateria ja pikakirjaus"
+            },
+            "sv": {
+              "TodaySmall": "Dagens återstående energi och en kameraknapp",
+              "Today": "Dagens energi och makron med snabbloggning: foto, tal, streckkod och vatten",
+              "TodayLarge": "Dagen i en blick: energi, makron, vatten, svit, nästa måltid och snabbloggning"
+            }
+          },
+          "previews": {
+            "fi": {
+              "TodaySmall": "./assets/widget/preview-small-fi.png",
+              "Today": "./assets/widget/preview-medium-fi.png",
+              "TodayLarge": "./assets/widget/preview-large-fi.png"
+            },
+            "sv": {
+              "TodaySmall": "./assets/widget/preview-small-sv.png",
+              "Today": "./assets/widget/preview-medium-sv.png",
+              "TodayLarge": "./assets/widget/preview-large-sv.png"
+            }
+          }
         }
       ]
     ],

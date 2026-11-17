@@ -16,7 +16,7 @@ import { useColorScheme, View } from 'react-native';
 import { ToastHost } from '@/components/Toast';
 import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { useNotificationRouting, usePantryReminderSync } from '@/features/notifications/useNotificationRouting';
-import { useWidgetSync } from '@/features/widget/useWidgetSync';
+import { WidgetSync } from '@/features/widget/WidgetSync';
 import { setHapticsEnabled } from '@/components/ui';
 import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnits } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
@@ -77,8 +77,6 @@ export default function RootLayout() {
   const units = useUnits();
   setActiveUnits(units);
   const unitsKey = UNIT_KINDS.map((kind) => units[kind]).join(',');
-  // The widget's snapshot holds finished text, so a new language or unit rebuilds it.
-  useWidgetSync(hydrated, `${language}|${unitsKey}`);
   setFirstWeekday(useDeviceLocale().firstWeekday, priceRegion);
   const theme = `${themeName}|${priceRegion}|${language}|${unitsKey}|${activeFirstWeekday()}`;
   // Scheduled reminders keep the words they were made with: re-create them in the new language.
@@ -137,6 +135,7 @@ export default function RootLayout() {
         <View style={{ flex: 1, backgroundColor: colors.bg }} />
       )}
       <ToastHost key={theme} />
+      <WidgetSync />
       {mountedTheme === theme ? <CelebrationHost /> : null}
       <StatusBar style={barStyle} />
       {/*

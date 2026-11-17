@@ -245,7 +245,15 @@ Yksi rivi per käyttäjä. Luodaan triggerillä `auth.users`-insertin yhteydess�
 | `hide_calories` | `boolean` NOT NULL DEFAULT false | "Piilota kalorit": päiväkirja ja Koti näyttävät ateriat ilman lukuja. Ei terveystieto, mutta ei analytiikkaan (kertoo käyttäjän suhteesta numeroihin). |
 | `onboarding_completed_at` | `timestamptz` | |
 | `language` | `text` | Käyttöliittymän ja reseptien kieli: `fi`, `en`, `sv`. NULL = puhelimen kieli, jos tuettu, muuten englanti. Ensikäynnistyksen ensimmäinen näkymä on kielen valinta. CHECK tuettu kieli |
-| `unit_system` | `text` | `metric` tai `imperial`. NULL = puhelimen mittajärjestelmä tai alue (Yhdysvallat imperiaalinen). Ruoka-, paino- ja pituusyksiköt tulevat samasta asetuksesta; tallennus on aina metrinen. CHECK |
+| `unit_weight` | `text` NOT NULL | `kg`, `lb` tai `st` (stonet ja paunat). CHECK |
+| `unit_height` | `text` NOT NULL | `cm` tai `ftin`. CHECK |
+| `unit_food` | `text` NOT NULL | Ruoan määrät: `g` (g, kg) tai `oz` (oz, lb). CHECK |
+| `unit_liquid` | `text` NOT NULL | `ml` (ml, dl, l) tai `cup` (fl oz, kupit). CHECK |
+| `unit_energy` | `text` NOT NULL | `kcal` tai `kj`. CHECK |
+| `unit_temperature` | `text` NOT NULL | Reseptien lämpötilat: `c` tai `f`. CHECK |
+| `units_chosen` | `boolean` NOT NULL DEFAULT false | Käyttäjä on vahvistanut yksiköt (onboardingin Yksiköt-näkymä). Ennen sitä yksiköt ovat alueen ehdotus. |
+
+Yksiköt valitaan yksitellen; pikavalinnat Metrinen (kg, cm, g, ml, kcal, °C) ja Imperiaalinen (lb, ft+in, oz, cups, kcal, °F) täyttävät kaikki. Oletusehdotus: Yhdysvallat imperiaalinen, Iso-Britannia metrinen paitsi paino stoneina ja pituus jalkoina, muut metrinen. **Kaikki tallennetaan ja lasketaan metrisenä** (g, ml, kg, cm, kcal, °C); muunnos tehdään vain näytettäessä ja syötettäessä (`domain/units.ts`, `lib/amounts.ts`). Ravintoaineet ja makrot ovat aina grammoina (kuten ravintoarvomerkinnöissä), ravintoarvotaulukot 100 g kohden.
 
 ### `profile_allergens` *(terveystieto)*
 
@@ -309,25 +317,30 @@ Kalorilaskimen lähtötiedot. Kaikki kentät valinnaisia: laskin on ohitettaviss
 | `birth_year` | `smallint` | Ikä lasketaan vuosittain oikein ilman päivitystä. CHECK BETWEEN 1900 AND kuluva vuosi |
 | `height_cm` | `smallint` | CHECK BETWEEN 120 AND 230 |
 | `weight_kg` | `numeric(5,1)` | Viimeisin paino, jolla tavoite laskettiin. CHECK BETWEEN 30 AND 300 |
-| `activity_level` | `smallint` | 1–5 (kertoimet 1,2 / 1,3 / 1,4 / 1,55 / 1,7) |
-| `exercise_per_week` | `smallint` NOT NULL DEFAULT 0 | Liikuntakerrat; jokainen lisää kerrointa 0,035, katto 2,0 |
+| `activity_level` | `smallint` | Kysymys 1: päivän pääasiallinen tekeminen, 1–5 (kertoimet 1,2 / 1,3 / 1,4 / 1,55 / 1,7). Ohitettuna 2 |
+| `occupation` | `text` | Haussa valittu ammatti (`domain/occupations.ts`, noin 100 kpl); taso on `activity_level` |
+| `situation` | `text` | `home`, `retired`, `job_seeker`, `shift` (taso 3 / 2 / 2 / 3). CHECK |
+| `commute_mode` | `text` NOT NULL DEFAULT `'none'` | Kysymys 2: `none`, `walk`, `bike`, `transit`, `car`. CHECK |
+| `commute_minutes` | `smallint` NOT NULL DEFAULT 0 | Meno ja paluu yhteensä päivässä, 5 päivänä viikossa. CHECK BETWEEN 0 AND 240 |
+| `step_band` | `text` NOT NULL DEFAULT `'unknown'` | `unknown`, `under5k`, `5to8k`, `8to12k`, `over12k`. CHECK |
+| `leisure` | `text[]` NOT NULL DEFAULT `'{}'` | `dog`, `garden`, `housework`, `kids`, `diy` |
+| `skipped` | `text[]` NOT NULL DEFAULT `'{}'` | Ohitetut kysymykset (`work`, `everyday`, `workouts`); niiden oletus näytetään yhteenvedossa |
 | `pregnancy` | enum `pregnancy_status` NOT NULL DEFAULT `'none'` | `none`, `pregnant`, `breastfeeding`. Kysytään vain, jos `sex = 'female'` |
 | `body_fat_pct` | `numeric(4,1)` | Valinnainen. CHECK BETWEEN 5 AND 60. Annettuna perusaineenvaihdunta lasketaan Katch–McArdle-kaavalla (370 + 21,6 × rasvaton paino). |
-| `everyday_mode` | `text` NOT NULL DEFAULT `'job'` | `job` (työn tyyppi = `activity_level`) tai `steps` |
-| `steps_per_day` | `integer` | Askelten keskiarvo, kun `everyday_mode = 'steps'`. CHECK BETWEEN 0 AND 40000 |
 | `updated_at` | `timestamptz` NOT NULL | |
 
 ### `profile_workouts` *(terveystieto)*
-Treenit lajeittain. Kun rivejä on, ne korvaavat `exercise_per_week`-kertoimen.
+Kysymys 3: treenit lajeittain.
 
 | Kenttä | Tyyppi | Huom. |
 |---|---|---|
 | `user_id` | `uuid` FK → `profiles` ON DELETE CASCADE | PK (`user_id`, `workout_type`) |
-| `workout_type` | `text` | `walk`, `run`, `cycle`, `gym`, `swim`, `ball`, `yoga`, `other` |
+| `workout_type` | `text` | `gym`, `run`, `cycle`, `swim`, `team`, `dance`, `yoga`, `walk`, `martial`, `other` |
 | `per_week` | `smallint` NOT NULL | CHECK BETWEEN 1 AND 14 |
 | `minutes` | `smallint` NOT NULL | CHECK BETWEEN 10 AND 240 |
+| `intensity` | `text` NOT NULL DEFAULT `'moderate'` | `light`, `moderate`, `hard`; MET lajin ja tehon mukaan (`domain/activity.ts`) |
 
-Kulutus = BMR × arkiaktiivisuus + Σ (MET − 1) × paino × tunnit × kerrat / 7, katto 2,5 × BMR (`domain/energy.ts`).
+Kulutus = BMR × arkikerroin + työmatka + vapaa-ajan liike + Σ (MET − 1) × paino × tunnit × kerrat / 7, katto 2,5 × BMR (`domain/energy.ts`, `domain/activity.ts`). Arkikerroin on työn tai koulun taso, jota askeleet voivat nostaa (ei laskea). Kun askeleet tiedetään, kävelymatkoja ja koiralenkkejä ei lisätä erikseen.
 
 ### `profile_weight_goals` *(terveystieto)*
 
@@ -336,8 +349,14 @@ Kulutus = BMR × arkiaktiivisuus + Σ (MET − 1) × paino × tunnit × kerrat /
 | `user_id` | `uuid` PK, FK → `profiles` ON DELETE CASCADE | |
 | `goal_type` | enum `weight_goal_type` NOT NULL | `lose`, `maintain`, `gain` (lihasmassan kasvatus), `recomp` (kehonkoostumuksen muutos) |
 | `rate_kg_per_week` | `numeric(3,2)` | Laihdutus `0.25` / `0.50` / `0.75`, kasvatus `0.10` / `0.25` / `0.40`; NULL ylläpidossa ja rekompositiossa |
-| `diet_style` | `text` NOT NULL DEFAULT `'balanced'` | `balanced`, `high_protein`, `low_carb`, `plant`; esiasettaa makrot |
-| `manual_macros` | `boolean` NOT NULL DEFAULT false | Makroja on säädetty käsin laskimen jälkeen |
+| `diet_style` | `text` NOT NULL DEFAULT `'balanced'` | `balanced`, `high_protein`, `muscle_gain`, `endurance`, `mediterranean`, `low_carb`, `keto`, `vegetarian`, `vegan`, `custom`; esiasettaa makrot (`domain/macros.ts`) |
+| `protein_level` | `text` | `base` 1,0 / `moderate` 1,4 / `high` 1,8 g/kg viitepainosta (kasvistyyleissä +10 %). NULL = tavoitteen mukainen suositus (laihdutus ja lihaskasvu: `high`) |
+| `macro_input` | `text` NOT NULL DEFAULT `'percent'` | Käsisäätö prosentteina tai grammoina (`percent`, `grams`) |
+| `locked_macros` | `text[]` NOT NULL DEFAULT `'{}'` | Käsisäädössä paikallaan pysyvät (`protein`, `carbs`, `fat`) |
+| `manual_macros` | `boolean` NOT NULL DEFAULT false | Sama kuin `diet_style = 'custom'` (säilytetty yhteensopivuuden vuoksi) |
+| `meals_enabled` | `boolean` NOT NULL DEFAULT false | Aterioiden jako päiväkirjaan |
+| `meals_per_day` | `smallint` NOT NULL DEFAULT 3 | CHECK BETWEEN 2 AND 6 |
+| `meal_distribution` | `text` NOT NULL DEFAULT `'even'` | `even`, `big_breakfast`, `big_dinner`. CHECK |
 | `cycling_enabled` | `boolean` NOT NULL DEFAULT false | Kalorien jaksotus |
 | `cycling_high_days` | `smallint[]` NOT NULL DEFAULT `'{5,6}'` | 0 = ma … 6 = su |
 | `cycling_extra_kcal` | `smallint` NOT NULL DEFAULT 300 | CHECK BETWEEN 0 AND 1000; sovellus rajaa, ettei pieni päivä alita lattiaa |
@@ -355,6 +374,8 @@ Kulutus = BMR × arkiaktiivisuus + Σ (MET − 1) × paino × tunnit × kerrat /
 - Kalorimäärä ei koskaan alita 1 200 kcal (naiset) / 1 500 kcal (miehet), eikä vaje ylitä 25 % kokonaiskulutuksesta. Jos valinta ylittäisi rajan, vauhtia hidastetaan ja UI kertoo miksi.
 - Alle 18-vuotiaille ja raskaana oleville tai imettäville ei lasketa vajetta (tavoite muuttuu ylläpidoksi ja UI ohjaa terveydenhoitajalle tai lääkärille).
 - Tavoitepaino alle BMI 18,5:n hylätään.
+
+**Makrot** (`domain/macros.ts`, yksikkötestattu): proteiini ensin (g/kg viitepainosta; viitepaino enintään BMI 25:n paino), sitten tyylin rasvaosuus (tasapainoinen 30 %, Välimeren 38 %, lihaskasvu ja kestävyys 25 %), hiilihydraatit loput; vähähiilihydraattinen 25 % energiasta (vähintään 100 g), ketogeeninen enintään 30 g. Proteiinia leikataan, jos rasva painuisi alle 20 % tai hiilihydraatit tyylin rajan alle. Käsisäädössä muutettu makro asetetaan ja lukitsemattomat jakavat erotuksen energiansa suhteessa, jolloin päivän energia pysyy; varoitukset (rasva alle 20 %, proteiini yli 2,2 g/kg) eivät estä tallennusta. **Aterioiden jako:** 2 = aamiainen + päivällinen, 3 = + lounas, 4–6 = lisäksi 1–3 välipalaa; tasaisessa jaossa kaikki yhtä suuria, muuten välipalat puolikkaita ja iso ateria 1,6-kertainen. Summa on aina päivän tavoite.
 
 ### `subscriptions`
 Tilauksen tila. Kirjoittaa vain RevenueCat-webhookin Edge Function.
@@ -830,7 +851,7 @@ Lasketaan, ei tallenneta (`domain/qualityScore.ts`, [QUALITY_SCORE.md](QUALITY_S
 | `pantry_expiry` | `boolean` NOT NULL DEFAULT true | Vanhenemismuistutus edellisenä aamuna klo 9 |
 
 ### Kotinäytön widget
-Ei taulua. Sovellus kirjoittaa laitteelle tilannekuvan (`platepal:widget`: päivän luvut, tekstit aktiivisella kielellä, teeman värit), jonka widget lukee myös sovelluksen ollessa kiinni (`features/widget/`).
+Ei taulua. Sovellus kirjoittaa laitteelle tilannekuvan (`platepal:widget`, versio 2: päivän energia ja makrot tavoitteineen, kirjausten määrä, vesi ja lasikoko, putki, tehtävät, seuraava päivällinen, kieli, yksiköt, hahmo, teema-asetus ja teeman värit). Widget muotoilee tekstit piirrettäessä, joten se toimii myös sovelluksen ollessa kiinni ja nollaa luvut päivän vaihtuessa. Vesi +1 kirjataan suoraan vesistoreen (`features/widget/`).
 
 ---
 
@@ -936,7 +957,7 @@ Huomioita:
 22. **Reseptikuvat:** testikirjastossa ei ole valokuvia; kuvituskortti piirretään kategoriasta teeman väreissä, kunnes backend tuottaa `recipe_images`-kuvan.
 23. **Kielet:** suomi, englanti ja ruotsi. Kieli on profiilin asetus (`profiles.language`), oletuksena puhelimen kieli tai englanti. Aiemmat (vain suomenkieliset) käyttäjät pitävät suomen (profiilin siirto v8).
 24. **Teksti erillään rakenteesta:** reseptien, ainesosien ja ruokien tekstit ovat käännöstauluissa (`recipe_translations`, `ingredient_translations`, `food_translations`), rakenne ja laskettu data yhteisiä. Uusi kieli = käännösrivit kaikille + käyttöliittymän käännöstiedosto; mitään rakennetta ei kopioida.
-25. **Mittayksiköt:** metrinen tai imperiaalinen (`profiles.unit_system`). Kaikki tallennetaan metrisenä (grammat, millilitrat, kilot, senttimetrit); yksikkö vaikuttaa vain näyttöön ja syöttöön.
+25. **Mittayksiköt:** käyttäjä valitsee jokaisen yksikön erikseen (`profiles.unit_*`): paino, pituus, ruoan määrät, nesteet, energia ja reseptien lämpötila. Kaikki tallennetaan metrisenä (g, ml, kg, cm, kcal, °C); yksikkö vaikuttaa vain näyttöön ja syöttöön. Vanha `unit_system` (tai alueen automaattinen valinta) muuttui käyttäjän asetukseksi (profiilin siirto v10).
 26. **Ravintoarvot muissa maissa:** Fineli säilyy toistaiseksi kaikkien kielten ja maiden pohjana. Muihin maihin laajennettaessa `fineli_foods`-taulun rinnalle voidaan tuoda esim. USDA FoodData Central (Yhdysvallat) ja Open Food Facts (kauppatuotteet). Ainesosa viittaa silloin yhteen lähteeseen, ja lähde näytetään.
 
 27. **Ruokavarasto** (`pantry_items`) viittaa vain ainesosatauluun; skannaus on aina arvio ja käyttäjä vahvistaa. Perusvarat (`profile_pantry_items`) lasketaan aina saatavilla oleviksi "Mitä voin tehdä" -ehdotuksissa.
@@ -946,6 +967,9 @@ Huomioita:
 31. **Tuodut reseptit** ovat vain käyttäjän omia; lähdelinkki tallennetaan, sivun kuvat ja teksti eivät. Käyttäjän allergeeneista varoitetaan selvästi.
 32. **Raportit** lasketaan kirjatusta datasta (`domain/periodReport.ts`), keskiarvot vain kirjatuista päivistä. Hahmon yhteenveto puhuu vain tavoista.
 33. **Widget** näyttää vain käyttäjän omalla kotinäytöllä olevaa tietoa laitteen tilannekuvasta; "Piilota kalorit" piilottaa luvut myös widgetistä.
+34. **Aktiivisuus kolmena kysymyksenä** (työ tai koulu, arkiliikunta, treenit), jokaisessa ohitus ja näkyvä oletus. Ammattilista (noin 100 ammattia ja tilannetta) on koodissa tasoineen, nimet käännöstiedostoissa; haku lukee kaikkia kieliä.
+35. **Ruokavaliotyylit** esiasettavat makrot; "Oma" on käsisäätö. Ketogeenisessä tyylissä on aina huomautus ammattilaisen kanssa keskustelemisesta. Turvarajat koskevat kaikkia tyylejä.
+36. **Aterioiden jako** on valinnainen ja näkyy vain päiväkirjassa; se ei muuta päivän tavoitetta.
 
 ## Avoimet kysymykset
 
