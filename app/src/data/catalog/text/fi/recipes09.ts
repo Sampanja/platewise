@@ -59,7 +59,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Nyhtöpossu ja coleslaw tortillassa',
     description: 'Uunissa hitaasti haudutettu nyhtöpossu, savuinen kastike ja raikas kaalisalaatti.',
     steps: [
-      'Lämmitä uuni 150 asteeseen. Hiero lihaan suola ja paprikajauhe.',
+      'Lämmitä uuni 150 °C:seen. Hiero lihaan suola ja paprikajauhe.',
       'Kypsennä lihaa kannellisessa padassa 1 dl:n kanssa vettä noin 3,5 tuntia.',
       'Nypi liha haarukoilla ja sekoita joukkoon tomaattipyree, siirappi ja puolet etikasta.',
       'Suikaloi kaali ja porkkana ja mausta loppuetikalla ja ripauksella suolaa.',
@@ -86,7 +86,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Jauheliha-perunavuoka',
     description: 'Perunaviipaleita, tomaattista jauhelihaa ja juustokuori: koko perheen arkivuoka.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Ruskista jauheliha ja sipuli, lisää tomaattimurska, oregano ja suola.',
       'Viipaloi perunat ohuiksi.',
       'Kerrosta vuokaan perunat ja jauhelihakastike, ylimmäksi perunaa.',
@@ -126,7 +126,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Hampurilaispihvi ja bataattiranskalaiset',
     description: 'Mehevä naudan pihvi, cheddar, rapeat kasvikset ja uunissa paahdetut bataattiranskalaiset.',
     steps: [
-      'Lämmitä uuni 225 asteeseen. Leikkaa bataatti tikuiksi, sekoita puoleen öljystä ja suolaan ja paahda 25 minuuttia.',
+      'Lämmitä uuni 225 °C:seen. Leikkaa bataatti tikuiksi, sekoita puoleen öljystä ja suolaan ja paahda 25 minuuttia.',
       'Muotoile jauhelihasta pihvit ja mausta suolalla.',
       'Paista pihvit kuumalla pannulla 3–4 minuuttia per puoli ja nosta päälle cheddar.',
       'Tarjoa salaatin, tomaatin, punasipulin, suolakurkun ja ranskalaisten kanssa.',
@@ -191,7 +191,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Jauhelihapiirakka voitaikinasta',
     description: 'Rapea voitaikinapiiras, jonka täytteenä on jauhelihaa, sipulia ja tuorejuustoa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja sulata voitaikinalevyt.',
+      'Lämmitä uuni 200 °C:seen ja sulata voitaikinalevyt.',
       'Ruskista jauheliha ja sipuli ja mausta. Sekoita joukkoon tuorejuusto ja anna jäähtyä.',
       'Levitä puolet levyistä vuoan pohjalle, lisää täyte ja peitä loppulevyillä.',
       'Sivele pinta vatkatulla kananmunalla ja paista noin 30 minuuttia.',
@@ -204,7 +204,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Moussaka',
     description: 'Kreikkalainen uuniruoka: munakoisoa, kanelista jauhelihakastiketta ja kuohkea juustokastike.',
     steps: [
-      'Lämmitä uuni 200 asteeseen. Viipaloi munakoiso, sivele öljyllä ja paahda pellillä 15 minuuttia.',
+      'Lämmitä uuni 200 °C:seen. Viipaloi munakoiso, sivele öljyllä ja paahda pellillä 15 minuuttia.',
       'Ruskista jauheliha ja sipuli, lisää tomaattimurska, kaneli ja suola ja hauduta 15 minuuttia.',
       'Sulata voi, lisää jauhot ja vatkaa joukkoon maito. Keitä paksuksi kastikkeeksi.',
       'Kerrosta vuokaan munakoiso ja jauheliha ja kaada kastike pinnalle. Ripottele juusto.',
@@ -231,7 +231,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Naudan ulkofilee ja chimichurri',
     description: 'Paistettu naudan ulkofilee, raikas persilja-valkosipulikastike ja paahdetut juurekset.',
     steps: [
-      'Lämmitä uuni 220 asteeseen. Lohko juurekset ja paahda puolessa öljystä 25 minuuttia.',
+      'Lämmitä uuni 220 °C:seen. Lohko juurekset ja paahda puolessa öljystä 25 minuuttia.',
       'Hienonna persilja ja valkosipuli ja sekoita loppuöljyn, etikan, chilin ja suolan kanssa.',
       'Paista pihvi kuumalla pannulla 3–4 minuuttia per puoli ja anna levätä 5 minuuttia.',
       'Viipaloi pihvi ja tarjoa kastikkeen ja juuresten kanssa.',
@@ -270,7 +270,7 @@ export const FI_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Kreikkalaiset jauhelihapihvit ja tzatziki',
     description: 'Oreganolla maustetut pihvit, uuniperunat ja viilentävä tzatziki.',
     steps: [
-      'Lämmitä uuni 225 asteeseen. Lohko perunat, sekoita öljyyn ja suolaan ja paahda 30 minuuttia.',
+      'Lämmitä uuni 225 °C:seen. Lohko perunat, sekoita öljyyn ja suolaan ja paahda 30 minuuttia.',
       'Sekoita jauheliha, raastettu sipuli, oregano, kananmuna ja suola ja muotoile pihveiksi.',
       'Paista pihvit pannulla tai perunoiden kanssa uunissa 15 minuuttia.',
       'Sekoita jogurtti, raastettu kurkku ja valkosipuli tzatzikiksi.',

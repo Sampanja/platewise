@@ -98,7 +98,7 @@ export const FI_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Uunipannukakku ja mansikat',
     description: 'Kohoava uunipannukakku, jonka kanssa tarjotaan mansikoita. Suomalainen viikonloppuherkku.',
     steps: [
-      'Lämmitä uuni 225 asteeseen. Sulata voi uunipellillä leivinpaperin päällä.',
+      'Lämmitä uuni 225 °C:seen. Sulata voi uunipellillä leivinpaperin päällä.',
       'Vatkaa jauhot, sokeri, suola ja puolet maidosta tasaiseksi.',
       'Lisää loppu maito ja kananmunat ja kaada voi taikinaan.',
       'Kaada taikina pellille ja paista 25–30 minuuttia, kunnes pinta on kullanruskea.',
@@ -171,7 +171,7 @@ export const FI_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Sekoita ruis- ja vehnäjauhot, 0,5 dl vettä ja ripaus suolaa kiinteäksi taikinaksi.',
       'Kauli taikinasta ohuita, halkaisijaltaan noin 12 cm:n kuoria.',
       'Levitä puuro kuorille ja rypytä reunat sormilla.',
-      'Paista 275 asteessa 12–15 minuuttia ja sivele kuumat piirakat sulatetulla voilla.',
+      'Paista 275 °C:ssa 12–15 minuuttia ja sivele kuumat piirakat sulatetulla voilla.',
       'Keitä kananmunat kovaksi ja sekoita hienonnettuina voin kanssa munavoiksi.',
     ],
     tips: [
@@ -179,7 +179,7 @@ export const FI_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Piirakat pakastuvat erinomaisesti.',
     ],
     storage: 'Säilytä piirakat jääkaapissa 3 päivää tai pakasta. Munavoi säilyy jääkaapissa 2 päivää.',
-    reheating: 'Lämmitä piirakat uunissa 200 asteessa noin 8 minuuttia.',
+    reheating: 'Lämmitä piirakat uunissa 200 °C:ssa noin 8 minuuttia.',
   },
   'oat-rolls': {
     title: 'Kaurasämpylät',
@@ -189,13 +189,13 @@ export const FI_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Lisää kaurahiutaleet, suola ja jauhot vähitellen ja vaivaa tasaiseksi taikinaksi. Lisää öljy lopuksi.',
       'Anna kohota liinan alla noin 40 minuuttia.',
       'Leivo taikinasta 12 sämpylää pellille ja anna kohota vielä 20 minuuttia.',
-      'Paista 225 asteessa noin 12 minuuttia.',
+      'Paista 225 °C:ssa noin 12 minuuttia.',
     ],
     tips: [
       'Pakasta jäähtyneet sämpylät pussissa ja ota aamulla tarvittava määrä.',
     ],
     storage: 'Säilytä pussissa huoneenlämmössä 2 päivää tai pakasta 3 kuukaudeksi.',
-    reheating: 'Lämmitä pakastettu sämpylä uunissa 200 asteessa 5–8 minuuttia.',
+    reheating: 'Lämmitä pakastettu sämpylä uunissa 200 °C:ssa 5–8 minuuttia.',
   },
   'turkey-avocado-wrap': {
     title: 'Kalkkuna-avokadorulla',
@@ -260,7 +260,7 @@ export const FI_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Kotitekoinen granola ja jogurtti',
     description: 'Uunissa paahdettu granola manteleista, siemenistä ja kookoksesta jogurtin kanssa.',
     steps: [
-      'Lämmitä uuni 175 asteeseen.',
+      'Lämmitä uuni 175 °C:seen.',
       'Sekoita kaurahiutaleet, rouhitut mantelit, siemenet, kookoshiutaleet ja kaneli.',
       'Lisää siirappi ja öljy ja sekoita, kunnes kaikki on kostunut.',
       'Levitä pellille ja paahda 20–25 minuuttia välillä sekoittaen. Anna jäähtyä.',

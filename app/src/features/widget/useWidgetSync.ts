@@ -6,6 +6,7 @@ import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
 import { entriesOn, sumEntries } from '@/domain/diary';
 import { strings } from '@/i18n';
+import { energyToInput, energyUnitLabel } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { palettes, type Palette } from '@/theme';
 import { DEFAULT_CHARACTER, isCharacterId } from '@/theme/characters';
@@ -41,8 +42,9 @@ export function buildSnapshot(): WidgetSnapshot {
   const w = strings.widget;
   return {
     date,
-    kcal: totals.kcal,
-    goalKcal: profile.hasCalorieGoal ? profile.goals.kcal : null,
+    // Energy in the user's unit (kcal or kJ): the widget draws numbers as they are.
+    kcal: energyToInput(totals.kcal),
+    goalKcal: profile.hasCalorieGoal ? energyToInput(profile.goals.kcal) : null,
     proteinG: totals.proteinG,
     carbsG: totals.carbsG,
     fatG: totals.fatG,
@@ -51,7 +53,8 @@ export function buildSnapshot(): WidgetSnapshot {
     character,
     labels: {
       title: w.title,
-      kcal: w.kcal,
+      kcal: energyUnitLabel(),
+      gram: strings.unitNames.g,
       eaten: w.eaten,
       protein: w.protein,
       carbs: w.carbs,

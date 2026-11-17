@@ -9,7 +9,8 @@ import { Icon, PressableScale, Text } from '@/components/ui';
 import { recipeQuality } from '@/data/catalog/quality';
 import { useServingPrice } from '@/data/hooks';
 import type { Recipe } from '@/data/types';
-import { format, formatMoney, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
+import { formatEnergy } from '@/lib/amounts';
 import { colors, radii, shadows, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -30,7 +31,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, overline, showHeart
   const servingPrice = useServingPrice();
   const price = formatMoney(servingPrice(recipe));
   const time = format(strings.common.minutes, { count: recipe.totalTimeMin });
-  const kcal = format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) });
+  const kcal = formatEnergy(recipe.perServing.kcal);
   const grade = recipeQuality(recipe)?.grade;
 
   return (

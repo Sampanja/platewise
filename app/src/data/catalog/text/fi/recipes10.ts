@@ -85,7 +85,7 @@ export const FI_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Uunibataatti ja mustapapusalsa',
     description: 'Pehmeäksi paahdettu bataatti, jonka päälle nostetaan raikas papu-maissisalsa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen. Pistele bataattiin reikiä ja paista noin 45 minuuttia, kunnes se on pehmeä.',
+      'Lämmitä uuni 200 °C:seen. Pistele bataattiin reikiä ja paista noin 45 minuuttia, kunnes se on pehmeä.',
       'Sekoita pavut, maissi, kuutioitu tomaatti, punasipuli, limen mehu, öljy, korianteri ja suola.',
       'Halkaise bataatti ja nosta salsa päälle.',
     ],
@@ -213,7 +213,7 @@ export const FI_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Halloumi-bataattikulho',
     description: 'Paahdettu bataatti, kvinoa, pinaatti ja kullanruskeaksi paistettu halloumi.',
     steps: [
-      'Lämmitä uuni 220 asteeseen. Kuutioi bataatti, sekoita puoleen öljystä ja kuminaan ja paahda 25 minuuttia.',
+      'Lämmitä uuni 220 °C:seen. Kuutioi bataatti, sekoita puoleen öljystä ja kuminaan ja paahda 25 minuuttia.',
       'Keitä kvinoa.',
       'Paista halloumiviipaleet kuivalla pannulla kullanruskeiksi.',
       'Kokoa kulhoon kvinoa, pinaatti, bataatti ja halloumi ja valuta päälle sitruunamehu ja loppu öljy.',
@@ -226,7 +226,7 @@ export const FI_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Kasvislasagne',
     description: 'Kerroksittain kesäkurpitsaa, pinaattia, tomaattikastiketta ja raejuustoa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Kuullota sipuli ja kesäkurpitsa öljyssä, lisää tomaattimurska, oregano ja suola ja hauduta 10 minuuttia.',
       'Sekoita raejuusto ja pinaatti.',
       'Kerrosta vuokaan kastike, lasagnelevyt ja raejuustoseos. Ylimmäksi kastiketta ja mozzarellaa.',
@@ -305,7 +305,7 @@ export const FI_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Uunikasvikset, kikherneet ja hummus',
     description: 'Kuminalla paahdettu kurpitsa, porkkana, punasipuli ja kikherneet hummuksen päällä.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Paloittele kurpitsa, porkkana ja sipuli ja sekoita kikherneiden, öljyn, kuminan ja suolan kanssa.',
       'Paahda pellillä noin 30 minuuttia.',
       'Levitä hummus lautaselle ja nosta kasvikset päälle. Viimeistele persiljalla.',

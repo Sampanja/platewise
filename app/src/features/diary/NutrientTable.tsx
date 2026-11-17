@@ -2,16 +2,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, Text } from '@/components/ui';
 import type { Macros } from '@/data/types';
-import { formatDecimal, formatInteger, strings } from '@/i18n';
+import { strings } from '@/i18n';
+import { formatEnergy, formatNutrientGrams } from '@/lib/amounts';
 import { colors, spacing, themedStyles } from '@/theme';
 
 const n = strings.nutrients;
 
 /** Label-style nutrient table (per 100 g or per portion). Unknown values show a dash. */
 export function NutrientTable({ values, title = n.title }: { values: Macros; title?: string }) {
-  const grams = (value: number | undefined) => (value === undefined ? n.unknown : `${formatDecimal(value)} g`);
+  const grams = (value: number | undefined) => (value === undefined ? n.unknown : formatNutrientGrams(value, 1));
   const rows: [string, string, boolean][] = [
-    [n.energy, `${formatInteger(values.kcal)} kcal`, false],
+    [n.energy, formatEnergy(values.kcal), false],
     [n.protein, grams(values.proteinG), false],
     [n.carbs, grams(values.carbsG), false],
     [n.sugar, grams(values.sugarG), true],

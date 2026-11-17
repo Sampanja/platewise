@@ -13,16 +13,17 @@ import {
   IconButton,
   ProgressMeter,
   Text,
+  UnitToggle,
 } from '@/components/ui';
 import { useProfileStore } from '@/data/stores/profile';
 import { useWeightStore } from '@/data/stores/weight';
 import { forecastDate, goalDate, goalProgress, milestones, movingAverage, shouldSuggestRecalculation } from '@/domain/energy';
 import { CheckInCard } from '@/features/weight/CheckInCard';
 import { WeightChart } from '@/features/weight/WeightChart';
-import { displayWeight, weightStep, weightToKg } from '@/domain/units';
+import { displayWeight, roundTo, weightStep, weightToKg, type WeightUnit } from '@/domain/units';
 import { format, formatFixed, strings } from '@/i18n';
-import { activeUnitSystem } from '@/i18n/locale';
-import { formatBodyWeight, formatWeightChange } from '@/lib/amounts';
+import { activeUnits } from '@/i18n/locale';
+import { formatBodyWeight, formatWeightBare, formatWeightChange, weightToggleOptions, weightUnitLabel } from '@/lib/amounts';
 import { diaryDayLabel, numericDate, today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
@@ -30,7 +31,7 @@ import { colors, spacing, themedStyles } from '@/theme';
 const t = strings.weight;
 const kg = (value: number) => formatBodyWeight(value);
 /** A weight in the user's unit without the unit, e.g. "72,5" or "159.8". */
-const bare = (value: number) => formatFixed(displayWeight(value, activeUnitSystem()), 1);
+const bare = (value: number) => formatWeightBare(value);
 
 /** Weight log: today's weigh-in, trend chart with a moving average and progress to the goal. */
 export default function WeightScreen() {
@@ -52,12 +53,13 @@ export default function WeightScreen() {
       ? goalDate(new Date(goal.setAt), Math.ceil(Math.abs(target - goal.startWeightKg) / goal.rateKgPerWeek))
       : null;
   const suggest = body.weightKg !== null && shouldSuggestRecalculation(entries, body.weightKg);
-  // Steps are in the user's unit (0.1 kg or 0.2 lb); the value is kept in kilograms.
-  const system = activeUnitSystem();
-  const step = weightStep(system);
-  const change = (delta: number) =>
-    setValue((v) => weightToKg(Math.round((displayWeight(v, system) + delta) * 10) / 10, system));
-  const unitLabel = system === 'imperial' ? 'lb' : strings.common.kgUnit;
+  // The value is kept in kilograms. The toggle shows it in another unit for
+  // this weigh-in only; stones step in pounds (0.2 lb), kilograms in 0.1 kg.
+  const [inputUnit, setInputUnit] = useState<WeightUnit>(activeUnits().weight);
+  const stepUnit: WeightUnit = inputUnit === 'st' ? 'lb' : inputUnit;
+  const step = weightStep(stepUnit);
+  const change = (delta: number) => setValue((v) => weightToKg(roundTo(displayWeight(v, stepUnit) + delta, 1), stepUnit));
+  const unitLabel = weightUnitLabel(stepUnit);
 
   const save = () => {
     log(today(), value);
@@ -90,16 +92,27 @@ export default function WeightScreen() {
             {t.log}
           </Text>
           <View style={styles.logRow}>
-            <IconButton icon="minus" size={52} haptic="select" accessibilityLabel={format(t.minus, { step: formatWeightChange(-step).replace('−', '') })} onPress={() => change(-step)} />
-            <View style={styles.valueBox} accessible accessibilityLabel={kg(value)}>
-              <Text variant="displayLarge" style={styles.tabular}>
-                {bare(value)}
-              </Text>
-              <Text variant="label" color="textSubtle">
-                {unitLabel}
-              </Text>
+            <IconButton icon="minus" size={52} haptic="select" accessibilityLabel={format(t.minus, { step: formatWeightChange(-weightToKg(step, stepUnit), stepUnit).replace('−', '') })} onPress={() => change(-step)} />
+            <View style={styles.valueBox} accessible accessibilityLabel={formatBodyWeight(value, inputUnit)}>
+              {inputUnit === 'st' ? (
+                <Text variant="display" style={styles.tabular} numberOfLines={1} adjustsFontSizeToFit>
+                  {formatBodyWeight(value, 'st')}
+                </Text>
+              ) : (
+                <>
+                  <Text variant="displayLarge" style={styles.tabular}>
+                    {formatWeightBare(value, inputUnit)}
+                  </Text>
+                  <Text variant="label" color="textSubtle">
+                    {unitLabel}
+                  </Text>
+                </>
+              )}
             </View>
-            <IconButton icon="plus" size={52} haptic="select" accessibilityLabel={format(t.plus, { step: formatWeightChange(step).replace('+', '') })} onPress={() => change(step)} />
+            <IconButton icon="plus" size={52} haptic="select" accessibilityLabel={format(t.plus, { step: formatWeightChange(weightToKg(step, stepUnit), stepUnit).replace('+', '') })} onPress={() => change(step)} />
+          </View>
+          <View style={styles.toggle}>
+            <UnitToggle value={inputUnit} options={weightToggleOptions()} onChange={setInputUnit} />
           </View>
           <View style={styles.quick}>
             {[-1, -0.5, 0.5, 1].map((delta) => (
@@ -241,6 +254,9 @@ export default function WeightScreen() {
 
 const styles = themedStyles(() =>
   StyleSheet.create({
+    toggle: {
+      alignItems: 'center',
+    },
     safe: {
       flex: 1,
       backgroundColor: colors.bg,

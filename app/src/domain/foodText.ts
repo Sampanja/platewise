@@ -10,7 +10,7 @@ import { foldText } from './fuzzy';
  * and nutrients from the food table.
  */
 
-export type UnitKind = 'g' | 'kg' | 'ml' | 'dl' | 'l' | 'tbsp' | 'tsp' | 'slice' | 'piece' | 'glass' | 'cup' | 'serving';
+export type UnitKind = 'g' | 'kg' | 'oz' | 'lb' | 'ml' | 'dl' | 'l' | 'tbsp' | 'tsp' | 'slice' | 'piece' | 'glass' | 'cup' | 'serving';
 
 /** One food mentioned in the text. */
 export type FoodPhrase = {
@@ -46,6 +46,9 @@ const UNIT_WORDS: Readonly<Record<string, UnitKind>> = Object.fromEntries(
     [
       ['g', ['g', 'gr', 'gramma', 'grammaa', 'gram', 'grams', 'gramm', 'grammes']],
       ['kg', ['kg', 'kilo', 'kiloa', 'kilos']],
+      // Ounces and pounds: people who use US units say them out loud too.
+      ['oz', ['oz', 'ounce', 'ounces', 'unssi', 'unssia', 'uns']],
+      ['lb', ['lb', 'lbs', 'pound', 'pounds', 'pauna', 'paunaa', 'pund']],
       ['ml', ['ml']],
       ['dl', ['dl', 'desi', 'desia', 'desilitra', 'desilitraa', 'deciliter', 'decilitre']],
       ['l', ['l', 'litra', 'litraa', 'liter', 'litre', 'litres', 'liters']],
@@ -61,7 +64,7 @@ const UNIT_WORDS: Readonly<Record<string, UnitKind>> = Object.fromEntries(
 );
 
 /** Grams (or ml, density ~1) of one unit, when the food has no matching portion. */
-const UNIT_GRAMS: Partial<Record<UnitKind, number>> = { g: 1, kg: 1000, ml: 1, dl: 100, l: 1000, tbsp: 15, tsp: 5, glass: 200, cup: 200 };
+const UNIT_GRAMS: Partial<Record<UnitKind, number>> = { g: 1, kg: 1000, oz: 28.35, lb: 453.6, ml: 1, dl: 100, l: 1000, tbsp: 15, tsp: 5, glass: 200, cup: 200 };
 
 /** Words in portion labels that mean the same unit, in every language. */
 export const UNIT_LABEL_WORDS: Partial<Record<UnitKind, readonly string[]>> = {
@@ -77,7 +80,7 @@ const SIZE_WORDS: Readonly<Record<string, number>> = {
 };
 
 /** Words that carry no food meaning. */
-const FILLER = new Set(['of', 'the', 'some', 'av', 'lite', 'vahan', 'noin', 'about', 'ca', 'n', 'my', 'min', 'mitt', 'jotain', 'joku']);
+const FILLER = new Set(['of', 'the', 'a', 'an', 'some', 'av', 'lite', 'vahan', 'noin', 'about', 'ca', 'n', 'my', 'min', 'mitt', 'jotain', 'joku']);
 
 /** Words that separate foods. "with/med" and Finnish "-lla/-llä" (adessive) add a food. */
 const SEPARATORS = /\s*(,|;|\+|&|\band\b|\bja\b|\bseka\b|\bplus\b|\boch\b|\bsamt\b|\bwith\b|\bmed\b)\s*/;
@@ -220,9 +223,12 @@ export type PortionInfo = { grams: number; labels: readonly string[] };
  * Grams for a phrase: weights and volumes directly, otherwise the food's
  * portion that names the unit (slice, glass…), else its first portion.
  */
+/** Units that are an amount by themselves (no portion needed). */
+const MEASURED: ReadonlySet<UnitKind> = new Set(['g', 'kg', 'oz', 'lb', 'ml', 'dl', 'l', 'tbsp', 'tsp']);
+
 export function phraseGrams(phrase: FoodPhrase, portions: readonly PortionInfo[]): number {
   const { quantity, unit, size } = phrase;
-  if (unit && (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'dl' || unit === 'l' || unit === 'tbsp' || unit === 'tsp')) {
+  if (unit && MEASURED.has(unit)) {
     return Math.round(quantity * (UNIT_GRAMS[unit] ?? 1));
   }
   const words = unit ? (UNIT_LABEL_WORDS[unit] ?? []) : [];

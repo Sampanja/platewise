@@ -21,7 +21,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Karelsk stek med potatis',
     description: 'Nötkött och fläskkött som fått stå i ugnen i timmar, med kryddpeppar och lingon.',
     steps: [
-      'Sätt ugnen på 175 grader. Skär köttet i cirka 3 cm stora tärningar.',
+      'Sätt ugnen på 175 °C. Skär köttet i cirka 3 cm stora tärningar.',
       'Varva kött, lökklyftor och morötter i en gryta. Tillsätt kryddpeppar och salt.',
       'Häll i vatten så att köttet precis täcks. Låt stå i ugnen under lock i cirka 3 timmar.',
       'Koka potatisen före serveringen.',
@@ -36,7 +36,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Makaronilåda',
     description: 'En barndomsfavorit: makaroner, köttfärs och äggstanning gräddade gyllenbruna.',
     steps: [
-      'Sätt ugnen på 200 grader. Förkoka makaronerna i saltat vatten.',
+      'Sätt ugnen på 200 °C. Förkoka makaronerna i saltat vatten.',
       'Bryn köttfärs och lök i en panna och krydda med salt och peppar.',
       'Blanda makaroner och köttfärs i en smord ugnsform.',
       'Vispa mjölk och ägg och häll i formen.',
@@ -66,7 +66,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Kållåda med lingon',
     description: 'En lätt söt kållåda med köttfärs, ris och sirap. Lingon till.',
     steps: [
-      'Sätt ugnen på 175 grader.',
+      'Sätt ugnen på 175 °C.',
       'Koka grötriset i 1 dl vatten i 10 minuter.',
       'Bryn den strimlade kålen i en panna i omgångar och lägg den i en stor skål.',
       'Bryn köttfärs och lök och blanda med kål, ris, salt och peppar. Tillsätt 2 dl vatten.',
@@ -82,7 +82,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Leverlåda',
     description: 'En traditionell leverlåda sötad med russin och sirap: järn och god gammaldags smak.',
     steps: [
-      'Sätt ugnen på 175 grader. Koka grötriset i 1 dl vatten i 10 minuter.',
+      'Sätt ugnen på 175 °C. Koka grötriset i 1 dl vatten i 10 minuter.',
       'Tillsätt mjölken och koka till en lös gröt i cirka 10 minuter. Låt svalna något.',
       'Mal eller finhacka levern och fräs löken i smör.',
       'Blanda lever, lök, ägg, russin, sirap och salt med gröten.',
@@ -147,7 +147,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Stek siklöjorna med gott om utrymme, så blir de krispiga i stället för att ångkokas.',
     ],
     storage: 'Bäst direkt. Förvara rester i kylskåpet i 1 dag.',
-    reheating: 'Värm i ugnen på 200 grader i cirka 8 minuter, så blir fiskarna krispiga igen.',
+    reheating: 'Värm i ugnen på 200 °C i cirka 8 minuter, så blir fiskarna krispiga igen.',
   },
   'frankfurter-sauce': {
     title: 'Korvsås med potatis',
@@ -194,7 +194,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Skinkfrestelse',
     description: 'Potatis, skinka och lök gräddade gyllenbruna i krämig mjölk.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Skär potatis och lök i strimlor.',
       'Varva potatis, lök och skinka i en smord ugnsform.',
       'Blanda grädde, mjölk, salt och peppar och häll i formen. Strö riven ost över.',
@@ -208,7 +208,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Laxlåda',
     description: 'Potatis, lax och dill i äggstanning: en mjuk och tröstande ugnsrätt.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Skiva potatisen tunt och tärna laxen.',
       'Varva potatis, lax, lök och dill i en smord ugnsform.',
       'Vispa ägg, mjölk, salt och krossad kryddpeppar och häll i formen.',
@@ -288,7 +288,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnskorv med potatismos',
     description: 'Korv gräddad i ugnen med senap och lök, och slätt potatismos.',
     steps: [
-      'Sätt ugnen på 225 grader.',
+      'Sätt ugnen på 225 °C.',
       'Skär snitt i korven, pensla med senap och fyll snitten med lökstrimlor.',
       'Grädda i en form i cirka 25 minuter.',
       'Koka potatisen och mosa den med varm mjölk och smör.',
@@ -328,7 +328,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Blåbärspaj',
     description: 'En mör botten, saftig blåbärsfyllning och gräddfilstäcke: en sommar- och höstdelikatess.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Vispa det mjuka smöret med hälften av sockret. Tillsätt hälften av ägget och sedan mjöl och bakpulver.',
       'Tryck ut degen i botten och längs kanterna på en pajform.',
       'Bred ut blåbären över botten.',
@@ -339,7 +339,7 @@ export const SV_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Låt pajen svalna innan du skär den, så sätter sig fyllningen.',
     ],
     storage: 'Förvara i kylskåpet täckt med plastfolie i 3 dagar.',
-    reheating: 'Servera rumstempererad eller värm i ugnen på 150 grader i 10 minuter.',
+    reheating: 'Servera rumstempererad eller värm i ugnen på 150 °C i 10 minuter.',
   },
   'spinach-soup-egg': {
     title: 'Spenatsoppa med ägg',

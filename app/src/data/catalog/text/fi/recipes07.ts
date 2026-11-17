@@ -6,7 +6,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Uunilohi ja sitruunaperunat',
     description: 'Samalla pellillä paistettu lohi ja sitruunaiset perunalohkot tillin kera.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Lohko perunat ja sekoita öljyn, suolan ja sitruunan kuoriraasteen kanssa. Paahda pellillä 20 minuuttia.',
       'Nosta lohi perunoiden joukkoon, mausta suolalla ja pippurilla ja paista vielä 12–15 minuuttia.',
       'Purista päälle sitruunamehu ja ripottele tilli.',
@@ -34,7 +34,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Seiti tomaattikastikkeessa ja riisi',
     description: 'Uunissa kypsennetty seiti tomaatti-oliivikastikkeessa ja jasmiiniriisi.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja keitä riisi.',
+      'Lämmitä uuni 200 °C:seen ja keitä riisi.',
       'Kuullota sipuli öljyssä ja lisää tomaattimurska, oliivit ja oregano. Hauduta 5 minuuttia.',
       'Nosta kalapalat vuokaan, mausta suolalla ja kaada kastike päälle.',
       'Paista 15–20 minuuttia ja tarjoa riisin kanssa.',
@@ -122,7 +122,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
       'Tarjoa riisin ja kurkkuviipaleiden kanssa.',
     ],
     tips: [
-      'Pyörykät voi paistaa myös uunissa 200 asteessa 15 minuuttia.',
+      'Pyörykät voi paistaa myös uunissa 200 °C:ssa 15 minuuttia.',
     ],
   },
   'mediterranean-fish-soup': {
@@ -157,7 +157,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Lohi, bataatti ja parsakaali pellillä',
     description: 'Yhden pellin illallinen: paprikainen bataatti, parsakaali ja lohi.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Kuutioi bataatti, sekoita puolen öljyn, paprikajauheen ja suolan kanssa ja paahda 15 minuuttia.',
       'Lisää pellille parsakaali ja lohi, valuta päälle loppu öljy ja mausta.',
       'Paista vielä 12–15 minuuttia ja purista päälle sitruunaa.',
@@ -214,7 +214,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Silakkarullat uunissa',
     description: 'Tillillä täytetyt silakkarullat kermaisessa liemessä ja perunamuusi.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Mausta silakkafileet suolalla, ripottele tilliä ja kääri rulliksi nahkapuoli ulospäin.',
       'Nosta rullat vuokaan, kaada päälle kerma ja sitruunamehu.',
       'Paista 20–25 minuuttia.',
@@ -255,7 +255,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Foliokirjolohi ja uudet perunat',
     description: 'Folionyytissä voin, tillin ja sitruunan kanssa kypsennetty kirjolohi ja vihreät pavut.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja keitä perunat.',
+      'Lämmitä uuni 200 °C:seen ja keitä perunat.',
       'Nosta kala foliolle, mausta suolalla ja lisää voi, tilli ja sitruunaviipaleet.',
       'Sulje nyytti tiiviisti ja paista 15–20 minuuttia.',
       'Keitä pavut 4 minuuttia ja tarjoa kalan ja perunoiden kanssa.',
@@ -277,7 +277,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     tips: [
       'Kuivaa sulanut kala talouspaperilla, niin leivitys tarttuu.',
     ],
-    reheating: 'Kuumenna uunissa 200 asteessa noin 10 minuuttia, niin kuori rapeutuu.',
+    reheating: 'Kuumenna uunissa 200 °C:ssa noin 10 minuuttia, niin kuori rapeutuu.',
   },
   'salmon-sesame-noodles': {
     title: 'Lohinuudelit ja parsakaali',
@@ -324,7 +324,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     steps: [
       'Liuota hiiva 0,5 dl:aan kädenlämpöistä vettä. Lisää suola, öljy ja jauhot ja vaivaa tasaiseksi.',
       'Anna taikinan kohota 30 minuuttia.',
-      'Lämmitä uuni 250 asteeseen. Kauli taikina ohueksi pohjaksi pellille.',
+      'Lämmitä uuni 250 °C:seen. Kauli taikina ohueksi pohjaksi pellille.',
       'Levitä pohjalle tomaattimurska ja oregano. Lisää tonnikala, punasipuli ja mozzarella.',
       'Paista 10–12 minuuttia, kunnes pohja on rapea.',
     ],
@@ -336,7 +336,7 @@ export const FI_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Kalagratiini ja parsakaali',
     description: 'Seitiä ja parsakaalia kermaisessa kastikkeessa juustokuoren alla, perunoiden kanssa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja keitä perunat.',
+      'Lämmitä uuni 200 °C:seen ja keitä perunat.',
       'Nosta kalapalat ja parsakaalin kukinnot voideltuun vuokaan. Mausta suolalla ja pippurilla.',
       'Kaada päälle kerma ja ripottele juustoraaste.',
       'Paista 25–30 minuuttia ja tarjoa perunoiden kanssa.',

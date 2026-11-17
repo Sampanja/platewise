@@ -5,7 +5,8 @@ import { Sheet } from '@/components/Sheet';
 import { Icon, PressableScale, Text, TextField } from '@/components/ui';
 import { FOODS } from '@/data/catalog';
 import { useSearchableFoods } from '@/data/foods';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatEnergy, formatNutrientGrams } from '@/lib/amounts';
 import { colors, spacing, themedStyles } from '@/theme';
 
 import { searchFoods } from './searchFoods';
@@ -51,7 +52,7 @@ export function FoodPickerSheet({ visible, title, onClose, onPick, includeCustom
             <View style={styles.flex}>
               <Text variant="body">{food.name}</Text>
               <Text variant="caption" color="textSubtle">
-                {format(strings.diaryAdd.per100, { kcal: formatInteger(food.per100g.kcal) })}
+                {format(strings.diaryAdd.per100, { kcal: formatEnergy(food.per100g.kcal), base: formatNutrientGrams(100) })}
               </Text>
             </View>
             <Icon name="chevronRight" size={18} color="textSubtle" />

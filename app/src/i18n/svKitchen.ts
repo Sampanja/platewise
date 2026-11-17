@@ -220,6 +220,6 @@ export const svKitchen: KitchenStrings = {
     emptyTitle: 'Inga egna recept än',
     emptyBody: 'Sätt ihop ett recept av ingredienser, så kan du logga det i dagboken en portion i taget.',
     servings: '{count} portioner',
-    perServing: '{kcal} kcal / portion',
+    perServing: '{kcal} / portion',
   },
 };

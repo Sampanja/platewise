@@ -28,8 +28,8 @@ import { RecipeQualityBadge } from '@/features/quality/RecipeQualityBadge';
 import { MacroBars } from '@/features/recipe/MacroBars';
 import { PriceRegionNote } from '@/features/shared/PriceRegionNote';
 import { useRecipeActions } from '@/features/recipe/useRecipeActions';
-import { format, formatInteger, formatMoney, formatServings, strings } from '@/i18n';
-import { formatAmount } from '@/lib/amounts';
+import { format, formatMoney, formatServings, strings } from '@/i18n';
+import { formatAmount, formatEnergy } from '@/lib/amounts';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 import { CookSheet } from '@/features/pantry/CookSheet';
@@ -157,7 +157,7 @@ export default function RecipeScreen() {
                   }
                 />
               </View>
-              <Chip label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })} />
+              <Chip label={formatEnergy(recipe.perServing.kcal)} />
               {recipe.goodForLeftovers ? <Chip tone="success" label={t.leftovers} /> : null}
             </View>
           </View>

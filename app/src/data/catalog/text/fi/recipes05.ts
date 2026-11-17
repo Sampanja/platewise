@@ -6,7 +6,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Rapeat paahdetut kikherneet',
     description: 'Uunissa paahdetut, paprikalla maustetut kikherneet: rouskuva ja täyttävä välipala.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Huuhtele ja valuta kikherneet ja kuivaa ne huolellisesti talouspaperilla.',
       'Sekoita öljy, paprikajauhe ja suola joukkoon ja levitä pellille.',
       'Paahda 25–30 minuuttia välillä ravistellen, kunnes kikherneet ovat rapeita.',
@@ -15,7 +15,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
       'Mitä kuivempia kikherneet ovat, sitä rapeampia niistä tulee.',
     ],
     storage: 'Säilytä avoimessa kulhossa huoneenlämmössä 1–2 päivää; kannen alla ne pehmenevät.',
-    reheating: 'Rapeuta tarvittaessa uunissa 200 asteessa 5 minuuttia.',
+    reheating: 'Rapeuta tarvittaessa uunissa 200 °C:ssa 5 minuuttia.',
   },
   'oat-peanut-energy-balls': {
     title: 'Kaura-maapähkinävoipallot',
@@ -87,7 +87,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Guacamole ja uunipaahdetut maissisipsit',
     description: 'Limellä ja korianterilla maustettu guacamole ja itse paahdetut maissitortillasipsit.',
     steps: [
-      'Lämmitä uuni 200 asteeseen. Leikkaa tortillat kolmioiksi, sivele öljyllä ja ripottele suolaa.',
+      'Lämmitä uuni 200 °C:seen. Leikkaa tortillat kolmioiksi, sivele öljyllä ja ripottele suolaa.',
       'Paahda pellillä 8–10 minuuttia, kunnes sipsit ovat rapeita.',
       'Muussaa avokado ja sekoita joukkoon tomaatti, hienonnettu punasipuli, limen mehu ja korianteri.',
     ],
@@ -121,7 +121,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Tortillapizza kinkulla',
     description: 'Rapea tortillapohja, tomaattikastike, mozzarella ja kinkku: pizzaa kymmenessä minuutissa.',
     steps: [
-      'Lämmitä uuni 225 asteeseen.',
+      'Lämmitä uuni 225 °C:seen.',
       'Levitä tomaattimurska tortillalle ja mausta oreganolla.',
       'Lisää kinkku ja revitty mozzarella.',
       'Paista uunin keskitasolla 6–8 minuuttia, kunnes reunat ovat rapeat.',
@@ -134,7 +134,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Mustikkamuffinit',
     description: 'Mehevät mustikkamuffinit kahvin kanssa tai eväsrasiaan.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja asettele muffinssivuokaan paperivuoat.',
+      'Lämmitä uuni 200 °C:seen ja asettele muffinssivuokaan paperivuoat.',
       'Vatkaa kananmunat ja sokeri vaahdoksi. Lisää sulatettu voi ja maito.',
       'Sekoita jauhot ja leivinjauhe ja nostele ne taikinaan kevyesti.',
       'Lisää mustikat ja jaa taikina vuokiin.',
@@ -150,7 +150,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Banaanileipä',
     description: 'Kanelinen banaanileipä, joka syntyy ylikypsistä banaaneista.',
     steps: [
-      'Lämmitä uuni 175 asteeseen ja voitele leipävuoka.',
+      'Lämmitä uuni 175 °C:seen ja voitele leipävuoka.',
       'Muussaa banaanit ja vatkaa joukkoon kananmunat, sokeri ja öljy.',
       'Sekoita jauhot, leivinjauhe ja kaneli ja yhdistä taikinaan.',
       'Kaada vuokaan ja paista noin 50 minuuttia.',
@@ -213,7 +213,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Mausteinen pähkinä-siemensekoitus',
     description: 'Paahdetut mantelit, cashewpähkinät ja siemenet paprikalla ja suolalla.',
     steps: [
-      'Lämmitä uuni 175 asteeseen.',
+      'Lämmitä uuni 175 °C:seen.',
       'Sekoita mantelit, cashewpähkinät, siemenet, öljy ja mausteet.',
       'Paahda pellillä 10–12 minuuttia välillä sekoittaen ja anna jäähtyä.',
     ],
@@ -257,7 +257,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Kaurakeksit',
     description: 'Rapeat ja voiset kaurakeksit, joita on helppo leipoa kerralla iso pelti.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Sulata voi ja sekoita joukkoon sokeri, kaurahiutaleet, jauhot ja leivinjauhe.',
       'Lisää kananmuna ja sekoita tasaiseksi.',
       'Nostele teelusikalla pieniä nokareita leivinpaperille väljästi.',
@@ -273,7 +273,7 @@ export const FI_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Uunikukkakaali ja jogurttidippi',
     description: 'Curryllä paahdettu kukkakaali ja viileä jogurttidippi.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Paloittele kukkakaali ja sekoita öljyn, curryjauheen ja suolan kanssa.',
       'Paahda pellillä 20–25 minuuttia, kunnes reunat ruskistuvat.',
       'Sekoita jogurtti ja sitruunamehu dipiksi.',

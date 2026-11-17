@@ -6,8 +6,10 @@
  * from the string tables (i18n `assistant`) in the active language.
  */
 
+import { KCAL_FLOOR, RATE_OPTIONS } from '@/domain/energy';
 import { format, intlLocale, strings } from '@/i18n';
-import { formatWater } from '@/lib/amounts';
+import { activeUnits } from '@/i18n/locale';
+import { formatBodyWeight, formatEnergy, formatWater, formatWaterRange, formatWeightRange } from '@/lib/amounts';
 
 export type SafetyTopic = 'eatingDisorder' | 'extremeDiet' | 'medical' | null;
 
@@ -138,6 +140,13 @@ function titles(list: readonly RecipeHint[]): string {
 export function testAnswer(message: string, context: AssistantContext, recipes: readonly RecipeHint[] = []): string {
   const a = strings.assistant;
   const safety = classifySafety(message);
+  if (safety === 'extremeDiet') {
+    return format(a.safety.extremeDiet, {
+      women: formatEnergy(KCAL_FLOOR.female),
+      men: formatEnergy(KCAL_FLOOR.male),
+      rate: formatBodyWeight(RATE_OPTIONS[RATE_OPTIONS.length - 1], activeUnits().weight, 2),
+    });
+  }
   if (safety) return a.safety[safety];
   const numbers = context !== null && !context.hideCalories;
   switch (detectIntent(message)) {
@@ -150,14 +159,14 @@ export function testAnswer(message: string, context: AssistantContext, recipes: 
       return `${start}${idea}`;
     }
     case 'weightSwings':
-      return a.weightSwings;
+      return format(a.weightSwings, { range: formatWeightRange(0.5, 2) });
     case 'moreVeg':
       return a.moreVeg;
     case 'leftovers':
       return a.leftovers;
     case 'water': {
       const status = context !== null ? ` ${format(a.waterToday, { amount: formatWater(context.waterMl) })}` : '';
-      return format(a.water, { status });
+      return format(a.water, { status, range: formatWaterRange(1000, 1500) });
     }
     case 'greeting':
       return a.greeting;

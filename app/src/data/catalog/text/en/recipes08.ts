@@ -6,7 +6,7 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Chicken skewers with tzatziki',
     description: 'Oregano-seasoned chicken and vegetable skewers, fresh tzatziki and rice.',
     steps: [
-      'Heat the oven to 225 °C (435 °F) and cook the rice.',
+      'Heat the oven to 225 °C and cook the rice.',
       'Cut the chicken, pepper and courgette into pieces and toss with the oil, oregano and salt.',
       'Thread onto skewers and bake on a tray for 15–18 minutes, turning once.',
       'Grate the cucumber, squeeze out the liquid and mix it with the yogurt and garlic.',
@@ -87,10 +87,10 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Chicken legs with roast potatoes',
     description: 'Crisp-skinned chicken legs and paprika roast potatoes on the same tray.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Cut the potatoes into wedges and toss them with the oil, paprika, salt and garlic.',
       'Put the potatoes and chicken legs on a tray and season the legs with salt and pepper.',
-      'Roast for about 45 minutes until the skin is crisp and the meat reaches 80 °C (175 °F) inside.',
+      'Roast for about 45 minutes until the skin is crisp and the meat reaches 80 °C inside.',
     ],
     tips: [
       'Chicken legs are an affordable, tasty cut.',
@@ -180,7 +180,7 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Dairy-free chicken balls, mashed potato made with oil, and lingonberries.',
     steps: [
       'Mix the mince, finely chopped onion, egg, gluten-free breadcrumbs and salt.',
-      'Roll into balls and bake in the oven at 200 °C (400 °F) for about 15 minutes.',
+      'Roll into balls and bake in the oven at 200 °C for about 15 minutes.',
       'Boil the potatoes and mash them with the oil and a splash of the cooking water.',
       'Serve with lingonberries.',
     ],
@@ -206,7 +206,7 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Oven-baked chicken marinated in yogurt and spices, rice and a cucumber raita.',
     steps: [
       'Mix half of the yogurt with the spices, garlic, ginger and salt. Marinate the chicken for at least 20 minutes.',
-      'Heat the oven to 225 °C (435 °F) and bake the chicken on a tray for about 25 minutes.',
+      'Heat the oven to 225 °C and bake the chicken on a tray for about 25 minutes.',
       'Cook the rice.',
       'Mix the rest of the yogurt, the grated cucumber and lemon juice into a raita.',
     ],
@@ -231,7 +231,7 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Roast chicken with root vegetables',
     description: 'Roasted carrots, parsnips and beetroots with juicy chicken thighs.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Peel the root vegetables and onion and cut them into wedges. Toss with the oil, oregano and salt.',
       'Roast the vegetables on a tray for 15 minutes.',
       'Add the chicken to the tray and roast for another 25 minutes.',
@@ -289,7 +289,7 @@ export const EN_RECIPES_08: Readonly<Record<string, RecipeText>> = {
       'Let the turkey rest for a moment and slice it.',
     ],
     tips: [
-      'Turkey is done when the core temperature is 72 °C (160 °F).',
+      'Turkey is done when the core temperature is 72 °C.',
     ],
   },
   'chicken-mushroom-risotto': {

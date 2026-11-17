@@ -33,7 +33,7 @@ export const FI_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Uuniohrapuuro',
     description: 'Hitaasti uunissa haudutettu, kermaisen pehmeä ohrapuuro: viikonlopun aamiaisherkku.',
     steps: [
-      'Lämmitä uuni 150 asteeseen.',
+      'Lämmitä uuni 150 °C:seen.',
       'Kaada ohrasuurimot, maito ja suola voideltuun uunivuokaan ja sekoita.',
       'Haudu uunissa noin 3 tuntia. Sekoita puuroa kerran tai kahdesti.',
       'Nosta pinnalle nokare voita ja tarjoa marjojen tai kanelisokerin kanssa.',
@@ -230,7 +230,7 @@ export const FI_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Lämmin kinkku-juustoleipä',
     description: 'Uunissa sulatettu juusto, kinkku ja tomaatti paahtoleivän päällä.',
     steps: [
-      'Lämmitä uuni 225 asteeseen.',
+      'Lämmitä uuni 225 °C:seen.',
       'Voitele leivät ja lisää päälle kinkku, tomaattiviipaleet ja juustoraaste.',
       'Paista uunin ylätasolla 5–7 minuuttia, kunnes juusto on sulanut ja saanut väriä.',
     ],
@@ -276,7 +276,7 @@ export const FI_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Uunimunakas kasviksilla',
     description: 'Mehevä uunimunakas paprikalla, pinaatilla ja juustolla. Riittää koko viikon aamuihin.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja voitele uunivuoka öljyllä.',
+      'Lämmitä uuni 200 °C:seen ja voitele uunivuoka öljyllä.',
       'Vatkaa kananmunat, maito ja suola.',
       'Levitä paprika, sipuli ja pinaatti vuokaan ja kaada munaseos päälle.',
       'Ripottele pinnalle juustoraaste ja paista 20–25 minuuttia, kunnes munakas on hyytynyt.',

@@ -6,9 +6,8 @@ import { INGREDIENTS_BY_ID } from '@/data/catalog';
 import { PANTRY_LEVELS, type PantryAmount } from '@/data/types';
 import { levelGrams } from '@/domain/pantry';
 import { parseAmount } from '@/domain/nutrition';
-import { gToOz, GRAMS_PER_OUNCE } from '@/domain/units';
-import { useUnitSystem } from '@/data/hooks';
-import { format, formatDecimal, strings } from '@/i18n';
+import { strings } from '@/i18n';
+import { foodInputText, foodUnitLabel, gramsFromInput } from '@/lib/amounts';
 import { spacing, themedStyles } from '@/theme';
 
 const t = strings.pantry;
@@ -23,8 +22,7 @@ export type AmountPickerProps = {
 export function AmountPicker({ ingredientId, amount, onChange }: AmountPickerProps) {
   const ingredient = INGREDIENTS_BY_ID[ingredientId];
   // Typed in the user's units (g or oz); stored in grams.
-  const imperial = useUnitSystem() === 'imperial';
-  const toText = (grams: number) => (imperial ? formatDecimal(Math.round(gToOz(grams) * 10) / 10) : String(grams));
+  const toText = (grams: number) => foodInputText(grams);
   const [text, setText] = useState(amount.kind === 'grams' ? toText(amount.grams) : '');
   const exact = amount.kind === 'grams';
 
@@ -37,7 +35,7 @@ export function AmountPicker({ ingredientId, amount, onChange }: AmountPickerPro
     const clean = value.replace(/[^\d,.]/g, '');
     setText(clean);
     const typed = parseAmount(clean) ?? 0;
-    onChange({ kind: 'grams', grams: Math.max(0, Math.round(imperial ? typed * GRAMS_PER_OUNCE : typed)) });
+    onChange({ kind: 'grams', grams: gramsFromInput(typed) });
   };
 
   return (
@@ -65,7 +63,7 @@ export function AmountPicker({ ingredientId, amount, onChange }: AmountPickerPro
             style={styles.field}
           />
           <Text variant="body" color="textMuted">
-            {imperial ? format(strings.units.oz, { value: '' }).trim() : strings.common.gUnit}
+            {foodUnitLabel()}
           </Text>
         </View>
       ) : null}

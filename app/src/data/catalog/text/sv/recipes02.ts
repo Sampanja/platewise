@@ -106,7 +106,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     title: 'Biff och rostad potatis',
     description: 'Biff av ytterfilé, vitlökspotatis och grön sallad.',
     steps: [
-      'Dela potatisen i klyftor och blanda med olivolja och salt. Rosta i 225 grader i 30 minuter.',
+      'Dela potatisen i klyftor och blanda med olivolja och salt. Rosta i 225 °C i 30 minuter.',
       'Låt biffarna bli rumstempererade och krydda med salt och peppar.',
       'Stek biffarna i en het panna i 3 minuter per sida. Tillsätt smör och vitlök på slutet.',
       'Låt vila i 5 minuter och servera med potatisen och salladen.',
@@ -156,7 +156,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'Kålsalladen är godast blandad strax före servering.',
-      'Fisken kan också tillagas i ugnen på 200 grader i 12 minuter.',
+      'Fisken kan också tillagas i ugnen på 200 °C i 12 minuter.',
     ],
     storage: 'Förvara fisken och kålsalladen separat i kylskåpet i 1 dag.',
   },
@@ -210,7 +210,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Koka potatisen och mosa den med mjölk och smör.',
       'Dela fisken i bitar i en form och krydda med salt, citron och dill. Tillsätt ärterna.',
       'Bred moset över och strö över osten.',
-      'Gratinera i 200 grader i 25 minuter.',
+      'Gratinera i 200 °C i 25 minuter.',
     ],
     tips: [
       'Fryst fisk kan läggas direkt i formen: öka tiden med 10 minuter.',
@@ -252,7 +252,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Fräs lök och vitlök i olja.',
       'Tillsätt krossade tomater, buljongtärning, socker och 1 dl vatten per portion. Koka i 10 minuter.',
       'Tillsätt grädden och mixa. Smaka av med basilika.',
-      'Strö osten över baguetteskivorna och grädda i ugnen på 225 grader i 5 minuter.',
+      'Strö osten över baguetteskivorna och grädda i ugnen på 225 °C i 5 minuter.',
     ],
     tips: [
       'Mixa soppan slät med en stavmixer.',
@@ -359,7 +359,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Bulta köttet jämntjockt, så blir det jämnt tillagat.',
       'Låt de stekta bitarna rinna av på ett galler, så förblir undersidan krispig.',
     ],
-    reheating: 'Värm i ugnen på 200 grader i cirka 10 minuter, så förblir panaden krispig.',
+    reheating: 'Värm i ugnen på 200 °C i cirka 10 minuter, så förblir panaden krispig.',
   },
   'spinach-cannelloni': {
     title: 'Cannelloni med spenat och keso',
@@ -368,7 +368,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Fräs lök och vitlök. Tillsätt spenaten och låt den sjunka ihop. Rör ner keson.',
       'Mjuka upp lasagneplattorna i varmt vatten, bred ut fyllningen och rulla ihop.',
       'Häll de krossade tomaterna i en form, lägg rullarna ovanpå och strö över osten.',
-      'Gratinera i 200 grader i 30 minuter.',
+      'Gratinera i 200 °C i 30 minuter.',
     ],
     tips: [
       'Fyll cannellonin med en spritspåse eller en fryspåse med ett avklippt hörn.',
@@ -397,7 +397,7 @@ export const SV_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Förkoka riset. Lossa kålbladen och förväll dem mjuka i saltat vatten.',
       'Blanda köttfärs, ris, lök, mjölk och salt.',
       'Rulla in fyllningen i bladen, lägg dem i en form och lägg smörklickar ovanpå.',
-      'Grädda i 200 grader i cirka en timme och ös dem då och då. Servera med kokt potatis och lingon.',
+      'Grädda i 200 °C i cirka en timme och ös dem då och då. Servera med kokt potatis och lingon.',
     ],
     tips: [
       'Förväll kålhuvudet helt, så lossnar bladen hela.',

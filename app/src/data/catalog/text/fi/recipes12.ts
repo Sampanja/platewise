@@ -184,7 +184,7 @@ export const FI_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Pinaatti-fetapiirakka',
     description: 'Voitaikinapiiras, jossa on pinaattia, fetaa ja kananmunaa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja sulata voitaikinalevyt.',
+      'Lämmitä uuni 200 °C:seen ja sulata voitaikinalevyt.',
       'Kuullota sipuli ja pinaatti ja anna jäähtyä.',
       'Sekoita pinaatti, murennettu feta, kananmunat ja pippuri.',
       'Vuoraa vuoka taikinalla, lisää täyte ja paista noin 30 minuuttia.',
@@ -236,7 +236,7 @@ export const FI_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Laktoositon makaronilaatikko',
     description: 'Tuttu makaronilaatikko laktoosittomalla maidolla.',
     steps: [
-      'Lämmitä uuni 200 asteeseen. Keitä makaronit puolikypsiksi.',
+      'Lämmitä uuni 200 °C:seen. Keitä makaronit puolikypsiksi.',
       'Ruskista jauheliha ja sipuli ja mausta.',
       'Sekoita makaronit ja jauheliha vuokaan.',
       'Vatkaa maito ja kananmunat ja kaada vuokaan. Paista noin 50 minuuttia.',
@@ -316,7 +316,7 @@ export const FI_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Purjo-perunagratiini',
     description: 'Edullinen ja lämmin uunivuoka perunasta, purjosta ja juustosta.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Viipaloi perunat ohuiksi ja purjo renkaiksi.',
       'Kerrosta vuokaan ja kaada päälle maito, kerma, valkosipuli ja suola.',
       'Ripottele juusto ja paista noin 45 minuuttia.',

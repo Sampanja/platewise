@@ -127,7 +127,7 @@ export const svFun: FunStrings = {
     preview: {
       today: 'I dag',
       streak: '5 dagars svit',
-      progress: '{eaten} / {goal} kcal',
+      progress: '{eaten} / {goal}',
       recipe: 'Laxsoppa',
       recipeMeta: '30 min · prisuppskattning {price}',
       cta: 'Planera veckan',

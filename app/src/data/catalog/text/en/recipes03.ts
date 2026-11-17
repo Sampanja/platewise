@@ -33,7 +33,7 @@ export const EN_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Oven-baked barley porridge',
     description: 'A slow-baked, creamy-soft barley porridge: a weekend breakfast treat.',
     steps: [
-      'Heat the oven to 150 °C (300 °F).',
+      'Heat the oven to 150 °C.',
       'Pour the pearl barley, milk and salt into a greased ovenproof dish and stir.',
       'Bake for about 3 hours. Stir the porridge once or twice.',
       'Top with a knob of butter and serve with berries or cinnamon sugar.',
@@ -230,7 +230,7 @@ export const EN_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Hot ham and cheese toast',
     description: 'Oven-melted cheese, ham and tomato on toast.',
     steps: [
-      'Heat the oven to 225 °C (435 °F).',
+      'Heat the oven to 225 °C.',
       'Spread the bread and top with the ham, tomato slices and grated cheese.',
       'Bake on the top shelf for 5–7 minutes until the cheese has melted and browned.',
     ],
@@ -276,7 +276,7 @@ export const EN_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Baked omelette with vegetables',
     description: 'A juicy baked omelette with pepper, spinach and cheese. Enough for the whole week’s breakfasts.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and grease an ovenproof dish with oil.',
+      'Heat the oven to 200 °C and grease an ovenproof dish with oil.',
       'Whisk the eggs, milk and salt.',
       'Spread the pepper, onion and spinach in the dish and pour the egg mixture over them.',
       'Sprinkle the grated cheese on top and bake for 20–25 minutes until the omelette has set.',

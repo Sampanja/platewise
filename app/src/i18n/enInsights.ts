@@ -103,7 +103,7 @@ export const enInsights: InsightStrings = {
     pantryUsed: 'Used from the pantry',
     pantryUsedValue: '{count} ingredients',
     energyTitle: 'Energy per day',
-    energyAvg: 'On average {value} kcal on logged days',
+    energyAvg: 'On average {value} on logged days',
     macrosTitle: 'Average macros',
     macroValue: '{value} g',
     macroGoal: '{value} / {goal} g',
@@ -141,7 +141,6 @@ export const enInsights: InsightStrings = {
   },
   widget: {
     title: 'Today',
-    kcal: 'kcal',
     eaten: 'eaten',
     protein: 'P',
     carbs: 'C',

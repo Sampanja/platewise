@@ -85,7 +85,7 @@ export const SV_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Bakad sötpotatis med salsa på svarta bönor',
     description: 'Mjukt ugnsbakad sötpotatis toppad med en fräsch salsa på bönor och majs.',
     steps: [
-      'Sätt ugnen på 200 grader. Stick hål i sötpotatisen och baka i cirka 45 minuter tills den är mjuk.',
+      'Sätt ugnen på 200 °C. Stick hål i sötpotatisen och baka i cirka 45 minuter tills den är mjuk.',
       'Blanda bönor, majs, tärnad tomat, rödlök, limesaft, olja, koriander och salt.',
       'Dela sötpotatisen och lägg salsan ovanpå.',
     ],
@@ -213,7 +213,7 @@ export const SV_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Bowl med halloumi och sötpotatis',
     description: 'Rostad sötpotatis, quinoa, spenat och gyllenstekt halloumi.',
     steps: [
-      'Sätt ugnen på 220 grader. Tärna sötpotatisen, blanda med hälften av oljan och spiskummin och rosta i 25 minuter.',
+      'Sätt ugnen på 220 °C. Tärna sötpotatisen, blanda med hälften av oljan och spiskummin och rosta i 25 minuter.',
       'Koka quinoan.',
       'Stek halloumiskivorna gyllene i en torr panna.',
       'Lägg upp quinoa, spenat, sötpotatis och halloumi i skålar och ringla över citronsaft och resten av oljan.',
@@ -226,7 +226,7 @@ export const SV_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Vegetarisk lasagne',
     description: 'Lager av zucchini, spenat, tomatsås och keso.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Fräs lök och zucchini i olja, tillsätt krossade tomater, oregano och salt och låt puttra i 10 minuter.',
       'Blanda keso och spenat.',
       'Varva sås, lasagneplattor och kesoblandning i en form. Avsluta med sås och mozzarella.',
@@ -305,7 +305,7 @@ export const SV_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsrostade grönsaker, kikärter och hummus',
     description: 'Pumpa, morot, rödlök och kikärter rostade med spiskummin på en bädd av hummus.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Dela pumpa, morot och lök i bitar och blanda med kikärter, olja, spiskummin och salt.',
       'Rosta på en plåt i cirka 30 minuter.',
       'Bred ut hummusen på en tallrik och lägg grönsakerna ovanpå. Toppa med persilja.',

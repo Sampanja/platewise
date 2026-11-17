@@ -19,7 +19,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Lentil salad with roasted root vegetables',
     description: 'Green lentils, oven-roasted beetroot and carrot, walnuts and a vinegar dressing.',
     steps: [
-      'Heat the oven to 220 °C (425 °F). Cut the root vegetables into wedges and roast them in half of the oil for 25 minutes.',
+      'Heat the oven to 220 °C. Cut the root vegetables into wedges and roast them in half of the oil for 25 minutes.',
       'Cook the lentils until soft, about 20 minutes, and drain.',
       'Mix the rest of the oil, the vinegar and salt into a dressing.',
       'Assemble the lettuce, lentils and root vegetables and sprinkle the walnuts on top.',
@@ -57,7 +57,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Buddha bowl with tahini dressing',
     description: 'Brown rice, roasted sweet potato, chickpeas, kale and avocado with a tahini dressing.',
     steps: [
-      'Heat the oven to 220 °C (425 °F). Roast the diced sweet potato and chickpeas in oil for 25 minutes.',
+      'Heat the oven to 220 °C. Roast the diced sweet potato and chickpeas in oil for 25 minutes.',
       'Cook the rice.',
       'Mix the tahini, lemon juice, a splash of water and salt into a dressing.',
       'Fill the bowls with rice, torn kale, sweet potato, chickpeas and avocado. Drizzle over the dressing.',
@@ -70,7 +70,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Roasted vegetable and quinoa lunch boxes',
     description: 'The week’s lunches in one go: roasted broccoli, pepper and chickpeas with quinoa.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Cut the broccoli, pepper and onion into pieces and toss with the chickpeas, oil, paprika and salt.',
       'Roast on a tray for 20–25 minutes.',
       'Cook the quinoa and divide it between boxes with the vegetables. Squeeze over some lemon.',
@@ -84,7 +84,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Chicken and rice lunch boxes',
     description: 'Paprika chicken, brown rice, broccoli and carrot: four days of lunches at once.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and cook the rice.',
+      'Heat the oven to 200 °C and cook the rice.',
       'Season the chicken with oil, paprika and salt and bake it in the oven for 20 minutes.',
       'Steam the broccoli and carrot.',
       'Slice the chicken and divide it between boxes with the rice and vegetables.',
@@ -112,7 +112,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Beetroot and goat’s cheese salad',
     description: 'Roasted beetroot, goat’s cheese, lentils, walnuts and a honey dressing.',
     steps: [
-      'Roast the beetroot wedges in the oven at 200 °C (400 °F) for about 40 minutes.',
+      'Roast the beetroot wedges in the oven at 200 °C for about 40 minutes.',
       'Cook and drain the lentils.',
       'Mix the oil, vinegar, honey and salt into a dressing.',
       'Assemble the lettuce, lentils, beetroot, goat’s cheese and walnuts and drizzle with the dressing.',
@@ -125,7 +125,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Warm sweet potato and lentil salad',
     description: 'Roasted sweet potato, green lentils, spinach and crunchy pumpkin seeds.',
     steps: [
-      'Heat the oven to 220 °C (425 °F). Roast the diced sweet potato in half of the oil for 25 minutes.',
+      'Heat the oven to 220 °C. Roast the diced sweet potato in half of the oil for 25 minutes.',
       'Cook the lentils until soft and drain.',
       'Mix the lentils, sweet potato, spinach and red onion.',
       'Season with the rest of the oil, lemon and salt and sprinkle with the seeds.',
@@ -230,7 +230,7 @@ export const EN_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Bean enchiladas with corn tortillas',
     description: 'Corn tortillas filled with spiced beans and baked in tomato sauce.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Fry the onion in oil, add the beans and taco seasoning and mash them partly.',
       'Fill the warmed corn tortillas and roll them into an ovenproof dish.',
       'Pour the chopped tomatoes over and bake for 20 minutes.',

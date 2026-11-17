@@ -85,7 +85,7 @@ export const EN_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Baked sweet potato with black bean salsa',
     description: 'Soft roasted sweet potato topped with a fresh bean and sweetcorn salsa.',
     steps: [
-      'Heat the oven to 200 °C (400 °F). Prick the sweet potato and bake for about 45 minutes until soft.',
+      'Heat the oven to 200 °C. Prick the sweet potato and bake for about 45 minutes until soft.',
       'Mix the beans, sweetcorn, diced tomato, red onion, lime juice, oil, coriander and salt.',
       'Split the sweet potato and spoon the salsa on top.',
     ],
@@ -213,7 +213,7 @@ export const EN_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Halloumi and sweet potato bowl',
     description: 'Roasted sweet potato, quinoa, spinach and golden fried halloumi.',
     steps: [
-      'Heat the oven to 220 °C (425 °F). Dice the sweet potato, toss it with half of the oil and the cumin and roast for 25 minutes.',
+      'Heat the oven to 220 °C. Dice the sweet potato, toss it with half of the oil and the cumin and roast for 25 minutes.',
       'Cook the quinoa.',
       'Fry the halloumi slices in a dry pan until golden.',
       'Fill the bowls with quinoa, spinach, sweet potato and halloumi and drizzle with lemon juice and the rest of the oil.',
@@ -226,7 +226,7 @@ export const EN_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Vegetable lasagne',
     description: 'Layers of courgette, spinach, tomato sauce and cottage cheese.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Soften the onion and courgette in oil, add the chopped tomatoes, oregano and salt and simmer for 10 minutes.',
       'Mix the cottage cheese and spinach.',
       'Layer the sauce, lasagne sheets and cottage cheese mixture in an ovenproof dish. Finish with sauce and mozzarella.',
@@ -305,7 +305,7 @@ export const EN_RECIPES_10: Readonly<Record<string, RecipeText>> = {
     title: 'Roasted vegetables, chickpeas and hummus',
     description: 'Cumin-roasted squash, carrot, red onion and chickpeas on a bed of hummus.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Cut the squash, carrot and onion into pieces and toss with the chickpeas, oil, cumin and salt.',
       'Roast on a tray for about 30 minutes.',
       'Spread the hummus on a plate and top with the vegetables. Finish with parsley.',

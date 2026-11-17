@@ -106,7 +106,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     title: 'Pihvi ja paahdetut perunat',
     description: 'Naudan ulkofileepihvi, valkosipuliperunat ja vihreä salaatti.',
     steps: [
-      'Lohko perunat, sekoita oliiviöljyyn ja suolaan. Paahda 225 asteessa 30 minuuttia.',
+      'Lohko perunat, sekoita oliiviöljyyn ja suolaan. Paahda 225 °C:ssa 30 minuuttia.',
       'Ota pihvit huoneenlämpöön ja mausta suolalla ja pippurilla.',
       'Paista pihvit kuumalla pannulla 3 minuuttia per puoli. Lisää lopuksi voi ja valkosipuli.',
       'Anna levätä 5 minuuttia ja tarjoa perunoiden ja salaatin kanssa.',
@@ -156,7 +156,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'Kaalisalaatti on paras hetki ennen tarjoilua sekoitettuna.',
-      'Kalan voi myös paistaa uunissa 200 asteessa 12 minuuttia.',
+      'Kalan voi myös paistaa uunissa 200 °C:ssa 12 minuuttia.',
     ],
     storage: 'Säilytä kala ja kaalisalaatti erikseen jääkaapissa 1 päivä.',
   },
@@ -210,7 +210,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Keitä perunat ja soseuta maidon ja voin kanssa.',
       'Paloittele kala vuokaan, mausta suolalla, sitruunalla ja tillillä. Lisää herneet.',
       'Levitä muusi päälle ja ripottele juusto.',
-      'Paista 200 asteessa 25 minuuttia.',
+      'Paista 200 °C:ssa 25 minuuttia.',
     ],
     tips: [
       'Pakastekala käy suoraan vuokaan: lisää paistoaikaa 10 minuuttia.',
@@ -252,7 +252,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Kuullota sipuli ja valkosipuli öljyssä.',
       'Lisää tomaattimurska, liemikuutio, sokeri ja 1 dl vettä per annos. Keitä 10 minuuttia.',
       'Lisää kerma ja soseuta. Mausta basilikalla.',
-      'Ripottele juusto patonkiviipaleille ja paista uunissa 225 asteessa 5 minuuttia.',
+      'Ripottele juusto patonkiviipaleille ja paista uunissa 225 °C:ssa 5 minuuttia.',
     ],
     tips: [
       'Soseuta keitto sauvasekoittimella sileäksi.',
@@ -359,7 +359,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Nuiji liha tasapaksuksi, niin se kypsyy tasaisesti.',
       'Valuta paistetut palat ritilällä, niin pohja pysyy rapeana.',
     ],
-    reheating: 'Kuumenna uunissa 200 asteessa noin 10 minuuttia, niin kuori pysyy rapeana.',
+    reheating: 'Kuumenna uunissa 200 °C:ssa noin 10 minuuttia, niin kuori pysyy rapeana.',
   },
   'spinach-cannelloni': {
     title: 'Pinaatti-raejuustocannellonit',
@@ -368,7 +368,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Kuullota sipuli ja valkosipuli. Lisää pinaatti ja anna sen pehmetä. Sekoita joukkoon raejuusto.',
       'Pehmennä lasagnelevyt kuumassa vedessä, levitä täyte ja rullaa.',
       'Kaada vuokaan tomaattimurska, lado rullat päälle ja ripottele juusto.',
-      'Paista 200 asteessa 30 minuuttia.',
+      'Paista 200 °C:ssa 30 minuuttia.',
     ],
     tips: [
       'Täytä cannellonit pursotinpussilla tai pakastepussilla, jonka kulma on leikattu.',
@@ -397,7 +397,7 @@ export const FI_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Keitä riisi puolikypsäksi. Irrota kaalinlehdet ja kiehauta niitä suolavedessä pehmeiksi.',
       'Sekoita jauheliha, riisi, sipuli, maito ja suola.',
       'Kääri täyte lehtiin, lado vuokaan ja nostele päälle voinokareita.',
-      'Paista 200 asteessa noin tunti, valele välillä. Tarjoa keitettyjen perunoiden ja puolukan kanssa.',
+      'Paista 200 °C:ssa noin tunti, valele välillä. Tarjoa keitettyjen perunoiden ja puolukan kanssa.',
     ],
     tips: [
       'Kiehauta kaalinpää kokonaisena, niin lehdet irtoavat ehjinä.',

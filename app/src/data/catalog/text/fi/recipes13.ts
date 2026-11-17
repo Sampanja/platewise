@@ -90,7 +90,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
       'Viipaloi sipulit ja kuullota voissa miedolla lämmöllä noin 35 minuuttia, kunnes ne karamellisoituvat.',
       'Lisää 7 dl vettä ja liemitiiviste ja keitä 10 minuuttia.',
       'Kaada keitto uuninkestäviin kulhoihin ja nosta päälle patonkiviipale ja juusto.',
-      'Gratinoi uunin ylätasolla 250 asteessa, kunnes juusto ruskistuu.',
+      'Gratinoi uunin ylätasolla 250 °C:ssa, kunnes juusto ruskistuu.',
     ],
     tips: [
       'Sipulien kärsivällinen kuullottaminen on keiton salaisuus.',
@@ -101,7 +101,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     description: 'Ranskalainen piiras murealla pohjalla, pekonilla ja kermaisella juustotäytteellä.',
     steps: [
       'Nypi jauhot ja kylmä voi muruksi, lisää ruokalusikallinen kylmää vettä ja painele piirasvuokaan. Jäähdytä 15 minuuttia.',
-      'Lämmitä uuni 200 asteeseen ja esipaista pohjaa 10 minuuttia.',
+      'Lämmitä uuni 200 °C:seen ja esipaista pohjaa 10 minuuttia.',
       'Paista pekoni ja sipuli ja levitä pohjalle.',
       'Vatkaa kananmunat, kerma, juusto ja suola ja kaada pohjalle.',
       'Paista noin 30 minuuttia, kunnes täyte on hyytynyt.',
@@ -150,7 +150,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Kinkku-munamuffinit',
     description: 'Uunissa paistetut munamuffinit kinkulla, paprikalla ja pinaatilla. Valmis aamiainen viikoksi.',
     steps: [
-      'Lämmitä uuni 180 asteeseen ja voitele muffinssivuoka.',
+      'Lämmitä uuni 180 °C:seen ja voitele muffinssivuoka.',
       'Jaa pilkottu kinkku, paprika ja pinaatti vuokiin.',
       'Vatkaa kananmunat ja suola ja kaada vuokiin. Ripottele juusto pinnalle.',
       'Paista noin 20 minuuttia, kunnes munat ovat hyytyneet.',
@@ -164,7 +164,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Uunipuuro omenalla ja kanelilla',
     description: 'Uunissa paistettu kaurapuuro, jossa on omenaa, rusinoita ja kanelia.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Sekoita vuoassa kaurahiutaleet, kuutioitu omena, rusinat, kaneli ja suola.',
       'Kaada maito päälle ja sekoita.',
       'Paista noin 30 minuuttia, kunnes pinta on kullanruskea.',
@@ -190,7 +190,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Härkäpapupihvit ja uuniperunat',
     description: 'Kuminalla maustetut vegaaniset härkäpapupihvit ja rapeat uuniperunat.',
     steps: [
-      'Lämmitä uuni 225 asteeseen. Lohko perunat, sekoita puoleen öljystä ja suolaan ja paahda 30 minuuttia.',
+      'Lämmitä uuni 225 °C:seen. Lohko perunat, sekoita puoleen öljystä ja suolaan ja paahda 30 minuuttia.',
       'Keitä härkäpavut 3 minuuttia ja valuta.',
       'Soseuta pavut, sipuli, perunajauho, kumina ja suola karkeaksi massaksi.',
       'Muotoile pihveiksi ja paista loppu öljyssä molemmin puolin kullanruskeiksi.',
@@ -203,7 +203,7 @@ export const FI_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Broilerikiusaus',
     description: 'Perunaa, broileria ja sipulia kermaisessa liemessä juustokuoren alla.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Suikaloi perunat ja sipuli.',
       'Kerrosta perunat, sipuli ja broileri vuokaan.',
       'Kaada päälle kerma, maito ja mausteet. Ripottele juusto ja paista noin tunti.',

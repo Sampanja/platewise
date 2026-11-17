@@ -5,7 +5,7 @@
  */
 
 import { PRICE_REGION_CODES } from '@/domain/priceRegion';
-import { isUnitSystem } from '@/domain/units';
+import { isUnitPrefs, unitsFromSystem, type UnitPrefs } from '@/domain/units';
 import { isLanguage } from '@/i18n/languages';
 
 type Loose = Record<string, unknown>;
@@ -88,14 +88,33 @@ export function profileWithoutStore<T>(profile: T, fromVersion: number): T {
  * who already finished onboarding keep Finnish and skip the language picker;
  * new installs see the picker first. Units follow the region (null) until
  * chosen. Unknown values from a newer or broken save fall back the same way.
+ * (The v8 `unitSystem` field is converted by `withUnitPrefs`.)
  */
 export function withLanguageSettings<T>(profile: T, fromVersion: number): T {
   if (!isObject(profile)) return profile;
   const onboarded = profile.onboardingCompleted === true;
   if (fromVersion < 8) {
-    return { ...profile, language: onboarded ? 'fi' : null, languageChosen: onboarded, unitSystem: null } as T;
+    return { ...profile, language: onboarded ? 'fi' : null, languageChosen: onboarded } as T;
   }
   const language = isLanguage(profile.language) ? profile.language : null;
-  const unitSystem = isUnitSystem(profile.unitSystem) ? profile.unitSystem : null;
-  return { ...profile, language, languageChosen: profile.languageChosen === true || onboarded, unitSystem } as T;
+  return { ...profile, language, languageChosen: profile.languageChosen === true || onboarded } as T;
+}
+
+/**
+ * Profile v10: units are chosen one by one. Before, one metric/imperial
+ * setting covered everything and `null` followed the phone's region; that
+ * automatic choice now becomes the user's own setting, so nothing changes on
+ * screen. People who already finished onboarding don't see the units screen;
+ * everyone else confirms the units there.
+ */
+export function withUnitPrefs<T>(profile: T, fromVersion: number, deviceDefault: UnitPrefs): T {
+  if (!isObject(profile)) return profile;
+  const { unitSystem, ...rest } = profile;
+  const onboarded = profile.onboardingCompleted === true;
+  if (fromVersion < 10) {
+    const legacy = unitSystem === 'metric' || unitSystem === 'imperial' ? unitsFromSystem(unitSystem) : null;
+    return { ...rest, units: legacy ?? (onboarded ? { ...deviceDefault } : null), unitsChosen: onboarded } as T;
+  }
+  const units = isUnitPrefs(profile.units) ? profile.units : onboarded ? { ...deviceDefault } : null;
+  return { ...rest, units, unitsChosen: profile.unitsChosen === true || onboarded } as T;
 }

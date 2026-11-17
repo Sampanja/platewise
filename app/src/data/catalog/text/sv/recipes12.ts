@@ -184,7 +184,7 @@ export const SV_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Spenat- och fetapaj',
     description: 'En smördegspaj med spenat, fetaost och ägg.',
     steps: [
-      'Sätt ugnen på 200 grader och tina smördegsplattorna.',
+      'Sätt ugnen på 200 °C och tina smördegsplattorna.',
       'Fräs lök och spenat och låt svalna.',
       'Blanda spenat, smulad fetaost, ägg och peppar.',
       'Klä formen med degen, lägg i fyllningen och grädda i cirka 30 minuter.',
@@ -236,7 +236,7 @@ export const SV_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Laktosfri makaronilåda',
     description: 'Den välkända makaronilådan gjord på laktosfri mjölk.',
     steps: [
-      'Sätt ugnen på 200 grader. Förkoka makaronerna.',
+      'Sätt ugnen på 200 °C. Förkoka makaronerna.',
       'Bryn köttfärs och lök och krydda.',
       'Blanda makaroner och köttfärs i en form.',
       'Vispa mjölk och ägg och häll i formen. Grädda i cirka 50 minuter.',
@@ -316,7 +316,7 @@ export const SV_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Purjolöks- och potatisgratäng',
     description: 'En prisvärd och värmande gratäng på potatis, purjolök och ost.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Skiva potatisen tunt och purjolöken i ringar.',
       'Varva dem i en form och häll över mjölk, grädde, vitlök och salt.',
       'Strö osten över och gratinera i cirka 45 minuter.',

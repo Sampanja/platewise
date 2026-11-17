@@ -50,6 +50,7 @@ import { MascotSays } from '@/features/mascot/SpeechBubble';
 import { ReportsView } from '@/features/reports/ReportsView';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { format, formatInteger, strings } from '@/i18n';
+import { formatEnergy, formatEnergyBare, formatNutrientGrams } from '@/lib/amounts';
 import { addDays, diaryDayLabel, today, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -153,8 +154,8 @@ function DiaryScreen() {
   };
 
   const kcalA11y = hasGoal
-    ? format(t.kcalA11y, { value: formatInteger(totals.kcal), goal: formatInteger(goals.kcal) })
-    : format(t.kcalA11yNoGoal, { value: formatInteger(totals.kcal) });
+    ? format(t.kcalA11y, { value: formatEnergy(totals.kcal), goal: formatEnergy(goals.kcal) })
+    : format(t.kcalA11yNoGoal, { value: formatEnergy(totals.kcal) });
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -207,10 +208,10 @@ function DiaryScreen() {
             <Card style={styles.summary}>
               <Ring value={hasGoal ? totals.kcal / goals.kcal : 0} size={128} thickness={12} accessibilityLabel={kcalA11y}>
                 <Text variant="title" style={styles.tabular}>
-                  {formatInteger(totals.kcal)}
+                  {formatEnergyBare(totals.kcal)}
                 </Text>
                 <Text variant="caption" color="textSubtle">
-                  {hasGoal ? format(t.goal, { value: formatInteger(goals.kcal) }) : t.eaten}
+                  {hasGoal ? format(t.goal, { value: formatEnergy(goals.kcal) }) : t.eaten}
                 </Text>
               </Ring>
               <View style={styles.macros}>
@@ -253,7 +254,7 @@ function DiaryScreen() {
                         ? t.mealEmpty
                         : hideCalories
                           ? format(t.entryCount, { count: mealEntries.length })
-                          : format(t.mealTotal, { value: formatInteger(mealKcal) })}
+                          : format(t.mealTotal, { value: formatEnergy(mealKcal) })}
                     </Text>
                   </View>
                   {mealEntries.length > 0 ? (
@@ -285,7 +286,7 @@ function DiaryScreen() {
                               : format(t.entryA11y, {
                                   name: catalogName(entry.basis, entry.name),
                                   amount: entryAmount(entry),
-                                  kcal: formatInteger(entryMacros(entry).kcal),
+                                  kcal: formatEnergy(entryMacros(entry).kcal),
                                 })
                           }
                           style={styles.entry}
@@ -304,7 +305,7 @@ function DiaryScreen() {
                           </View>
                           {hideCalories ? null : (
                             <Text variant="label" style={styles.tabular}>
-                              {format(strings.common.kcal, { value: formatInteger(entryMacros(entry).kcal) })}
+                              {formatEnergy(entryMacros(entry).kcal)}
                             </Text>
                           )}
                         </PressableScale>
@@ -429,7 +430,7 @@ function DiaryScreen() {
 function MacroBar({ label, value, goal }: { label: string; value: number; goal: number | null }) {
   const text =
     goal === null
-      ? format(strings.common.grams, { value: formatInteger(value) })
+      ? formatNutrientGrams(value)
       : format(strings.home.macroOfGoal, { value: formatInteger(value), goal: formatInteger(goal) });
   return (
     <View style={styles.macroRow}>

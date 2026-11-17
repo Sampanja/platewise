@@ -184,7 +184,7 @@ export const EN_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Spinach and feta pie',
     description: 'A puff pastry pie with spinach, feta and egg.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and thaw the puff pastry sheets.',
+      'Heat the oven to 200 °C and thaw the puff pastry sheets.',
       'Soften the onion and spinach and let them cool.',
       'Mix the spinach, crumbled feta, eggs and pepper.',
       'Line the dish with the pastry, add the filling and bake for about 30 minutes.',
@@ -236,7 +236,7 @@ export const EN_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Lactose-free macaroni and mince bake',
     description: 'The familiar macaroni bake made with lactose-free milk.',
     steps: [
-      'Heat the oven to 200 °C (400 °F). Par-cook the macaroni.',
+      'Heat the oven to 200 °C. Par-cook the macaroni.',
       'Brown the mince and onion and season.',
       'Mix the macaroni and mince in an ovenproof dish.',
       'Whisk the milk and eggs and pour them into the dish. Bake for about 50 minutes.',
@@ -316,7 +316,7 @@ export const EN_RECIPES_12: Readonly<Record<string, RecipeText>> = {
     title: 'Leek and potato gratin',
     description: 'An affordable, warming bake of potato, leek and cheese.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Slice the potatoes thinly and the leek into rings.',
       'Layer them in an ovenproof dish and pour over the milk, cream, garlic and salt.',
       'Sprinkle the cheese on top and bake for about 45 minutes.',

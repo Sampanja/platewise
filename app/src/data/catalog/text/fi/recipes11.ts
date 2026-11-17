@@ -19,7 +19,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Linssisalaatti ja paahdetut juurekset',
     description: 'Vihreät linssit, uunissa paahdettu punajuuri ja porkkana, saksanpähkinät ja etikkakastike.',
     steps: [
-      'Lämmitä uuni 220 asteeseen. Lohko juurekset ja paahda puolessa öljystä 25 minuuttia.',
+      'Lämmitä uuni 220 °C:seen. Lohko juurekset ja paahda puolessa öljystä 25 minuuttia.',
       'Keitä linssit kypsiksi noin 20 minuutissa ja valuta.',
       'Sekoita loppu öljy, etikka ja suola kastikkeeksi.',
       'Kokoa salaatti, linssit ja juurekset ja ripottele päälle saksanpähkinät.',
@@ -57,7 +57,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Buddha-kulho ja tahinikastike',
     description: 'Täysjyväriisi, paahdettu bataatti, kikherneet, lehtikaali ja avokado tahinikastikkeella.',
     steps: [
-      'Lämmitä uuni 220 asteeseen. Paahda kuutioitu bataatti ja kikherneet öljyssä 25 minuuttia.',
+      'Lämmitä uuni 220 °C:seen. Paahda kuutioitu bataatti ja kikherneet öljyssä 25 minuuttia.',
       'Keitä riisi.',
       'Sekoita tahini, sitruunamehu, tilkka vettä ja suola kastikkeeksi.',
       'Kokoa kulhoon riisi, revitty lehtikaali, bataatti, kikherneet ja avokado. Valuta päälle kastike.',
@@ -70,7 +70,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Uunikasvis-kvinoarasiat',
     description: 'Viikon lounaat kerralla: paahdettu parsakaali, paprika ja kikherneet kvinoan kanssa.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Paloittele parsakaali, paprika ja sipuli ja sekoita kikherneiden, öljyn, paprikajauheen ja suolan kanssa.',
       'Paahda pellillä 20–25 minuuttia.',
       'Keitä kvinoa ja jaa rasioihin kasvisten kanssa. Purista päälle sitruunaa.',
@@ -84,7 +84,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Kana-riisirasiat',
     description: 'Paprikainen broileri, täysjyväriisi, parsakaali ja porkkana: neljän päivän lounaat kerralla.',
     steps: [
-      'Lämmitä uuni 200 asteeseen ja keitä riisi.',
+      'Lämmitä uuni 200 °C:seen ja keitä riisi.',
       'Mausta broileri öljyllä, paprikalla ja suolalla ja paista uunissa 20 minuuttia.',
       'Höyrytä parsakaali ja porkkana.',
       'Viipaloi kana ja jaa rasioihin riisin ja kasvisten kanssa.',
@@ -112,7 +112,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Punajuuri-vuohenjuustosalaatti',
     description: 'Paahdettu punajuuri, vuohenjuusto, linssit, saksanpähkinät ja hunajainen kastike.',
     steps: [
-      'Paahda lohkotut punajuuret uunissa 200 asteessa noin 40 minuuttia.',
+      'Paahda lohkotut punajuuret uunissa 200 °C:ssa noin 40 minuuttia.',
       'Keitä linssit ja valuta.',
       'Sekoita öljy, etikka, hunaja ja suola kastikkeeksi.',
       'Kokoa salaatti, linssit, punajuuri, vuohenjuusto ja pähkinät ja valuta kastike päälle.',
@@ -125,7 +125,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Lämmin bataatti-linssisalaatti',
     description: 'Paahdettu bataatti, vihreät linssit, pinaatti ja rapeat kurpitsansiemenet.',
     steps: [
-      'Lämmitä uuni 220 asteeseen. Paahda kuutioitu bataatti puolessa öljystä 25 minuuttia.',
+      'Lämmitä uuni 220 °C:seen. Paahda kuutioitu bataatti puolessa öljystä 25 minuuttia.',
       'Keitä linssit kypsiksi ja valuta.',
       'Sekoita linssit, bataatti, pinaatti ja punasipuli.',
       'Mausta loppuöljyllä, sitruunalla ja suolalla ja ripottele siemenet.',
@@ -230,7 +230,7 @@ export const FI_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Papuenchiladat maissitortilloista',
     description: 'Maissitortillat täytettynä mausteisilla pavuilla ja paistettuna tomaattikastikkeessa.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Paista sipuli öljyssä, lisää pavut ja tacomauste ja muussaa osittain.',
       'Täytä lämmitetyt maissitortillat ja rullaa vuokaan.',
       'Kaada tomaattimurska päälle ja paista 20 minuuttia.',

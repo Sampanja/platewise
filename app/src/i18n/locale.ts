@@ -1,17 +1,17 @@
 import { DEFAULT_PRICE_REGION, PRICE_REGIONS, type PriceRegionCode } from '@/domain/priceRegion';
-import type { UnitSystem } from '@/domain/units';
+import { METRIC_UNITS, type UnitPrefs } from '@/domain/units';
 
 import { FALLBACK_LANGUAGE, type Language } from './languages';
 
 /**
- * Active language, price region and unit system, read at call time like the
+ * Active language, price region and units, read at call time like the
  * theme's `colors`. The root layout sets them before rendering and remounts
  * the screens when they change, so strings and formatting helpers need no
  * React context.
  */
 let language: Language = FALLBACK_LANGUAGE;
 let priceRegion: PriceRegionCode = DEFAULT_PRICE_REGION;
-let unitSystem: UnitSystem = 'metric';
+let units: UnitPrefs = METRIC_UNITS;
 const listeners = new Set<() => void>();
 
 export function activeLanguage(): Language {
@@ -53,12 +53,13 @@ export function setFirstWeekday(phoneValue: number | null, region: PriceRegionCo
   firstWeekday = phoneValue && phoneValue >= 1 && phoneValue <= 7 ? (phoneValue + 5) % 7 : region === 'US' ? 6 : 0;
 }
 
-export function activeUnitSystem(): UnitSystem {
-  return unitSystem;
+/** The user's display units (domain/units.ts); everything is stored metric. */
+export function activeUnits(): UnitPrefs {
+  return units;
 }
 
-export function setActiveUnitSystem(system: UnitSystem): void {
-  unitSystem = system;
+export function setActiveUnits(next: UnitPrefs): void {
+  units = next;
 }
 
 /**

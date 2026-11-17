@@ -218,6 +218,6 @@ export const fiKitchen = {
     emptyTitle: 'Ei vielä omia reseptejä',
     emptyBody: 'Kokoa resepti ainesosista, niin voit kirjata sen päiväkirjaan annos kerrallaan.',
     servings: '{count} annosta',
-    perServing: '{kcal} kcal / annos',
+    perServing: '{kcal} / annos',
   },
 };

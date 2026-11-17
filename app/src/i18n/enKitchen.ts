@@ -220,6 +220,6 @@ export const enKitchen: KitchenStrings = {
     emptyTitle: 'No recipes of your own yet',
     emptyBody: 'Put a recipe together from ingredients, then log it in your diary one serving at a time.',
     servings: '{count} servings',
-    perServing: '{kcal} kcal / serving',
+    perServing: '{kcal} / serving',
   },
 };

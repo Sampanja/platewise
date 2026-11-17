@@ -21,7 +21,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Karjalanpaisti ja perunat',
     description: 'Uunissa tuntikausia haudutettu naudan ja porsaan liha, maustepippuri ja puolukka.',
     steps: [
-      'Lämmitä uuni 175 asteeseen. Leikkaa lihat noin 3 cm:n kuutioiksi.',
+      'Lämmitä uuni 175 °C:seen. Leikkaa lihat noin 3 cm:n kuutioiksi.',
       'Kerrosta liha, sipulilohkot ja porkkanat pataan. Lisää maustepippurit ja suola.',
       'Kaada joukkoon vettä niin, että liha juuri peittyy. Haudu kannen alla noin 3 tuntia.',
       'Keitä perunat kypsiksi ennen tarjoilua.',
@@ -36,7 +36,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Makaronilaatikko',
     description: 'Lapsuuden suosikki: makaronia, jauhelihaa ja munamaitoa uunissa kullanruskeaksi.',
     steps: [
-      'Lämmitä uuni 200 asteeseen. Keitä makaronit puolikypsiksi suolalla maustetussa vedessä.',
+      'Lämmitä uuni 200 °C:seen. Keitä makaronit puolikypsiksi suolalla maustetussa vedessä.',
       'Ruskista jauheliha ja sipuli pannulla ja mausta suolalla ja pippurilla.',
       'Sekoita makaronit ja jauheliha voideltuun uunivuokaan.',
       'Vatkaa maito ja kananmunat ja kaada vuokaan.',
@@ -66,7 +66,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Kaalilaatikko ja puolukka',
     description: 'Makeahko kaalilaatikko jauhelihalla, riisillä ja siirapilla. Puolukka kuuluu kylkeen.',
     steps: [
-      'Lämmitä uuni 175 asteeseen.',
+      'Lämmitä uuni 175 °C:seen.',
       'Keitä puuroriisiä 1 dl:ssa vettä 10 minuuttia.',
       'Ruskista suikaloitu kaali pannulla erissä ja siirrä isoon kulhoon.',
       'Ruskista jauheliha ja sipuli ja sekoita kaalin, riisin, suolan ja pippurin kanssa. Lisää 2 dl vettä.',
@@ -82,7 +82,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Maksalaatikko',
     description: 'Rusinoilla ja siirapilla makeutettu perinteinen maksalaatikko: rautaa ja vanhaa kunnon makua.',
     steps: [
-      'Lämmitä uuni 175 asteeseen. Keitä puuroriisiä 1 dl:ssa vettä 10 minuuttia.',
+      'Lämmitä uuni 175 °C:seen. Keitä puuroriisiä 1 dl:ssa vettä 10 minuuttia.',
       'Lisää maito ja keitä löysäksi puuroksi noin 10 minuuttia. Jäähdytä hieman.',
       'Jauha tai hienonna maksa ja kuullota sipuli voissa.',
       'Sekoita puuroon maksa, sipuli, kananmuna, rusinat, siirappi ja suola.',
@@ -147,7 +147,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Paista muikut väljästi, niin ne rapeutuvat eivätkä hautu.',
     ],
     storage: 'Paras heti. Säilytä tähteet jääkaapissa 1 päivä.',
-    reheating: 'Kuumenna uunissa 200 asteessa noin 8 minuuttia, niin muikut rapeutuvat uudelleen.',
+    reheating: 'Kuumenna uunissa 200 °C:ssa noin 8 minuuttia, niin muikut rapeutuvat uudelleen.',
   },
   'frankfurter-sauce': {
     title: 'Nakkikastike ja perunat',
@@ -194,7 +194,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Kinkkukiusaus',
     description: 'Perunaa, kinkkua ja sipulia kermaisessa maidossa uunissa kullanruskeaksi.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Suikaloi perunat ja sipuli.',
       'Kerrosta perunat, sipuli ja kinkku voideltuun vuokaan.',
       'Sekoita kerma, maito, suola ja pippuri ja kaada vuokaan. Ripottele juustoraaste pinnalle.',
@@ -208,7 +208,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Lohilaatikko',
     description: 'Perunaa, lohta ja tilliä munamaidossa: pehmeä ja lohdullinen uuniruoka.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Viipaloi perunat ohuiksi ja kuutioi lohi.',
       'Kerrosta perunat, lohi, sipuli ja tilli voideltuun vuokaan.',
       'Vatkaa kananmunat, maito, suola ja rouhittu maustepippuri ja kaada vuokaan.',
@@ -288,7 +288,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Uunimakkara ja perunamuusi',
     description: 'Sinapilla ja sipulilla uunissa paistettu makkara ja sileä perunamuusi.',
     steps: [
-      'Lämmitä uuni 225 asteeseen.',
+      'Lämmitä uuni 225 °C:seen.',
       'Viillä makkaraan viiltoja, sivele sinapilla ja täytä viillot sipulisuikaleilla.',
       'Paista vuoassa noin 25 minuuttia.',
       'Keitä perunat ja soseuta lämpimän maidon ja voin kanssa muusiksi.',
@@ -328,7 +328,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Mustikkapiirakka',
     description: 'Murea pohja, mehevä mustikkatäyte ja kermaviilikuorrute: kesän ja syksyn herkku.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Vatkaa pehmeä voi ja puolet sokerista. Lisää puolet kananmunasta ja sitten jauhot ja leivinjauhe.',
       'Painele taikina piirakkavuoan pohjalle ja reunoille.',
       'Levitä mustikat pohjan päälle.',
@@ -339,7 +339,7 @@ export const FI_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Anna piirakan jäähtyä ennen leikkaamista, niin täyte asettuu.',
     ],
     storage: 'Säilytä jääkaapissa kelmulla peitettynä 3 päivää.',
-    reheating: 'Tarjoa huoneenlämpöisenä tai lämmitä uunissa 150 asteessa 10 minuuttia.',
+    reheating: 'Tarjoa huoneenlämpöisenä tai lämmitä uunissa 150 °C:ssa 10 minuuttia.',
   },
   'spinach-soup-egg': {
     title: 'Pinaattikeitto ja kananmuna',

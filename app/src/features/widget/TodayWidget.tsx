@@ -23,7 +23,7 @@ export function TodayWidget({ snapshot, colors }: { snapshot: WidgetSnapshot; co
   const ring = snapshot.hideCalories
     ? ringSvg(0, colors, String(snapshot.entryCount), labels.title)
     : ringSvg(progress, colors, round(snapshot.kcal), snapshot.goalKcal ? `/ ${round(snapshot.goalKcal)} ${labels.kcal}` : labels.eaten);
-  const macroText = `${labels.protein} ${round(snapshot.proteinG)} g   ${labels.carbs} ${round(snapshot.carbsG)} g   ${labels.fat} ${round(snapshot.fatG)} g`;
+  const macroText = `${labels.protein} ${round(snapshot.proteinG)} ${labels.gram}   ${labels.carbs} ${round(snapshot.carbsG)} ${labels.gram}   ${labels.fat} ${round(snapshot.fatG)} ${labels.gram}`;
   const buttonStyle = {
     flex: 1,
     height: 40,

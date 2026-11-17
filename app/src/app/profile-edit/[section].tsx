@@ -17,7 +17,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { MIN_KCAL_GOAL, PANTRY_ELIGIBLE } from '@/data/catalog';
-import { useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
+import { useLanguage, usePriceRegion } from '@/data/hooks';
 import { useProfileStore } from '@/data/stores/profile';
 import {
   budgetBounds,
@@ -27,12 +27,13 @@ import {
   priceRegionFor,
   type PriceRegionCode,
 } from '@/domain/priceRegion';
-import { defaultUnitSystem, UNIT_SYSTEMS, type UnitSystem } from '@/domain/units';
 import { RemindersEditor } from '@/features/profile/RemindersEditor';
+import { UnitsSettings } from '@/features/settings/UnitsEditor';
 import { LanguageOptions } from '@/features/settings/LanguageOptions';
 import { STRING_TABLES } from '@/i18n/registry';
 import { DietPicker } from '@/features/shared/DietPicker';
-import { currencySymbol, format, formatMoney, formatInteger, strings } from '@/i18n';
+import { currencySymbol, format, formatMoney, strings } from '@/i18n';
+import { energyUnitLabel, formatEnergy, formatEnergyBare } from '@/lib/amounts';
 import { useDeviceLocale } from '@/lib/deviceLocale';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
@@ -59,7 +60,6 @@ export default function ProfileEditScreen() {
       name: s.name,
       weeklyBudgetCents: s.weeklyBudgetCents,
       priceRegion: s.priceRegion,
-      unitSystem: s.unitSystem,
       themePreference: s.themePreference,
       allergens: s.allergens,
       diets: s.diets,
@@ -75,10 +75,8 @@ export default function ProfileEditScreen() {
   );
   const region = usePriceRegion();
   const language = useLanguage();
-  const unitSystem = useUnitSystem();
   const device = useDeviceLocale();
   const deviceRegion = priceRegionFor(device.regionCode);
-  const deviceUnits = defaultUnitSystem(device.measurementSystem, device.regionCode);
   // Budget inputs work in whole currency units (euros, kronor).
   const bounds = budgetBounds(region);
   const [budgetText, setBudgetText] = useState(String(Math.round(profile.weeklyBudgetCents / 100)));
@@ -190,30 +188,7 @@ export default function ProfileEditScreen() {
     units: {
       title: strings.unitSystems.title,
       body: strings.unitSystems.body,
-      node: (
-        <View style={styles.gap} accessibilityRole="radiogroup">
-          <OptionRow
-            icon="phone"
-            title={strings.unitSystems.auto}
-            hint={format(strings.unitSystems.autoHint, { system: strings.unitSystems[deviceUnits] })}
-            selected={profile.unitSystem === null}
-            onPress={() => profile.update({ unitSystem: null })}
-          />
-          {UNIT_SYSTEMS.map((system: UnitSystem) => (
-            <OptionRow
-              key={system}
-              icon="ruler"
-              title={strings.unitSystems[system]}
-              hint={strings.unitSystems[system === 'metric' ? 'metricHint' : 'imperialHint']}
-              selected={profile.unitSystem === system}
-              onPress={() => profile.update({ unitSystem: system })}
-            />
-          ))}
-          <Text variant="caption" color="textSubtle">
-            {format(strings.unitSystems.autoHint, { system: strings.unitSystems[unitSystem] })}
-          </Text>
-        </View>
-      ),
+      node: <UnitsSettings />,
     },
     reminders: {
       title: strings.reminders.title,
@@ -283,7 +258,7 @@ export default function ProfileEditScreen() {
     },
     goals: {
       title: t.goalsTitle,
-      body: format(t.goalsBody, { min: formatInteger(MIN_KCAL_GOAL) }),
+      body: format(t.goalsBody, { min: formatEnergy(MIN_KCAL_GOAL) }),
       node: (
         <Card style={styles.gap}>
           <SwitchRow
@@ -293,19 +268,19 @@ export default function ProfileEditScreen() {
           />
           {profile.hasCalorieGoal ? (
             <View style={styles.goals}>
-              <GoalRow label={t.kcal}>
+              <GoalRow label={format(t.kcal, { unit: energyUnitLabel() })}>
                 <Stepper
                   value={profile.goals.kcal}
                   min={MIN_KCAL_GOAL}
                   max={4000}
                   step={50}
                   onChange={(kcal) => profile.setGoals({ ...profile.goals, kcal })}
-                  format={(v) => formatInteger(v)}
-                  accessibilityLabel={t.kcal}
+                  format={(v) => formatEnergyBare(v)}
+                  accessibilityLabel={format(t.kcal, { unit: energyUnitLabel() })}
                 />
               </GoalRow>
               <Text variant="caption" color="textSubtle">
-                {format(t.minNote, { min: formatInteger(MIN_KCAL_GOAL) })}
+                {format(t.minNote, { min: formatEnergy(MIN_KCAL_GOAL) })}
               </Text>
               <GoalRow label={t.protein}>
                 <Stepper

@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Icon, Text } from '@/components/ui';
-import { format, formatInteger, formatMoney, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
+import { formatEnergy, formatEnergyBare } from '@/lib/amounts';
 import { radii, spacing, type Palette } from '@/theme';
 
 const t = strings.characters.preview;
@@ -35,7 +36,7 @@ export function ThemePreview({ palette }: { palette: Palette }) {
           <View style={[styles.fill, { backgroundColor: p.accent }]} />
         </View>
         <Text variant="caption" style={{ color: p.textMuted }}>
-          {format(t.progress, { eaten: formatInteger(1240), goal: formatInteger(1900) })}
+          {format(t.progress, { eaten: formatEnergyBare(1240), goal: formatEnergy(1900) })}
         </Text>
       </View>
 

@@ -10,6 +10,7 @@ import { useMyMealsStore } from '@/data/stores/myMeals';
 import type { ImportedRecipe, OwnRecipe } from '@/data/types';
 import { ownRecipePerServing } from '@/domain/diary';
 import { format, formatInteger, strings } from '@/i18n';
+import { formatEnergy } from '@/lib/amounts';
 import { sourceHost } from '@/services/recipeImport';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -59,7 +60,7 @@ export function MyRecipesList({ header, bottomSpace }: MyRecipesListProps) {
 
 const ImportedRow = memo(function ImportedRow({ recipe }: { recipe: ImportedRecipe }) {
   const asRecipe = importedAsRecipe(recipe);
-  const kcal = format(t.perServing, { kcal: formatInteger(asRecipe.perServing.kcal) });
+  const kcal = format(t.perServing, { kcal: formatEnergy(asRecipe.perServing.kcal) });
   const source = recipe.sourceUrl ? sourceHost(recipe.sourceUrl) : strings.recipeImport.manualTitle;
   return (
     <PressableScale

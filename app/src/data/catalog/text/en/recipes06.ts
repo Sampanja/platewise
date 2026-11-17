@@ -21,7 +21,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Karelian hot pot with potatoes',
     description: 'Beef and pork braised in the oven for hours, with allspice and lingonberries.',
     steps: [
-      'Heat the oven to 175 °C (350 °F). Cut the meat into roughly 3 cm (1 in) cubes.',
+      'Heat the oven to 175 °C. Cut the meat into roughly 3 cm (1 in) cubes.',
       'Layer the meat, onion wedges and carrots in a casserole dish. Add the allspice and salt.',
       'Pour in water until the meat is just covered. Braise with the lid on for about 3 hours.',
       'Boil the potatoes before serving.',
@@ -36,7 +36,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Macaroni and mince bake',
     description: 'A childhood favourite: macaroni, minced meat and an egg custard baked golden brown.',
     steps: [
-      'Heat the oven to 200 °C (400 °F). Par-cook the macaroni in salted water.',
+      'Heat the oven to 200 °C. Par-cook the macaroni in salted water.',
       'Brown the mince and onion in a pan and season with salt and pepper.',
       'Mix the macaroni and mince in a greased ovenproof dish.',
       'Whisk the milk and eggs and pour them into the dish.',
@@ -66,7 +66,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Cabbage bake with lingonberries',
     description: 'A slightly sweet cabbage bake with minced meat, rice and syrup. Lingonberries on the side.',
     steps: [
-      'Heat the oven to 175 °C (350 °F).',
+      'Heat the oven to 175 °C.',
       'Simmer the pudding rice in 100 ml of water for 10 minutes.',
       'Brown the shredded cabbage in a pan in batches and transfer it to a large bowl.',
       'Brown the mince and onion and mix them with the cabbage, rice, salt and pepper. Add 200 ml of water.',
@@ -82,7 +82,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Liver and rice bake',
     description: 'A traditional liver bake sweetened with raisins and syrup: iron and good old-fashioned flavour.',
     steps: [
-      'Heat the oven to 175 °C (350 °F). Simmer the pudding rice in 100 ml of water for 10 minutes.',
+      'Heat the oven to 175 °C. Simmer the pudding rice in 100 ml of water for 10 minutes.',
       'Add the milk and cook into a loose porridge for about 10 minutes. Let it cool a little.',
       'Mince or finely chop the liver and soften the onion in butter.',
       'Mix the liver, onion, egg, raisins, syrup and salt into the porridge.',
@@ -147,7 +147,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Don’t crowd the pan, so the fish crisp up instead of steaming.',
     ],
     storage: 'Best eaten right away. Keep leftovers in the fridge for 1 day.',
-    reheating: 'Heat in the oven at 200 °C (400 °F) for about 8 minutes so the fish crisp up again.',
+    reheating: 'Heat in the oven at 200 °C for about 8 minutes so the fish crisp up again.',
   },
   'frankfurter-sauce': {
     title: 'Frankfurter sauce with potatoes',
@@ -194,7 +194,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Ham and potato gratin',
     description: 'Potato, ham and onion baked golden in creamy milk.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Cut the potatoes and onion into thin strips.',
       'Layer the potatoes, onion and ham in a greased ovenproof dish.',
       'Mix the cream, milk, salt and pepper and pour into the dish. Sprinkle the grated cheese on top.',
@@ -208,7 +208,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Salmon and potato bake',
     description: 'Potato, salmon and dill in an egg custard: a soft, comforting oven dish.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Slice the potatoes thinly and dice the salmon.',
       'Layer the potatoes, salmon, onion and dill in a greased ovenproof dish.',
       'Whisk the eggs, milk, salt and crushed allspice and pour into the dish.',
@@ -288,7 +288,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Baked sausage with mashed potato',
     description: 'Sausage baked with mustard and onion, with smooth mashed potato.',
     steps: [
-      'Heat the oven to 225 °C (435 °F).',
+      'Heat the oven to 225 °C.',
       'Score the sausage, brush it with mustard and fill the cuts with onion strips.',
       'Bake in a dish for about 25 minutes.',
       'Boil the potatoes and mash them with warm milk and butter.',
@@ -328,7 +328,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
     title: 'Blueberry pie',
     description: 'A tender base, a juicy blueberry filling and a soured cream topping: a summer and autumn treat.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Beat the soft butter with half of the sugar. Add half of the egg, then the flour and baking powder.',
       'Press the dough over the base and sides of a pie dish.',
       'Spread the blueberries over the base.',
@@ -339,7 +339,7 @@ export const EN_RECIPES_06: Readonly<Record<string, RecipeText>> = {
       'Let the pie cool before cutting so the filling sets.',
     ],
     storage: 'Keep in the fridge covered with film for 3 days.',
-    reheating: 'Serve at room temperature or warm in the oven at 150 °C (300 °F) for 10 minutes.',
+    reheating: 'Serve at room temperature or warm in the oven at 150 °C for 10 minutes.',
   },
   'spinach-soup-egg': {
     title: 'Spinach soup with egg',

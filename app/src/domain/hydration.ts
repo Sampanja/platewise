@@ -36,15 +36,15 @@ export const DEFAULT_GLASS_ML = 250;
 export const DEFAULT_GOAL_ML = 1500;
 
 /** Drinks share of the body-weight rule (30 ml/kg total water, ~80 % from drinks). */
-const ML_PER_KG = 24;
+export const ML_PER_KG = 24;
 const BASE_MIN_ML = 1200;
 const BASE_MAX_ML = 2600;
 const SEX_BASE_ML: Record<Sex, number> = { female: 1600, male: 2000 };
 const ACTIVITY_EXTRA_ML: Record<ActivityLevel, number> = { 1: 0, 2: 0, 3: 0, 4: 250, 5: 500 };
 /** Per hour of exercise; capped so a long day out never sets an extreme goal. */
-const EXERCISE_ML_PER_HOUR = 500;
+export const EXERCISE_ML_PER_HOUR = 500;
 const EXERCISE_MAX_EXTRA_ML = 1500;
-const HEAT_EXTRA_ML = 500;
+export const HEAT_EXTRA_ML = 500;
 const PREGNANCY_EXTRA_ML: Record<PregnancyStatus, number> = { none: 0, pregnant: 300, breastfeeding: 700 };
 
 export type HydrationProfile = {

@@ -12,7 +12,7 @@ import { buildShoppingList, type ListEntry, type ShoppingList } from '@/domain/s
 import { parseLocalDate, today, type LocalDate } from '@/lib/dates';
 
 import { priceFactor, priceRegionFor, type PriceRegionCode } from '@/domain/priceRegion';
-import { defaultUnitSystem, type UnitSystem } from '@/domain/units';
+import { defaultUnits, type UnitPrefs } from '@/domain/units';
 import { languageFor, type Language } from '@/i18n/languages';
 import { useDeviceLocale } from '@/lib/deviceLocale';
 
@@ -163,11 +163,15 @@ export function useLanguage(): Language {
   return chosen ?? languageFor(device);
 }
 
-/** Metric or imperial: the chosen system, or the phone's measurement system / region. */
-export function useUnitSystem(): UnitSystem {
-  const chosen = useProfileStore((s) => s.unitSystem);
+/**
+ * The user's display units. Before the units screen of onboarding they are the
+ * phone's suggestion; after it always the user's own choice. The object is
+ * stable while nothing changes (the store keeps the same reference).
+ */
+export function useUnits(): UnitPrefs {
+  const chosen = useProfileStore((s) => s.units);
   const { measurementSystem, regionCode } = useDeviceLocale();
-  return chosen ?? defaultUnitSystem(measurementSystem, regionCode);
+  return useMemo(() => chosen ?? defaultUnits(measurementSystem, regionCode), [chosen, measurementSystem, regionCode]);
 }
 
 /** Price estimate per serving in the user's price region, without their pantry staples. */

@@ -59,7 +59,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Pulled pork and coleslaw in tortillas',
     description: 'Slow-cooked pulled pork, a smoky sauce and a fresh cabbage slaw.',
     steps: [
-      'Heat the oven to 150 °C (300 °F). Rub the salt and paprika into the meat.',
+      'Heat the oven to 150 °C. Rub the salt and paprika into the meat.',
       'Cook the meat in a covered casserole dish with 100 ml of water for about 3½ hours.',
       'Pull the meat apart with forks and mix in the tomato purée, syrup and half of the vinegar.',
       'Shred the cabbage and carrot and season with the rest of the vinegar and a pinch of salt.',
@@ -86,7 +86,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Mince and potato bake',
     description: 'Potato slices, tomato mince and a cheese crust: a weekday bake for the whole family.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Brown the mince and onion and add the chopped tomatoes, oregano and salt.',
       'Slice the potatoes thinly.',
       'Layer the potatoes and mince sauce in an ovenproof dish, finishing with potato.',
@@ -126,7 +126,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Burger patty with sweet potato fries',
     description: 'A juicy beef patty, cheddar, crisp vegetables and oven-baked sweet potato fries.',
     steps: [
-      'Heat the oven to 225 °C (435 °F). Cut the sweet potato into sticks, toss with half of the oil and the salt and roast for 25 minutes.',
+      'Heat the oven to 225 °C. Cut the sweet potato into sticks, toss with half of the oil and the salt and roast for 25 minutes.',
       'Shape the mince into patties and season with salt.',
       'Fry the patties in a hot pan for 3–4 minutes per side and lay the cheddar on top.',
       'Serve with lettuce, tomato, red onion, pickled cucumber and the fries.',
@@ -191,7 +191,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Minced meat puff pastry pie',
     description: 'A crisp puff pastry pie filled with minced meat, onion and cream cheese.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and thaw the puff pastry sheets.',
+      'Heat the oven to 200 °C and thaw the puff pastry sheets.',
       'Brown the mince and onion and season. Stir in the cream cheese and let it cool.',
       'Line the base of the dish with half of the sheets, add the filling and cover with the rest.',
       'Brush the top with beaten egg and bake for about 30 minutes.',
@@ -204,7 +204,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Moussaka',
     description: 'A Greek bake: aubergine, cinnamon-spiced mince sauce and a fluffy cheese sauce.',
     steps: [
-      'Heat the oven to 200 °C (400 °F). Slice the aubergine, brush with oil and roast on a tray for 15 minutes.',
+      'Heat the oven to 200 °C. Slice the aubergine, brush with oil and roast on a tray for 15 minutes.',
       'Brown the mince and onion, add the chopped tomatoes, cinnamon and salt and simmer for 15 minutes.',
       'Melt the butter, add the flour and whisk in the milk. Cook into a thick sauce.',
       'Layer the aubergine and mince in an ovenproof dish and pour the sauce over. Sprinkle with cheese.',
@@ -231,7 +231,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Beef sirloin with chimichurri',
     description: 'Pan-fried beef sirloin, a fresh parsley and garlic sauce and roasted root vegetables.',
     steps: [
-      'Heat the oven to 220 °C (425 °F). Cut the root vegetables into wedges and roast them in half of the oil for 25 minutes.',
+      'Heat the oven to 220 °C. Cut the root vegetables into wedges and roast them in half of the oil for 25 minutes.',
       'Chop the parsley and garlic and mix them with the rest of the oil, the vinegar, chilli and salt.',
       'Fry the steak in a hot pan for 3–4 minutes per side and let it rest for 5 minutes.',
       'Slice the steak and serve with the sauce and vegetables.',
@@ -270,7 +270,7 @@ export const EN_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Greek beef patties with tzatziki',
     description: 'Oregano-seasoned patties, roast potatoes and a cooling tzatziki.',
     steps: [
-      'Heat the oven to 225 °C (435 °F). Cut the potatoes into wedges, toss with oil and salt and roast for 30 minutes.',
+      'Heat the oven to 225 °C. Cut the potatoes into wedges, toss with oil and salt and roast for 30 minutes.',
       'Mix the mince, grated onion, oregano, egg and salt and shape into patties.',
       'Fry the patties in a pan or bake them with the potatoes for 15 minutes.',
       'Mix the yogurt, grated cucumber and garlic into a tzatziki.',

@@ -122,7 +122,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnskyckling med rostade grönsaker',
     description: 'Paprikakryddad kyckling, ugnspotatis och vitlöksyoghurt.',
     steps: [
-      'Sätt ugnen på 225 grader.',
+      'Sätt ugnen på 225 °C.',
       'Dela potatis och grönsaker i klyftor på en plåt, ringla över olivolja och salta.',
       'Gnid in kycklingen med paprikapulver och salt. Lägg den på plåten efter 15 minuter.',
       'Stek ytterligare 20 minuter tills kycklingen är genomstekt.',
@@ -130,7 +130,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'Skär grönsakerna i lika stora bitar, så blir de klara samtidigt.',
-      'Kycklingen är klar när innertemperaturen är 75 grader.',
+      'Kycklingen är klar när innertemperaturen är 75 °C.',
     ],
   },
   'beef-ragu': {
@@ -182,7 +182,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Bryn köttfärs och lök. Tillsätt krossade tomater och oregano och låt puttra i 10 minuter.',
       'Smält smöret, tillsätt mjölet och vispa ner mjölken. Koka till en tjock vit sås.',
       'Varva köttfärssås, plattor och vit sås i en form.',
-      'Strö osten över och grädda i 200 grader i 40 minuter.',
+      'Strö osten över och grädda i 200 °C i 40 minuter.',
     ],
     tips: [
       'Låt lasagnen vila i 10 minuter innan du skär den, så håller bitarna ihop.',
@@ -210,7 +210,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     description: 'Hemlagade köttbullar i ugn, smörigt mos och rårörda lingon.',
     steps: [
       'Låt ströbrödet svälla i en skvätt mjölk. Blanda i köttfärs, ägg, finhackad lök och kryddor.',
-      'Rulla bullar på en plåt och grädda i 225 grader i 15–20 minuter.',
+      'Rulla bullar på en plåt och grädda i 225 °C i 15–20 minuter.',
       'Koka den skalade potatisen mjuk och mosa den med resten av mjölken och smöret.',
       'Servera med rårörda lingon.',
     ],
@@ -260,7 +260,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Stek den panerade kycklingen i ordentligt het olja, så förblir ytan krispig.',
       'Currysåsen kan göras dagen innan.',
     ],
-    reheating: 'Värm såsen i en kastrull och kycklingen i ugnen på 200 grader i cirka 10 minuter, så förblir panaden krispig.',
+    reheating: 'Värm såsen i en kastrull och kycklingen i ugnen på 200 °C i cirka 10 minuter, så förblir panaden krispig.',
   },
   'pad-thai': {
     title: 'Pad thai med kyckling',
@@ -280,7 +280,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsbakade enchiladas med kyckling',
     description: 'Tortillor, kyckling och svarta bönor under salsa och ost.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Stek kyckling och lök i olja. Tillsätt tacokrydda, svarta bönor och en skvätt vatten.',
       'Fyll tortillorna och rulla ihop dem i en form.',
       'Häll salsa och krossade tomater över och strö över osten. Grädda i 20 minuter och servera med gräddfil.',
@@ -308,7 +308,7 @@ export const SV_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Kyckling- och svampgryta i ugn',
     description: 'Kycklinglårfilé, svamp och rotfrukter i gräddfilssås.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Bryn kyckling och svamp i olja.',
       'Dela potatis och morötter i klyftor i en form. Tillsätt kyckling, svamp, lök och 2 dl buljong gjord på buljongtärningen.',
       'Låt bli klart under lock i 35 minuter. Rör ner gräddfil och persilja.',

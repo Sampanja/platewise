@@ -90,7 +90,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
       'Slice the onions and soften them in butter over low heat for about 35 minutes until they caramelise.',
       'Add 700 ml of water and the stock concentrate and simmer for 10 minutes.',
       'Pour the soup into ovenproof bowls and top with a slice of baguette and the cheese.',
-      'Grill on the top shelf of the oven at 250 °C (480 °F) until the cheese browns.',
+      'Grill on the top shelf of the oven at 250 °C until the cheese browns.',
     ],
     tips: [
       'Patiently softening the onions is the secret of the soup.',
@@ -101,7 +101,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     description: 'A French tart with a short crust, bacon and a creamy cheese filling.',
     steps: [
       'Rub the flour and cold butter into crumbs, add a tablespoon of cold water and press into a tart tin. Chill for 15 minutes.',
-      'Heat the oven to 200 °C (400 °F) and blind-bake the base for 10 minutes.',
+      'Heat the oven to 200 °C and blind-bake the base for 10 minutes.',
       'Fry the bacon and onion and spread them over the base.',
       'Whisk the eggs, cream, cheese and salt and pour onto the base.',
       'Bake for about 30 minutes until the filling has set.',
@@ -150,7 +150,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Ham and egg muffins',
     description: 'Oven-baked egg muffins with ham, pepper and spinach. Breakfast ready for the week.',
     steps: [
-      'Heat the oven to 180 °C (350 °F) and grease a muffin tin.',
+      'Heat the oven to 180 °C and grease a muffin tin.',
       'Divide the chopped ham, pepper and spinach between the cups.',
       'Whisk the eggs and salt and pour into the cups. Sprinkle the cheese on top.',
       'Bake for about 20 minutes until the eggs have set.',
@@ -164,7 +164,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Baked oatmeal with apple and cinnamon',
     description: 'Oven-baked oat porridge with apple, raisins and cinnamon.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Mix the oats, diced apple, raisins, cinnamon and salt in an ovenproof dish.',
       'Pour the milk over and stir.',
       'Bake for about 30 minutes until the top is golden brown.',
@@ -190,7 +190,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Fava bean patties with roast potatoes',
     description: 'Cumin-spiced vegan fava bean patties and crisp roast potatoes.',
     steps: [
-      'Heat the oven to 225 °C (435 °F). Cut the potatoes into wedges, toss with half of the oil and the salt and roast for 30 minutes.',
+      'Heat the oven to 225 °C. Cut the potatoes into wedges, toss with half of the oil and the salt and roast for 30 minutes.',
       'Cook the fava beans for 3 minutes and drain.',
       'Blitz the beans, onion, potato starch, cumin and salt into a coarse mixture.',
       'Shape into patties and fry them in the rest of the oil until golden on both sides.',
@@ -203,7 +203,7 @@ export const EN_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Chicken and potato gratin',
     description: 'Potato, chicken and onion in a creamy sauce under a cheese crust.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Cut the potatoes and onion into thin strips.',
       'Layer the potatoes, onion and chicken in an ovenproof dish.',
       'Pour over the cream, milk and seasoning. Sprinkle with the cheese and bake for about an hour.',

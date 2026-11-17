@@ -6,7 +6,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Oven-baked salmon with lemon potatoes',
     description: 'Salmon and lemony potato wedges roasted on the same tray, with dill.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Cut the potatoes into wedges and toss them with the oil, salt and grated lemon zest. Roast on a tray for 20 minutes.',
       'Add the salmon among the potatoes, season with salt and pepper and bake for another 12–15 minutes.',
       'Squeeze over the lemon juice and sprinkle with dill.',
@@ -34,7 +34,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Saithe in tomato sauce with rice',
     description: 'Oven-baked saithe in a tomato and olive sauce with jasmine rice.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and cook the rice.',
+      'Heat the oven to 200 °C and cook the rice.',
       'Soften the onion in oil and add the chopped tomatoes, olives and oregano. Simmer for 5 minutes.',
       'Put the fish pieces in an ovenproof dish, season with salt and pour the sauce over.',
       'Bake for 15–20 minutes and serve with the rice.',
@@ -122,7 +122,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
       'Serve with the rice and cucumber slices.',
     ],
     tips: [
-      'You can also bake the balls in the oven at 200 °C (400 °F) for 15 minutes.',
+      'You can also bake the balls in the oven at 200 °C for 15 minutes.',
     ],
   },
   'mediterranean-fish-soup': {
@@ -157,7 +157,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Salmon, sweet potato and broccoli traybake',
     description: 'A one-tray dinner: paprika sweet potato, broccoli and salmon.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Dice the sweet potato, toss it with half of the oil, the paprika and salt and roast for 15 minutes.',
       'Add the broccoli and salmon to the tray, drizzle with the rest of the oil and season.',
       'Bake for another 12–15 minutes and squeeze over some lemon.',
@@ -214,7 +214,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Oven-baked Baltic herring rolls',
     description: 'Herring rolls filled with dill in a creamy sauce, with mashed potato.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Season the herring fillets with salt, sprinkle with dill and roll them up skin side out.',
       'Put the rolls in an ovenproof dish and pour over the cream and lemon juice.',
       'Bake for 20–25 minutes.',
@@ -255,7 +255,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Trout in foil with new potatoes',
     description: 'Rainbow trout cooked in a foil parcel with butter, dill and lemon, and green beans.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and boil the potatoes.',
+      'Heat the oven to 200 °C and boil the potatoes.',
       'Put the fish on foil, season with salt and add the butter, dill and lemon slices.',
       'Seal the parcel tightly and bake for 15–20 minutes.',
       'Cook the beans for 4 minutes and serve with the fish and potatoes.',
@@ -277,7 +277,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     tips: [
       'Pat thawed fish dry with kitchen paper so the coating sticks.',
     ],
-    reheating: 'Heat in the oven at 200 °C (400 °F) for about 10 minutes so the coating crisps up.',
+    reheating: 'Heat in the oven at 200 °C for about 10 minutes so the coating crisps up.',
   },
   'salmon-sesame-noodles': {
     title: 'Salmon noodles with broccoli',
@@ -324,7 +324,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     steps: [
       'Dissolve the yeast in 50 ml of lukewarm water. Add the salt, oil and flour and knead until smooth.',
       'Let the dough rise for 30 minutes.',
-      'Heat the oven to 250 °C (480 °F). Roll the dough into a thin base on a baking tray.',
+      'Heat the oven to 250 °C. Roll the dough into a thin base on a baking tray.',
       'Spread the chopped tomatoes and oregano on the base. Add the tuna, red onion and mozzarella.',
       'Bake for 10–12 minutes until the base is crisp.',
     ],
@@ -336,7 +336,7 @@ export const EN_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Fish and broccoli gratin',
     description: 'Saithe and broccoli in a creamy sauce under a cheese crust, with potatoes.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and boil the potatoes.',
+      'Heat the oven to 200 °C and boil the potatoes.',
       'Put the fish pieces and broccoli florets in a greased ovenproof dish. Season with salt and pepper.',
       'Pour the cream over and sprinkle with the grated cheese.',
       'Bake for 25–30 minutes and serve with the potatoes.',

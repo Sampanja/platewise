@@ -9,7 +9,9 @@ import { useDiaryStore } from '@/data/stores/diary';
 import type { DiaryMeal } from '@/data/types';
 import { DIARY_MEALS } from '@/domain/diary';
 import { parseAmount } from '@/domain/nutrition';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { EnergyField } from '@/features/shared/EnergyField';
+import { formatEnergy } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
@@ -48,7 +50,7 @@ export default function QuickAddScreen() {
       estimate: false,
     });
     haptics.success();
-    showToast(format(t.added, { value: formatInteger(kcal) }), {
+    showToast(format(t.added, { value: formatEnergy(kcal) }), {
       label: strings.common.undo,
       onPress: () => removeEntry(entry.id),
     });
@@ -67,25 +69,13 @@ export default function QuickAddScreen() {
             <Text variant="overline" color="textSubtle">
               {t.kcal}
             </Text>
-            <TextField
-              large
-              value={kcal > 0 ? String(kcal) : ''}
-              onChangeText={(text) => setKcal(Math.min(MAX_KCAL, Number(text.replace(/\D/g, ''))))}
-              keyboardType="number-pad"
-              maxLength={4}
-              accessibilityLabel={t.kcal}
-              trailing={
-                <Text variant="title" color="textMuted">
-                  {strings.common.kcalUnit}
-                </Text>
-              }
-            />
+            <EnergyField large value={kcal} onChange={setKcal} max={MAX_KCAL} accessibilityLabel={t.kcal} />
             <View style={styles.chips}>
               {PRESETS.map((value) => (
                 <SelectChip
                   key={value}
                   role="radio"
-                  label={format(strings.common.kcal, { value })}
+                  label={formatEnergy(value)}
                   selected={kcal === value}
                   onPress={() => setKcal(value)}
                 />
@@ -147,7 +137,7 @@ export default function QuickAddScreen() {
         </ScrollView>
         <View style={styles.footer}>
           <Button
-            label={format(t.add, { value: formatInteger(kcal) })}
+            label={format(t.add, { value: formatEnergy(kcal) })}
             onPress={add}
             disabled={kcal <= 0}
             haptic="none"

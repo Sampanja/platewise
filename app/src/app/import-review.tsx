@@ -12,6 +12,7 @@ import type { ImportedIngredient } from '@/data/types';
 import { parseAmount } from '@/domain/nutrition';
 import { IngredientPickerSheet } from '@/features/pantry/IngredientPickerSheet';
 import { format, strings } from '@/i18n';
+import { foodInputText, foodUnitLabel, gramsFromInput } from '@/lib/amounts';
 import { showToast } from '@/lib/toast';
 import { CONFIRM_BELOW } from '@/services/recipeImport';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -104,7 +105,7 @@ type RowProps = {
 };
 
 const ReviewRow = memo(function ReviewRow({ row, onChange, onRemove, onPick }: RowProps) {
-  const [text, setText] = useState(row.grams !== null ? String(row.grams) : '');
+  const [text, setText] = useState(row.grams !== null ? foodInputText(row.grams) : '');
   const ingredient = row.ingredientId ? INGREDIENTS_BY_ID[row.ingredientId] : undefined;
   const uncertain = ingredient !== undefined && row.confidence < CONFIRM_BELOW;
   return (
@@ -128,14 +129,14 @@ const ReviewRow = memo(function ReviewRow({ row, onChange, onRemove, onPick }: R
             const clean = value.replace(/[^\d,.]/g, '');
             setText(clean);
             const grams = parseAmount(clean);
-            onChange(row.key, { grams: grams !== undefined && grams > 0 ? Math.round(grams) : null });
+            onChange(row.key, { grams: grams !== undefined && grams > 0 ? gramsFromInput(grams) : null });
           }}
           keyboardType="decimal-pad"
           placeholder={t.noAmount}
           accessibilityLabel={t.gramsLabel}
           trailing={
             <Text variant="caption" color="textSubtle">
-              {strings.common.gUnit}
+              {foodUnitLabel()}
             </Text>
           }
         />

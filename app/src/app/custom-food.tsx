@@ -11,6 +11,16 @@ import type { Food, FoodCategory, FoodSource, Macros } from '@/data/types';
 import { foodIdForBarcode } from '@/domain/openFoodFacts';
 import { energyMismatch, parseAmount } from '@/domain/nutrition';
 import { format, formatInteger, strings } from '@/i18n';
+import {
+  energyFromInput,
+  energyToInput,
+  energyUnitLabel,
+  foodInputText,
+  foodUnitLabel,
+  formatEnergy,
+  formatNutrientGrams,
+  gramsFromInput,
+} from '@/lib/amounts';
 import { newId } from '@/lib/id';
 import { showToast } from '@/lib/toast';
 import { nutritionLabel } from '@/services/nutritionLabel';
@@ -22,18 +32,26 @@ const n = strings.nutrients;
 type Mode = 'own' | 'label' | 'barcode';
 const CATEGORIES: readonly FoodCategory[] = ['meal', 'bread', 'dairy', 'meat', 'produce', 'fruit', 'drink', 'snack', 'fat'];
 type FieldKey = 'kcal' | 'proteinG' | 'carbsG' | 'sugarG' | 'fatG' | 'fiberG' | 'saltG';
-const FIELDS: readonly { key: FieldKey; label: string; unit: string; required?: boolean }[] = [
-  { key: 'kcal', label: n.energy, unit: 'kcal', required: true },
-  { key: 'proteinG', label: n.protein, unit: 'g' },
-  { key: 'carbsG', label: n.carbs, unit: 'g' },
-  { key: 'sugarG', label: n.sugar, unit: 'g' },
-  { key: 'fatG', label: n.fat, unit: 'g' },
-  { key: 'fiberG', label: n.fiber, unit: 'g' },
-  { key: 'saltG', label: n.salt, unit: 'g' },
+const FIELDS: readonly { key: FieldKey; label: string; required?: boolean }[] = [
+  { key: 'kcal', label: n.energy, required: true },
+  { key: 'proteinG', label: n.protein },
+  { key: 'carbsG', label: n.carbs },
+  { key: 'sugarG', label: n.sugar },
+  { key: 'fatG', label: n.fat },
+  { key: 'fiberG', label: n.fiber },
+  { key: 'saltG', label: n.salt },
 ];
+
+/** Energy is typed in the user's unit (kcal or kJ, both are on labels); nutrients in grams. */
+const fieldUnit = (key: FieldKey) => (key === 'kcal' ? energyUnitLabel() : strings.unitNames.g);
 
 function toText(value: number | undefined): string {
   return value === undefined ? '' : String(value).replace('.', ',');
+}
+
+/** Energy per 100 g as the text of the energy field, in kcal or kJ. */
+function energyText(kcal: number | undefined): string {
+  return kcal === undefined ? '' : String(energyToInput(kcal));
 }
 
 /**
@@ -60,7 +78,7 @@ export default function CustomFoodScreen() {
   const [brand, setBrand] = useState(existing?.brand ?? params.brand ?? '');
   const [category, setCategory] = useState<FoodCategory>(existing?.category ?? 'meal');
   const [values, setValues] = useState<Record<FieldKey, string>>(() => ({
-    kcal: toText(existing?.per100g.kcal),
+    kcal: energyText(existing?.per100g.kcal),
     proteinG: toText(existing?.per100g.proteinG),
     carbsG: toText(existing?.per100g.carbsG),
     sugarG: toText(existing?.per100g.sugarG),
@@ -68,7 +86,7 @@ export default function CustomFoodScreen() {
     fiberG: toText(existing?.per100g.fiberG),
     saltG: toText(existing?.per100g.saltG),
   }));
-  const [serving, setServing] = useState(toText(existing?.portions[0]?.grams));
+  const [serving, setServing] = useState(existing?.portions[0] ? foodInputText(existing.portions[0].grams) : '');
   const [reading, setReading] = useState(mode === 'label' && Boolean(params.uri) && !existing);
   const [confidence, setConfidence] = useState<number | null>(null);
 
@@ -78,7 +96,7 @@ export default function CustomFoodScreen() {
     void nutritionLabel.read(params.uri).then((label) => {
       if (cancelled) return;
       setValues({
-        kcal: toText(label.per100g.kcal),
+        kcal: energyText(label.per100g.kcal),
         proteinG: toText(label.per100g.proteinG),
         carbsG: toText(label.per100g.carbsG),
         sugarG: toText(label.per100g.sugarG),
@@ -86,7 +104,7 @@ export default function CustomFoodScreen() {
         fiberG: toText(label.per100g.fiberG),
         saltG: toText(label.per100g.saltG),
       });
-      if (label.servingG) setServing(toText(label.servingG));
+      if (label.servingG) setServing(foodInputText(label.servingG));
       setConfidence(label.confidence);
       haptics.success();
       setReading(false);
@@ -96,7 +114,10 @@ export default function CustomFoodScreen() {
     };
   }, [reading, params.uri]);
 
-  const num = (key: FieldKey) => parseAmount(values[key]);
+  const num = (key: FieldKey) => {
+    const value = parseAmount(values[key]);
+    return key === 'kcal' && value !== undefined ? energyFromInput(value) : value;
+  };
   const per100g: Macros = {
     kcal: num('kcal') ?? 0,
     proteinG: num('proteinG') ?? 0,
@@ -109,7 +130,8 @@ export default function CustomFoodScreen() {
   }
   const mismatch = num('kcal') !== undefined ? energyMismatch(per100g) : null;
   const valid = name.trim().length > 0 && num('kcal') !== undefined;
-  const servingG = parseAmount(serving);
+  const servingTyped = parseAmount(serving);
+  const servingG = servingTyped !== undefined ? gramsFromInput(servingTyped) : undefined;
 
   const save = () => {
     if (!valid) return;
@@ -223,20 +245,20 @@ export default function CustomFoodScreen() {
                       value={values[field.key]}
                       onChangeText={(text) => setValues((v) => ({ ...v, [field.key]: text.replace(/[^\d.,]/g, '') }))}
                       keyboardType="decimal-pad"
-                      accessibilityLabel={`${field.label}, ${field.unit} / 100 g`}
+                      accessibilityLabel={format(t.fieldA11y, { label: field.label, unit: fieldUnit(field.key), base: formatNutrientGrams(100) })}
                       placeholder={field.required ? '0' : n.unknown}
                       style={styles.numberField}
                       maxLength={6}
                     />
                     <Text variant="label" color="textSubtle" style={styles.unit}>
-                      {field.unit}
+                      {fieldUnit(field.key)}
                     </Text>
                   </View>
                 ))}
               </Card>
               {mismatch !== null ? (
                 <Text variant="caption" color="textMuted">
-                  {format(t.mismatch, { kcal: formatInteger(mismatch) })}
+                  {format(t.mismatch, { kcal: formatEnergy(mismatch) })}
                 </Text>
               ) : null}
 
@@ -247,6 +269,11 @@ export default function CustomFoodScreen() {
                 placeholder={t.serving}
                 accessibilityLabel={t.serving}
                 maxLength={5}
+                trailing={
+                  <Text variant="label" color="textSubtle">
+                    {foodUnitLabel()}
+                  </Text>
+                }
               />
             </FadeInView>
           )}

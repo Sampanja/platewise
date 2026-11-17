@@ -1,6 +1,16 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { dropHouseholdSize, planWithEaters, profileWithoutStore, waterToEntries, withLanguageSettings, withPriceRegion } from './migrations';
+import { IMPERIAL_UNITS, METRIC_UNITS } from '@/domain/units';
+
+import {
+  dropHouseholdSize,
+  planWithEaters,
+  profileWithoutStore,
+  waterToEntries,
+  withLanguageSettings,
+  withPriceRegion,
+  withUnitPrefs,
+} from './migrations';
 
 describe('dropHouseholdSize', () => {
   it('removes the field and keeps everything else', () => {
@@ -86,22 +96,50 @@ describe('withLanguageSettings', () => {
       onboardingCompleted: true,
       language: 'fi',
       languageChosen: true,
-      unitSystem: null,
     });
   });
 
   it('sends new installs to the language picker', () => {
     expect(withLanguageSettings({ onboardingCompleted: false }, 7)).toMatchObject({ language: null, languageChosen: false });
-    expect(withLanguageSettings({}, 0)).toMatchObject({ language: null, languageChosen: false, unitSystem: null });
+    expect(withLanguageSettings({}, 0)).toMatchObject({ language: null, languageChosen: false });
   });
 
-  it('drops unknown languages and unit systems without crashing', () => {
-    expect(withLanguageSettings({ language: 'xx', unitSystem: 'cubits', languageChosen: true }, 8)).toMatchObject({
-      language: null,
-      unitSystem: null,
-      languageChosen: true,
-    });
-    expect(withLanguageSettings({ language: 'sv', unitSystem: 'imperial' }, 8)).toMatchObject({ language: 'sv', unitSystem: 'imperial' });
+  it('drops unknown languages without crashing', () => {
+    expect(withLanguageSettings({ language: 'xx', languageChosen: true }, 8)).toMatchObject({ language: null, languageChosen: true });
+    expect(withLanguageSettings({ language: 'sv' }, 8)).toMatchObject({ language: 'sv' });
     expect(withLanguageSettings(null, 7)).toBeNull();
+  });
+});
+
+describe('withUnitPrefs', () => {
+  const uk = { ...METRIC_UNITS, weight: 'st' as const, height: 'ftin' as const };
+
+  it('turns the old single setting into separate units', () => {
+    expect(withUnitPrefs({ unitSystem: 'imperial', onboardingCompleted: true }, 9, METRIC_UNITS)).toEqual({
+      onboardingCompleted: true,
+      units: IMPERIAL_UNITS,
+      unitsChosen: true,
+    });
+    expect(withUnitPrefs({ unitSystem: 'metric', onboardingCompleted: true }, 9, IMPERIAL_UNITS)).toMatchObject({ units: METRIC_UNITS });
+  });
+
+  it('keeps the automatic choice of onboarded users as their own setting', () => {
+    expect(withUnitPrefs({ unitSystem: null, onboardingCompleted: true }, 9, uk)).toMatchObject({ units: uk, unitsChosen: true });
+    expect(withUnitPrefs({ onboardingCompleted: true }, 7, IMPERIAL_UNITS)).toMatchObject({ units: IMPERIAL_UNITS });
+  });
+
+  it('sends people in the middle of onboarding to the units screen', () => {
+    expect(withUnitPrefs({ unitSystem: null, onboardingCompleted: false }, 9, uk)).toEqual({
+      onboardingCompleted: false,
+      units: null,
+      unitsChosen: false,
+    });
+  });
+
+  it('keeps valid v10 units and repairs broken ones', () => {
+    const custom = { ...METRIC_UNITS, energy: 'kj' as const };
+    expect(withUnitPrefs({ units: custom, unitsChosen: true }, 10, METRIC_UNITS)).toEqual({ units: custom, unitsChosen: true });
+    expect(withUnitPrefs({ units: { weight: 'cubits' }, onboardingCompleted: true }, 10, uk)).toMatchObject({ units: uk });
+    expect(withUnitPrefs(null, 10, METRIC_UNITS)).toBeNull();
   });
 });

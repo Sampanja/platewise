@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ProgressMeter, Text } from '@/components/ui';
 import type { Macros } from '@/data/types';
 import { format, formatInteger, strings } from '@/i18n';
+import { energyUnitLabel, formatEnergyBare, formatNutrientGrams } from '@/lib/amounts';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -30,16 +31,16 @@ export function MacroBars({ macros }: Props) {
     <View style={styles.wrap}>
       <View style={styles.energy}>
         <Text variant="displayLarge" style={styles.tabular}>
-          {formatInteger(macros.kcal)}
+          {formatEnergyBare(macros.kcal)}
         </Text>
         <Text variant="label" color="textSubtle">
-          {strings.common.kcalUnit} {strings.common.perServing}
+          {energyUnitLabel()} {strings.common.perServing}
         </Text>
       </View>
       <View style={styles.rows}>
         {rows.map((row) => {
           const share = energy > 0 ? (row.grams * KCAL_PER_G[row.key]) / energy : 0;
-          const grams = format(strings.common.grams, { value: formatInteger(row.grams) });
+          const grams = formatNutrientGrams(row.grams);
           return (
             <View key={row.key} style={styles.row}>
               <View style={styles.labels}>

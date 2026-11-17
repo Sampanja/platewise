@@ -103,7 +103,7 @@ export const svInsights: InsightStrings = {
     pantryUsed: 'Använt från förrådet',
     pantryUsedValue: '{count} råvaror',
     energyTitle: 'Energi per dag',
-    energyAvg: 'I snitt {value} kcal loggade dagar',
+    energyAvg: 'I snitt {value} loggade dagar',
     macrosTitle: 'Makron i snitt',
     macroValue: '{value} g',
     macroGoal: '{value} / {goal} g',
@@ -141,7 +141,6 @@ export const svInsights: InsightStrings = {
   },
   widget: {
     title: 'Idag',
-    kcal: 'kcal',
     eaten: 'ätit',
     protein: 'P',
     carbs: 'K',

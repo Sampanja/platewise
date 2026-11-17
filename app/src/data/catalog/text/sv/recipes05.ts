@@ -6,7 +6,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Krispiga rostade kikärter',
     description: 'Ugnsrostade kikärter kryddade med paprika: ett krispigt och mättande mellanmål.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Skölj och låt kikärterna rinna av och torka dem noga med hushållspapper.',
       'Blanda med olja, paprikapulver och salt och bred ut på en plåt.',
       'Rosta i 25–30 minuter och skaka plåten då och då tills kikärterna är krispiga.',
@@ -15,7 +15,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
       'Ju torrare kikärterna är, desto krispigare blir de.',
     ],
     storage: 'Förvara i en öppen skål i rumstemperatur i 1–2 dagar; under lock mjuknar de.',
-    reheating: 'Gör dem krispiga igen i ugnen på 200 grader i 5 minuter vid behov.',
+    reheating: 'Gör dem krispiga igen i ugnen på 200 °C i 5 minuter vid behov.',
   },
   'oat-peanut-energy-balls': {
     title: 'Havrebollar med jordnötssmör',
@@ -87,7 +87,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Guacamole med ugnsrostade majschips',
     description: 'Guacamole smaksatt med lime och koriander och hemrostade majstortillachips.',
     steps: [
-      'Sätt ugnen på 200 grader. Skär tortillorna i trianglar, pensla med olja och strö över salt.',
+      'Sätt ugnen på 200 °C. Skär tortillorna i trianglar, pensla med olja och strö över salt.',
       'Rosta på en plåt i 8–10 minuter tills chipsen är krispiga.',
       'Mosa avokadon och blanda i tomat, finhackad rödlök, limesaft och koriander.',
     ],
@@ -121,7 +121,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Tortillapizza med skinka',
     description: 'Krispig tortillabotten, tomatsås, mozzarella och skinka: pizza på tio minuter.',
     steps: [
-      'Sätt ugnen på 225 grader.',
+      'Sätt ugnen på 225 °C.',
       'Bred krossade tomater på tortillan och krydda med oregano.',
       'Lägg på skinka och riven mozzarella.',
       'Grädda mitt i ugnen i 6–8 minuter tills kanterna är krispiga.',
@@ -134,7 +134,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Blåbärsmuffins',
     description: 'Saftiga blåbärsmuffins till kaffet eller i matlådan.',
     steps: [
-      'Sätt ugnen på 200 grader och ställ pappersformar i en muffinsplåt.',
+      'Sätt ugnen på 200 °C och ställ pappersformar i en muffinsplåt.',
       'Vispa ägg och socker pösigt. Tillsätt smält smör och mjölk.',
       'Blanda mjöl och bakpulver och vänd försiktigt ner det i smeten.',
       'Tillsätt blåbären och fördela smeten i formarna.',
@@ -150,7 +150,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Bananbröd',
     description: 'Ett kanelkryddat bananbröd som blir till av övermogna bananer.',
     steps: [
-      'Sätt ugnen på 175 grader och smörj en brödform.',
+      'Sätt ugnen på 175 °C och smörj en brödform.',
       'Mosa bananerna och vispa ner ägg, socker och olja.',
       'Blanda mjöl, bakpulver och kanel och rör ner i smeten.',
       'Häll i formen och grädda i cirka 50 minuter.',
@@ -213,7 +213,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Kryddig blandning av nötter och frön',
     description: 'Rostad mandel, cashewnötter och frön med paprika och salt.',
     steps: [
-      'Sätt ugnen på 175 grader.',
+      'Sätt ugnen på 175 °C.',
       'Blanda mandel, cashewnötter, frön, olja och kryddor.',
       'Rosta på en plåt i 10–12 minuter under omrörning då och då och låt svalna.',
     ],
@@ -257,7 +257,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Havrekakor',
     description: 'Krispiga och smöriga havrekakor som är lätta att baka en hel plåt av.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Smält smöret och rör ner socker, havregryn, mjöl och bakpulver.',
       'Tillsätt ägget och rör till en jämn smet.',
       'Klicka ut små klickar med en tesked på bakplåtspapper med gott om mellanrum.',
@@ -273,7 +273,7 @@ export const SV_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsrostad blomkål med yoghurtdipp',
     description: 'Blomkål rostad med curry och en sval yoghurtdipp.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Dela blomkålen i buketter och blanda med olja, curry och salt.',
       'Rosta på en plåt i 20–25 minuter tills kanterna får färg.',
       'Blanda yoghurt och citronsaft till en dipp.',

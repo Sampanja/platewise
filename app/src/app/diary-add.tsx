@@ -26,7 +26,8 @@ import { useMyMealsStore } from '@/data/stores/myMeals';
 import type { DiaryMeal, Food, OwnRecipe, Recipe, SavedMeal } from '@/data/types';
 import { ownRecipeId, ownRecipePerServing, savedMealEntries, savedMealMacros } from '@/domain/diary';
 import { searchFoods } from '@/features/diary/searchFoods';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatEnergy, formatNutrientGrams } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -299,13 +300,13 @@ export default function DiaryAddScreen() {
                   <PressableScale
                     onPress={() => router.push({ pathname: '/food/[id]', params: { id: item.food.id, meal, date } })}
                     accessibilityRole="button"
-                    accessibilityLabel={`${item.food.name}, ${format(t.per100, { kcal: formatInteger(item.food.per100g.kcal) })}`}
+                    accessibilityLabel={`${item.food.name}, ${format(t.per100, { kcal: formatEnergy(item.food.per100g.kcal), base: formatNutrientGrams(100) })}`}
                     style={styles.row}
                   >
                     <View style={styles.flex}>
                       <Text variant="body">{item.food.brand ? `${item.food.name} · ${item.food.brand}` : item.food.name}</Text>
                       <Text variant="caption" color="textSubtle">
-                        {format(t.per100, { kcal: formatInteger(item.food.per100g.kcal) })}
+                        {format(t.per100, { kcal: formatEnergy(item.food.per100g.kcal), base: formatNutrientGrams(100) })}
                       </Text>
                     </View>
                     {custom && item.food.source ? <Chip label={strings.source[item.food.source]} /> : null}
@@ -321,7 +322,7 @@ export default function DiaryAddScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`${item.meal.name}, ${format(strings.mine.mealItems, {
                       count: item.meal.items.length,
-                      kcal: formatInteger(kcal),
+                      kcal: formatEnergy(kcal),
                     })}`}
                     style={styles.row}
                   >
@@ -329,7 +330,7 @@ export default function DiaryAddScreen() {
                     <View style={styles.flex}>
                       <Text variant="body">{item.meal.name}</Text>
                       <Text variant="caption" color="textSubtle">
-                        {format(strings.mine.mealItems, { count: item.meal.items.length, kcal: formatInteger(kcal) })}
+                        {format(strings.mine.mealItems, { count: item.meal.items.length, kcal: formatEnergy(kcal) })}
                       </Text>
                     </View>
                     <Icon name="plus" size={20} color="accentText" />
@@ -351,7 +352,7 @@ export default function DiaryAddScreen() {
                         <Text variant="body">{item.recipe.name}</Text>
                         <Text variant="caption" color="textSubtle">
                           {format(strings.mine.recipeServing, {
-                            kcal: formatInteger(perServing.kcal),
+                            kcal: formatEnergy(perServing.kcal),
                             servings: item.recipe.servings,
                           })}
                         </Text>
@@ -382,7 +383,7 @@ export default function DiaryAddScreen() {
                         {item.recipe.title}
                       </Text>
                       <Text variant="caption" color="textSubtle">
-                        {`${format(strings.common.kcal, { value: formatInteger(item.recipe.perServing.kcal) })} ${strings.common.perServing}`}
+                        {`${formatEnergy(item.recipe.perServing.kcal)} ${strings.common.perServing}`}
                       </Text>
                     </View>
                     <Icon name="plus" size={20} color="accentText" />

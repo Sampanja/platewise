@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Card, PressableScale, Text } from '@/components/ui';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatEnergy } from '@/lib/amounts';
 import { weekdayShort, type LocalDate } from '@/lib/dates';
 import { colors, radii, spacing, themedStyles } from '@/theme';
 
@@ -36,7 +37,7 @@ export function WeekChart({ days, selected, goal, onSelect }: Props) {
               onPress={() => onSelect(day.date)}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={format(strings.diary.weekA11y, { day: weekday, value: formatInteger(day.kcal) })}
+              accessibilityLabel={format(strings.diary.weekA11y, { day: weekday, value: formatEnergy(day.kcal) })}
               style={styles.column}
             >
               <View style={styles.barArea}>

@@ -59,7 +59,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Pulled pork och coleslaw i tortilla',
     description: 'Långsamt ugnsbakad pulled pork, en rökig sås och fräsch kålsallad.',
     steps: [
-      'Sätt ugnen på 150 grader. Gnid in köttet med salt och paprikapulver.',
+      'Sätt ugnen på 150 °C. Gnid in köttet med salt och paprikapulver.',
       'Tillaga köttet i en gryta med lock med 1 dl vatten i cirka 3,5 timmar.',
       'Dra isär köttet med gafflar och blanda i tomatpuré, sirap och hälften av vinägern.',
       'Strimla kål och morot och smaka av med resten av vinägern och en nypa salt.',
@@ -86,7 +86,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Köttfärs- och potatisform',
     description: 'Potatisskivor, tomatig köttfärs och osttäcke: en vardagsform för hela familjen.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Bryn köttfärs och lök och tillsätt krossade tomater, oregano och salt.',
       'Skiva potatisen tunt.',
       'Varva potatis och köttfärssås i en form, med potatis överst.',
@@ -126,7 +126,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Hamburgare med sötpotatispommes',
     description: 'En saftig nötköttsbiff, cheddar, krispiga grönsaker och ugnsrostade sötpotatispommes.',
     steps: [
-      'Sätt ugnen på 225 grader. Skär sötpotatisen i stavar, blanda med hälften av oljan och salt och rosta i 25 minuter.',
+      'Sätt ugnen på 225 °C. Skär sötpotatisen i stavar, blanda med hälften av oljan och salt och rosta i 25 minuter.',
       'Forma köttfärsen till biffar och salta.',
       'Stek biffarna i en het panna i 3–4 minuter per sida och lägg cheddarn ovanpå.',
       'Servera med sallad, tomat, rödlök, saltgurka och pommes.',
@@ -191,7 +191,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Köttfärspaj med smördeg',
     description: 'En krispig smördegspaj fylld med köttfärs, lök och färskost.',
     steps: [
-      'Sätt ugnen på 200 grader och tina smördegsplattorna.',
+      'Sätt ugnen på 200 °C och tina smördegsplattorna.',
       'Bryn köttfärs och lök och krydda. Rör ner färskosten och låt svalna.',
       'Lägg hälften av plattorna i botten av formen, fördela fyllningen och täck med resten.',
       'Pensla ytan med uppvispat ägg och grädda i cirka 30 minuter.',
@@ -204,7 +204,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Moussaka',
     description: 'En grekisk ugnsrätt: aubergine, kanelkryddad köttfärssås och en luftig ostsås.',
     steps: [
-      'Sätt ugnen på 200 grader. Skiva auberginen, pensla med olja och rosta på en plåt i 15 minuter.',
+      'Sätt ugnen på 200 °C. Skiva auberginen, pensla med olja och rosta på en plåt i 15 minuter.',
       'Bryn köttfärs och lök, tillsätt krossade tomater, kanel och salt och låt puttra i 15 minuter.',
       'Smält smöret, tillsätt mjölet och vispa ner mjölken. Koka till en tjock sås.',
       'Varva aubergine och köttfärs i en form och häll såsen ovanpå. Strö över osten.',
@@ -231,7 +231,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Ytterfilé av nöt med chimichurri',
     description: 'Stekt ytterfilé av nöt, en fräsch sås på persilja och vitlök och rostade rotfrukter.',
     steps: [
-      'Sätt ugnen på 220 grader. Dela rotfrukterna i klyftor och rosta dem i hälften av oljan i 25 minuter.',
+      'Sätt ugnen på 220 °C. Dela rotfrukterna i klyftor och rosta dem i hälften av oljan i 25 minuter.',
       'Hacka persilja och vitlök och blanda med resten av oljan, vinägern, chilin och salt.',
       'Stek biffen i en het panna i 3–4 minuter per sida och låt den vila i 5 minuter.',
       'Skiva biffen och servera med såsen och rotfrukterna.',
@@ -270,7 +270,7 @@ export const SV_RECIPES_09: Readonly<Record<string, RecipeText>> = {
     title: 'Grekiska köttfärsbiffar med tzatziki',
     description: 'Oreganokryddade biffar, ugnspotatis och en svalkande tzatziki.',
     steps: [
-      'Sätt ugnen på 225 grader. Dela potatisen i klyftor, blanda med olja och salt och rosta i 30 minuter.',
+      'Sätt ugnen på 225 °C. Dela potatisen i klyftor, blanda med olja och salt och rosta i 30 minuter.',
       'Blanda köttfärs, riven lök, oregano, ägg och salt och forma till biffar.',
       'Stek biffarna i en panna eller tillaga dem med potatisen i ugnen i 15 minuter.',
       'Blanda yoghurt, riven gurka och vitlök till tzatziki.',

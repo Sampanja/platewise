@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, Icon, PressableScale, ProgressMeter, Ring, Text } from '@/components/ui';
 import type { DayNutrition } from '@/data/types';
 import { format, formatInteger, strings } from '@/i18n';
+import { energyUnitLabel, formatEnergy, formatEnergyBare, formatNutrientGrams } from '@/lib/amounts';
 import { spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -27,8 +28,8 @@ export function NutritionCard({ nutrition, hasGoal, hideCalories = false, entryC
       accessibilityRole="button"
       accessibilityLabel={`${t.nutritionTitle}. ${t.nutritionOpen}`}
       accessibilityHint={format(t.kcalA11y, {
-        value: formatInteger(eaten.kcal),
-        goal: formatInteger(goals.kcal),
+        value: formatEnergy(eaten.kcal),
+        goal: formatEnergy(goals.kcal),
       })}
     >
       <Card style={styles.card}>
@@ -53,15 +54,15 @@ export function NutritionCard({ nutrition, hasGoal, hideCalories = false, entryC
           <Ring
             value={hasGoal ? eaten.kcal / goals.kcal : 0}
             accessibilityLabel={format(t.kcalA11y, {
-              value: formatInteger(eaten.kcal),
-              goal: formatInteger(goals.kcal),
+              value: formatEnergy(eaten.kcal),
+              goal: formatEnergy(goals.kcal),
             })}
           >
             <Text variant="title" style={styles.tabular}>
-              {formatInteger(eaten.kcal)}
+              {formatEnergyBare(eaten.kcal)}
             </Text>
             <Text variant="caption" color="textSubtle" maxFontSizeMultiplier={1.3}>
-              {hasGoal ? format(t.kcalOfGoal, { goal: formatInteger(goals.kcal) }) : strings.common.kcalUnit}
+              {hasGoal ? format(t.kcalOfGoal, { goal: formatEnergy(goals.kcal) }) : energyUnitLabel()}
             </Text>
           </Ring>
 
@@ -86,7 +87,7 @@ export function NutritionCard({ nutrition, hasGoal, hideCalories = false, entryC
 function MacroRow({ label, value, goal }: { label: string; value: number; goal: number | null }) {
   const text =
     goal === null
-      ? format(strings.common.grams, { value: formatInteger(value) })
+      ? formatNutrientGrams(value)
       : format(strings.home.macroOfGoal, { value: formatInteger(value), goal: formatInteger(goal) });
   return (
     <View style={styles.macroRow}>

@@ -15,7 +15,8 @@ import type { DiaryMeal, Food } from '@/data/types';
 import { entryMacros } from '@/domain/diary';
 import { AmountEditor } from '@/features/diary/AmountEditor';
 import { NutrientTable } from '@/features/diary/NutrientTable';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatEnergy, formatNutrientGrams } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, fixed, radii, spacing, themedStyles } from '@/theme';
@@ -130,7 +131,7 @@ export default function FoodScreen() {
           <View style={styles.chips}>
             <Chip tone={custom ? 'accent' : 'neutral'} label={strings.source[source]} />
             <Text variant="caption" color="textSubtle">
-              {format(strings.diaryAdd.per100, { kcal: formatInteger(food.per100g.kcal) })}
+              {format(strings.diaryAdd.per100, { kcal: formatEnergy(food.per100g.kcal), base: formatNutrientGrams(100) })}
             </Text>
           </View>
         </View>

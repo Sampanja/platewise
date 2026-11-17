@@ -36,7 +36,9 @@ export type WidgetSnapshot = {
   character: CharacterId;
   labels: {
     title: string;
+    /** Energy unit: kcal or kJ. */
     kcal: string;
+    gram: string;
     eaten: string;
     protein: string;
     carbs: string;

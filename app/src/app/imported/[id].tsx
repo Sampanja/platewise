@@ -19,7 +19,7 @@ import { RecipeNutrients } from '@/features/nutrients/RecipeNutrients';
 import { RecipeQualityBadge } from '@/features/quality/RecipeQualityBadge';
 import { MacroBars } from '@/features/recipe/MacroBars';
 import { format, formatMoney, formatServings, strings } from '@/i18n';
-import { formatAmount } from '@/lib/amounts';
+import { formatAmount, localizeRecipeText } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { sourceHost } from '@/services/recipeImport';
@@ -187,7 +187,7 @@ export default function ImportedRecipeScreen() {
                   </Text>
                 </View>
                 <Text variant="body" style={styles.flex}>
-                  {step}
+                  {localizeRecipeText(step)}
                 </Text>
               </View>
             ))}

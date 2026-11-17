@@ -98,7 +98,7 @@ export const EN_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Oven pancake with strawberries',
     description: 'A puffed-up oven pancake served with strawberries. A Finnish weekend treat.',
     steps: [
-      'Heat the oven to 225 °C (435 °F). Melt the butter on a baking tray lined with baking paper.',
+      'Heat the oven to 225 °C. Melt the butter on a baking tray lined with baking paper.',
       'Whisk the flour, sugar, salt and half of the milk until smooth.',
       'Add the rest of the milk and the eggs and pour the butter into the batter.',
       'Pour the batter onto the tray and bake for 25–30 minutes until golden brown.',
@@ -171,7 +171,7 @@ export const EN_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Mix the rye and wheat flour, 50 ml of water and a pinch of salt into a firm dough.',
       'Roll the dough into thin rounds about 12 cm (5 in) across.',
       'Spread the porridge on the rounds and crimp the edges with your fingers.',
-      'Bake at 275 °C (525 °F) for 12–15 minutes and brush the hot pasties with melted butter.',
+      'Bake at 275 °C for 12–15 minutes and brush the hot pasties with melted butter.',
       'Hard-boil the eggs, chop them and mix them with the butter to make egg butter.',
     ],
     tips: [
@@ -179,7 +179,7 @@ export const EN_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'The pasties freeze excellently.',
     ],
     storage: 'Keep the pasties in the fridge for 3 days or freeze them. Egg butter keeps in the fridge for 2 days.',
-    reheating: 'Warm the pasties in the oven at 200 °C (400 °F) for about 8 minutes.',
+    reheating: 'Warm the pasties in the oven at 200 °C for about 8 minutes.',
   },
   'oat-rolls': {
     title: 'Oat bread rolls',
@@ -189,13 +189,13 @@ export const EN_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Add the oats, salt and flour gradually and knead into a smooth dough. Add the oil at the end.',
       'Let it rise under a cloth for about 40 minutes.',
       'Shape the dough into 12 rolls on a baking tray and let them rise for another 20 minutes.',
-      'Bake at 225 °C (435 °F) for about 12 minutes.',
+      'Bake at 225 °C for about 12 minutes.',
     ],
     tips: [
       'Freeze the cooled rolls in a bag and take out as many as you need in the morning.',
     ],
     storage: 'Keep in a bag at room temperature for 2 days or freeze for 3 months.',
-    reheating: 'Warm a frozen roll in the oven at 200 °C (400 °F) for 5–8 minutes.',
+    reheating: 'Warm a frozen roll in the oven at 200 °C for 5–8 minutes.',
   },
   'turkey-avocado-wrap': {
     title: 'Turkey and avocado wrap',
@@ -260,7 +260,7 @@ export const EN_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Homemade granola with yogurt',
     description: 'Oven-toasted granola of almonds, seeds and coconut, with yogurt.',
     steps: [
-      'Heat the oven to 175 °C (350 °F).',
+      'Heat the oven to 175 °C.',
       'Mix the oats, chopped almonds, seeds, coconut flakes and cinnamon.',
       'Add the syrup and oil and stir until everything is coated.',
       'Spread on a baking tray and toast for 20–25 minutes, stirring now and then. Let it cool.',

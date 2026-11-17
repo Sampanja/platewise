@@ -101,7 +101,7 @@ export const fiInsights = {
     pantryUsed: 'Varastosta käytetty',
     pantryUsedValue: '{count} raaka-ainetta',
     energyTitle: 'Energia päivittäin',
-    energyAvg: 'Keskimäärin {value} kcal kirjauspäivinä',
+    energyAvg: 'Keskimäärin {value} kirjauspäivinä',
     macrosTitle: 'Makrot keskimäärin',
     macroValue: '{value} g',
     macroGoal: '{value} / {goal} g',
@@ -139,7 +139,6 @@ export const fiInsights = {
   },
   widget: {
     title: 'Tänään',
-    kcal: 'kcal',
     eaten: 'syöty',
     protein: 'P',
     carbs: 'H',

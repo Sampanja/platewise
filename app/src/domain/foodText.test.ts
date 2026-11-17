@@ -28,6 +28,11 @@ describe('splitFoodText', () => {
     expect(splitFoodText('200g kanaa')[0]).toMatchObject({ query: 'kanaa', quantity: 200, unit: 'g' });
   });
 
+  it('reads ounces and pounds', () => {
+    expect(splitFoodText('6 oz salmon')[0]).toMatchObject({ query: 'salmon', quantity: 6, unit: 'oz' });
+    expect(splitFoodText('half a pound of chicken')[0]).toMatchObject({ query: 'chicken', quantity: 0.5, unit: 'lb' });
+  });
+
   it('reads size words', () => {
     expect(splitFoodText('iso omena')[0]).toMatchObject({ query: 'omena', size: 1.5 });
   });
@@ -49,6 +54,8 @@ describe('phraseGrams', () => {
   it('uses weights and volumes as they are', () => {
     expect(phraseGrams({ text: '', query: 'x', quantity: 2, unit: 'dl', size: 1 }, portions)).toBe(200);
     expect(phraseGrams({ text: '', query: 'x', quantity: 150, unit: 'g', size: 1 }, portions)).toBe(150);
+    expect(phraseGrams({ text: '', query: 'x', quantity: 4, unit: 'oz', size: 1 }, portions)).toBe(113);
+    expect(phraseGrams({ text: '', query: 'x', quantity: 0.5, unit: 'lb', size: 1 }, portions)).toBe(227);
   });
   it('uses the portion that names the unit, else the first', () => {
     expect(phraseGrams({ text: '', query: 'x', quantity: 2, unit: 'slice', size: 1 }, portions)).toBe(60);

@@ -6,7 +6,7 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Broilerivartaat ja tzatziki',
     description: 'Oreganolla maustetut broileri-kasvisvartaat, raikas tzatziki ja riisi.',
     steps: [
-      'Lämmitä uuni 225 asteeseen ja keitä riisi.',
+      'Lämmitä uuni 225 °C:seen ja keitä riisi.',
       'Paloittele broileri, paprika ja kesäkurpitsa ja sekoita öljyn, oreganon ja suolan kanssa.',
       'Pujota vartaisiin ja paista pellillä 15–18 minuuttia kerran käännellen.',
       'Raasta kurkku, purista nesteet pois ja sekoita jogurtin ja valkosipulin kanssa.',
@@ -87,10 +87,10 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Broilerin koipireidet ja uuniperunat',
     description: 'Rapeanahkaiset koipireidet ja paprikaiset uuniperunat samalla pellillä.',
     steps: [
-      'Lämmitä uuni 200 asteeseen.',
+      'Lämmitä uuni 200 °C:seen.',
       'Lohko perunat ja sekoita öljyn, paprikan, suolan ja valkosipulin kanssa.',
       'Nosta perunat ja koipireidet pellille ja mausta reidet suolalla ja pippurilla.',
-      'Paista noin 45 minuuttia, kunnes nahka on rapea ja lihan sisälämpö 80 astetta.',
+      'Paista noin 45 minuuttia, kunnes nahka on rapea ja lihan sisälämpö 80 °C.',
     ],
     tips: [
       'Koipireisi on edullinen ja maukas osa broileria.',
@@ -180,7 +180,7 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Maidottomat kanapyörykät, öljyllä tehty perunasose ja puolukka.',
     steps: [
       'Sekoita jauheliha, hienonnettu sipuli, kananmuna, gluteenittomat korppujauhot ja suola.',
-      'Pyörittele pyöryköiksi ja paista uunissa 200 asteessa noin 15 minuuttia.',
+      'Pyörittele pyöryköiksi ja paista uunissa 200 °C:ssa noin 15 minuuttia.',
       'Keitä perunat ja soseuta ne öljyn ja tilkan keitinveden kanssa.',
       'Tarjoa puolukan kanssa.',
     ],
@@ -206,7 +206,7 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Jogurttiin ja mausteisiin marinoitu uunikana, riisi ja kurkkuinen raita.',
     steps: [
       'Sekoita puolet jogurtista, mausteet, valkosipuli, inkivääri ja suola. Marinoi kanaa vähintään 20 minuuttia.',
-      'Lämmitä uuni 225 asteeseen ja paista kanaa pellillä noin 25 minuuttia.',
+      'Lämmitä uuni 225 °C:seen ja paista kanaa pellillä noin 25 minuuttia.',
       'Keitä riisi.',
       'Sekoita loppu jogurtti, raastettu kurkku ja sitruunamehu raitaksi.',
     ],
@@ -231,7 +231,7 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Uunikana ja juurekset',
     description: 'Paahdetut porkkanat, palsternakat ja punajuuret sekä mehevät reisifileet.',
     steps: [
-      'Lämmitä uuni 220 asteeseen.',
+      'Lämmitä uuni 220 °C:seen.',
       'Kuori ja lohko juurekset ja sipuli. Sekoita öljyn, oreganon ja suolan kanssa.',
       'Paahda juureksia pellillä 15 minuuttia.',
       'Lisää kana pellille ja paista vielä 25 minuuttia.',
@@ -289,7 +289,7 @@ export const FI_RECIPES_08: Readonly<Record<string, RecipeText>> = {
       'Anna kalkkunan levätä hetki ja viipaloi.',
     ],
     tips: [
-      'Kalkkuna on kypsää, kun sisälämpö on 72 astetta.',
+      'Kalkkuna on kypsää, kun sisälämpö on 72 °C.',
     ],
   },
   'chicken-mushroom-risotto': {

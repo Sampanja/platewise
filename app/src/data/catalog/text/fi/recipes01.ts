@@ -122,7 +122,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Uunibroileri ja paahdetut kasvikset',
     description: 'Paprikalla maustettua broileria, uuniperunat ja valkosipulijogurtti.',
     steps: [
-      'Kuumenna uuni 225 asteeseen.',
+      'Kuumenna uuni 225 °C:seen.',
       'Lohko perunat ja kasvikset pellille, valuta päälle oliiviöljyä ja mausta suolalla.',
       'Hiero broileriin paprikajauhe ja suola. Lisää pellille 15 minuutin kuluttua.',
       'Paista vielä 20 minuuttia, kunnes broileri on kypsää.',
@@ -130,7 +130,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'Leikkaa kasvikset samankokoisiksi, niin ne kypsyvät tasaisesti.',
-      'Kana on kypsää, kun lihan sisälämpö on 75 astetta.',
+      'Kana on kypsää, kun lihan sisälämpö on 75 °C.',
     ],
   },
   'beef-ragu': {
@@ -182,7 +182,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Ruskista jauheliha ja sipuli. Lisää tomaattimurska ja oregano, hauduta 10 minuuttia.',
       'Sulata voi, lisää jauhot ja vatkaa joukkoon maito. Keitä sakeaksi valkokastikkeeksi.',
       'Lado vuokaan kerroksittain lihakastiketta, levyjä ja valkokastiketta.',
-      'Ripottele pinnalle juusto ja paista 200 asteessa 40 minuuttia.',
+      'Ripottele pinnalle juusto ja paista 200 °C:ssa 40 minuuttia.',
     ],
     tips: [
       'Anna lasagnen vetäytyä 10 minuuttia ennen leikkaamista, niin palat pysyvät koossa.',
@@ -210,7 +210,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     description: 'Kotoisat uunilihapullat, voinen muusi ja puolukkasurvos.',
     steps: [
       'Turvota korppujauhot tilkassa maitoa. Sekoita joukkoon jauheliha, muna, hienonnettu sipuli ja mausteet.',
-      'Pyörittele pullat pellille ja paista 225 asteessa 15–20 minuuttia.',
+      'Pyörittele pullat pellille ja paista 225 °C:ssa 15–20 minuuttia.',
       'Keitä kuoritut perunat kypsiksi ja soseuta loppumaidon ja voin kanssa.',
       'Tarjoa puolukkasurvoksen kanssa.',
     ],
@@ -260,7 +260,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Paista leivitetty kana kunnolla kuumassa öljyssä, niin pinta pysyy rapeana.',
       'Currykastikkeen voi tehdä valmiiksi edellisenä päivänä.',
     ],
-    reheating: 'Kuumenna kastike kattilassa ja kana uunissa 200 asteessa noin 10 minuuttia, niin kuori pysyy rapeana.',
+    reheating: 'Kuumenna kastike kattilassa ja kana uunissa 200 °C:ssa noin 10 minuuttia, niin kuori pysyy rapeana.',
   },
   'pad-thai': {
     title: 'Kana pad thai',
@@ -280,7 +280,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Uunienchiladat kanalla',
     description: 'Tortilloja, broileria ja mustapapuja salsan ja juuston alla.',
     steps: [
-      'Kuumenna uuni 200 asteeseen.',
+      'Kuumenna uuni 200 °C:seen.',
       'Paista broileri ja sipuli öljyssä. Lisää tacomauste, mustapavut ja tilkka vettä.',
       'Täytä tortillat ja rullaa ne vuokaan.',
       'Kaada päälle salsa ja tomaattimurska, ripottele juusto. Paista 20 minuuttia ja tarjoa kermaviilin kanssa.',
@@ -308,7 +308,7 @@ export const FI_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Kana-sienipata uunissa',
     description: 'Broilerin reisifileetä, sieniä ja juureksia kermaviilikastikkeessa.',
     steps: [
-      'Kuumenna uuni 200 asteeseen.',
+      'Kuumenna uuni 200 °C:seen.',
       'Ruskista broileri ja sienet öljyssä.',
       'Lohko perunat ja porkkanat vuokaan. Lisää broileri, sienet, sipuli ja liemikuutiosta tehty liemi (2 dl).',
       'Kypsennä kannen alla 35 minuuttia. Sekoita joukkoon kermaviili ja persilja.',

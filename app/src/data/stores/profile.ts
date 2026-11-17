@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 import { DEFAULT_GOALS, MIN_KCAL_GOAL } from '../catalog/reference';
 import { DEFAULT_PANTRY } from '../catalog/ingredients';
-import { dropHouseholdSize, profileWithoutStore, withLanguageSettings } from '../migrations';
+import { dropHouseholdSize, profileWithoutStore, withLanguageSettings, withUnitPrefs } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import {
   DEFAULT_CYCLING,
@@ -17,7 +17,8 @@ import {
 } from '@/domain/energy';
 import { migrateCharacter } from '@/domain/characterMigration';
 import { convertBudget, DEFAULT_PRICE_REGION, type PriceRegionCode } from '@/domain/priceRegion';
-import type { UnitSystem } from '@/domain/units';
+import { defaultUnits, type UnitPrefs } from '@/domain/units';
+import { deviceLocale } from '@/lib/deviceLocale';
 import type { Language } from '@/i18n/languages';
 import { DEFAULT_CHARACTER, type CharacterId } from '@/theme/characters';
 import type { ThemePreference } from '@/theme/colors';
@@ -109,8 +110,13 @@ export type Profile = {
   language: Language | null;
   /** The language picker has been seen (very first screen). */
   languageChosen: boolean;
-  /** Metric or imperial; null = by the phone's region (data/hooks.ts `useUnitSystem`). */
-  unitSystem: UnitSystem | null;
+  /**
+   * Display units, each chosen separately (domain/units.ts). null only before
+   * the units screen of onboarding: the phone's region suggests them (data/hooks.ts `useUnits`).
+   */
+  units: UnitPrefs | null;
+  /** The units screen has been confirmed (second screen of onboarding). */
+  unitsChosen: boolean;
   /** The region whose currency the saved budgets are in; budgets are converted when the region changes. */
   budgetRegion: PriceRegionCode;
   goals: NutritionGoals;
@@ -145,7 +151,8 @@ export const DEFAULT_PROFILE: Profile = {
   priceRegion: null,
   language: null,
   languageChosen: false,
-  unitSystem: null,
+  units: null,
+  unitsChosen: false,
   budgetRegion: DEFAULT_PRICE_REGION,
   goals: { ...DEFAULT_GOALS },
   hasCalorieGoal: false,
@@ -212,17 +219,20 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 9,
+      version: 10,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
       // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
       // v7: stores removed; earlier users keep the Finnish price region their budget is in.
       // v8: language and units; earlier users keep Finnish and skip the language picker.
       // v9: the cast was renewed (six international characters); retired ids map to the closest one.
+      // v10: units are chosen one by one; the old metric/imperial setting (or the region's) becomes the user's own.
       migrate: (persisted, version) => {
-        const saved = withLanguageSettings(
-          profileWithoutStore(dropHouseholdSize((persisted ?? {}) as Partial<Profile>), version),
+        const device = deviceLocale();
+        const saved = withUnitPrefs(
+          withLanguageSettings(profileWithoutStore(dropHouseholdSize((persisted ?? {}) as Partial<Profile>), version), version),
           version,
+          defaultUnits(device.measurementSystem, device.regionCode),
         );
         const character = migrateCharacter(saved.characterId);
         return {

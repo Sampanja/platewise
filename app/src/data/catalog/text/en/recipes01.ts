@@ -122,7 +122,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Roast chicken with roasted vegetables',
     description: 'Paprika-seasoned chicken, roast potatoes and a garlic yogurt sauce.',
     steps: [
-      'Heat the oven to 225 °C (435 °F).',
+      'Heat the oven to 225 °C.',
       'Cut the potatoes and vegetables into wedges on a baking tray, drizzle with olive oil and season with salt.',
       'Rub the paprika and salt into the chicken. Add it to the tray after 15 minutes.',
       'Roast for another 20 minutes until the chicken is cooked through.',
@@ -130,7 +130,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'Cut the vegetables to the same size so they cook evenly.',
-      'Chicken is cooked when the core temperature reaches 75 °C (165 °F).',
+      'Chicken is cooked when the core temperature reaches 75 °C.',
     ],
   },
   'beef-ragu': {
@@ -182,7 +182,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Brown the mince and onion. Add the chopped tomatoes and oregano and simmer for 10 minutes.',
       'Melt the butter, add the flour and whisk in the milk. Cook into a thick white sauce.',
       'Layer meat sauce, lasagne sheets and white sauce in an ovenproof dish.',
-      'Sprinkle the cheese on top and bake at 200 °C (400 °F) for 40 minutes.',
+      'Sprinkle the cheese on top and bake at 200 °C for 40 minutes.',
     ],
     tips: [
       'Let the lasagne rest for 10 minutes before cutting so the pieces hold together.',
@@ -210,7 +210,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     description: 'Homely oven-baked meatballs, buttery mash and crushed lingonberries.',
     steps: [
       'Soak the breadcrumbs in a splash of milk. Mix in the mince, egg, finely chopped onion and seasoning.',
-      'Roll into balls on a baking tray and bake at 225 °C (435 °F) for 15–20 minutes.',
+      'Roll into balls on a baking tray and bake at 225 °C for 15–20 minutes.',
       'Boil the peeled potatoes until soft and mash them with the rest of the milk and the butter.',
       'Serve with the crushed lingonberries.',
     ],
@@ -260,7 +260,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
       'Fry the breaded chicken in properly hot oil so the coating stays crisp.',
       'You can make the curry sauce the day before.',
     ],
-    reheating: 'Heat the sauce in a pan and the chicken in the oven at 200 °C (400 °F) for about 10 minutes so the coating stays crisp.',
+    reheating: 'Heat the sauce in a pan and the chicken in the oven at 200 °C for about 10 minutes so the coating stays crisp.',
   },
   'pad-thai': {
     title: 'Chicken pad thai',
@@ -280,7 +280,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Baked chicken enchiladas',
     description: 'Tortillas, chicken and black beans under salsa and cheese.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Fry the chicken and onion in oil. Add the taco seasoning, black beans and a splash of water.',
       'Fill the tortillas and roll them into an ovenproof dish.',
       'Pour the salsa and chopped tomatoes over, sprinkle with cheese. Bake for 20 minutes and serve with soured cream.',
@@ -308,7 +308,7 @@ export const EN_RECIPES_01: Readonly<Record<string, RecipeText>> = {
     title: 'Oven-baked chicken and mushroom stew',
     description: 'Chicken thigh, mushrooms and root vegetables in a soured cream sauce.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Brown the chicken and mushrooms in oil.',
       'Cut the potatoes and carrots into wedges in an ovenproof dish. Add the chicken, mushrooms, onion and 200 ml of stock made with the stock cube.',
       'Cook with the lid on for 35 minutes. Stir in the soured cream and parsley.',

@@ -6,7 +6,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnslax med citronpotatis',
     description: 'Lax och potatisklyftor med citron som tillagas på samma plåt, med dill.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Dela potatisen i klyftor och blanda med olja, salt och rivet citronskal. Rosta på en plåt i 20 minuter.',
       'Lägg laxen bland potatisen, krydda med salt och peppar och tillaga ytterligare 12–15 minuter.',
       'Pressa över citronsaft och strö över dill.',
@@ -34,7 +34,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Sej i tomatsås med ris',
     description: 'Ugnsbakad sej i tomat- och olivsås med jasminris.',
     steps: [
-      'Sätt ugnen på 200 grader och koka riset.',
+      'Sätt ugnen på 200 °C och koka riset.',
       'Fräs löken i olja och tillsätt krossade tomater, oliver och oregano. Låt puttra i 5 minuter.',
       'Lägg fiskbitarna i en form, salta och häll såsen över.',
       'Tillaga i 15–20 minuter och servera med riset.',
@@ -122,7 +122,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
       'Servera med riset och gurkskivor.',
     ],
     tips: [
-      'Bullarna kan också tillagas i ugnen på 200 grader i 15 minuter.',
+      'Bullarna kan också tillagas i ugnen på 200 °C i 15 minuter.',
     ],
   },
   'mediterranean-fish-soup': {
@@ -157,7 +157,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Lax, sötpotatis och broccoli på plåt',
     description: 'En middag på en plåt: sötpotatis med paprika, broccoli och lax.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Tärna sötpotatisen, blanda med hälften av oljan, paprikapulver och salt och rosta i 15 minuter.',
       'Lägg broccoli och lax på plåten, ringla över resten av oljan och krydda.',
       'Tillaga ytterligare 12–15 minuter och pressa över citron.',
@@ -214,7 +214,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsbakade strömmingsrullar',
     description: 'Strömmingsrullar fyllda med dill i krämigt spad och potatismos.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Salta strömmingsfiléerna, strö över dill och rulla ihop dem med skinnsidan utåt.',
       'Lägg rullarna i en form och häll över grädde och citronsaft.',
       'Tillaga i 20–25 minuter.',
@@ -255,7 +255,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Regnbåge i folie med färskpotatis',
     description: 'Regnbåge tillagad i foliepaket med smör, dill och citron, och gröna bönor.',
     steps: [
-      'Sätt ugnen på 200 grader och koka potatisen.',
+      'Sätt ugnen på 200 °C och koka potatisen.',
       'Lägg fisken på folie, salta och lägg på smör, dill och citronskivor.',
       'Förslut paketet väl och tillaga i 15–20 minuter.',
       'Koka bönorna i 4 minuter och servera med fisken och potatisen.',
@@ -277,7 +277,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     tips: [
       'Torka den tinade fisken med hushållspapper, så fäster panaden.',
     ],
-    reheating: 'Värm i ugnen på 200 grader i cirka 10 minuter, så blir panaden krispig.',
+    reheating: 'Värm i ugnen på 200 °C i cirka 10 minuter, så blir panaden krispig.',
   },
   'salmon-sesame-noodles': {
     title: 'Laxnudlar med broccoli',
@@ -324,7 +324,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     steps: [
       'Lös upp jästen i 0,5 dl fingervarmt vatten. Tillsätt salt, olja och mjöl och knåda slätt.',
       'Låt degen jäsa i 30 minuter.',
-      'Sätt ugnen på 250 grader. Kavla ut degen till en tunn botten på en plåt.',
+      'Sätt ugnen på 250 °C. Kavla ut degen till en tunn botten på en plåt.',
       'Bred krossade tomater och oregano på bottnen. Lägg på tonfisk, rödlök och mozzarella.',
       'Grädda i 10–12 minuter tills bottnen är krispig.',
     ],
@@ -336,7 +336,7 @@ export const SV_RECIPES_07: Readonly<Record<string, RecipeText>> = {
     title: 'Fisk- och broccoligratäng',
     description: 'Sej och broccoli i krämig sås under ett osttäcke, med potatis.',
     steps: [
-      'Sätt ugnen på 200 grader och koka potatisen.',
+      'Sätt ugnen på 200 °C och koka potatisen.',
       'Lägg fiskbitarna och broccolibuketterna i en smord form. Krydda med salt och peppar.',
       'Häll grädden över och strö över riven ost.',
       'Gratinera i 25–30 minuter och servera med potatisen.',

@@ -8,17 +8,18 @@ import { useShallow } from 'zustand/react/shallow';
 import { withFreezeOnBlur } from '@/components/freezeOnBlur';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Card, haptics, Icon, PressableScale, SwitchRow, Text, type IconName } from '@/components/ui';
-import { useLanguage, usePriceRegion, useUnitSystem, useWaterGoal } from '@/data/hooks';
+import { useLanguage, usePriceRegion, useUnits, useWaterGoal } from '@/data/hooks';
 import { resetAppData } from '@/data/reset';
 import { useDiaryStore } from '@/data/stores/diary';
 import { useProfileStore } from '@/data/stores/profile';
 import { useRemindersStore } from '@/data/stores/reminders';
 import { useWeightStore } from '@/data/stores/weight';
 import { useCharacter } from '@/features/mascot/useCharacter';
+import { unitsSummary } from '@/features/settings/UnitsEditor';
 import { demoDiaryEntries, demoWeightEntries } from '@/features/profile/demoDiary';
 import { WidgetGuideSheet } from '@/features/widget/WidgetGuideSheet';
-import { format, formatMoney, formatInteger, LANGUAGE_NAMES, strings } from '@/i18n';
-import { formatBodyWeight, formatWater } from '@/lib/amounts';
+import { format, formatMoney, LANGUAGE_NAMES, strings } from '@/i18n';
+import { formatBodyWeight, formatEnergy, formatWater } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles, touchTarget } from '@/theme';
@@ -33,7 +34,7 @@ function ProfileScreen() {
   const waterGoal = useWaterGoal(today());
   const priceRegion = usePriceRegion();
   const language = useLanguage();
-  const unitSystem = useUnitSystem();
+  const units = useUnits();
   const tabBarSpace = useTabBarSpace();
   const profile = useProfileStore(
     useShallow((s) => ({
@@ -141,7 +142,7 @@ function ProfileScreen() {
             label={t.goals}
             value={
               profile.hasCalorieGoal
-                ? format(strings.common.kcal, { value: formatInteger(profile.goals.kcal) })
+                ? formatEnergy(profile.goals.kcal)
                 : t.goalsOff
             }
             href={edit('goals')}
@@ -200,7 +201,7 @@ function ProfileScreen() {
           <Row icon="sparkles" label={strings.characters.profileRow} value={voice.name} href="/choose-character" />
           <Row icon="sun" label={strings.characters.modeTitle} value={strings.themes[profile.themePreference]} href={edit('theme')} />
           <Row icon="language" label={strings.language.profileRow} value={LANGUAGE_NAMES[language]} href={edit('language')} />
-          <Row icon="ruler" label={strings.unitSystems.profileRow} value={strings.unitSystems[unitSystem]} href={edit('units')} />
+          <Row icon="ruler" label={strings.unitSystems.profileRow} value={unitsSummary(units)} href={edit('units')} />
           <Row icon="phone" label={strings.widget.guideTitle} value={strings.widget.guideHint} onPress={() => setWidgetGuide(true)} />
           <Row icon="crown" label={t.subscription} value={t.subscriptionValue} href="/paywall" />
           <Row icon="shield" label={t.privacy} href={{ pathname: '/legal/[doc]', params: { doc: 'privacy' } }} />

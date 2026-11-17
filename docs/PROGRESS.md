@@ -8,11 +8,15 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 
 | Osa | Tila |
 | --- | --- |
-| 1. Yksiköt | aloittamatta |
+| 1. Yksiköt | valmis |
 | 2. Aktiivisuus | aloittamatta |
 | 3. Makrot ja ruokavaliotyylit | aloittamatta |
 | 4. Widget | aloittamatta |
 | 5. Dokumentaatio | aloittamatta |
+
+### Mitä tehtiin (2026-11-17)
+
+- Osa 1 (yksiköt): käyttäjä valitsee kuusi yksikköä erikseen: paino kg / lb / st+lb, pituus cm / ft+in, ruoan määrät g / oz, nesteet ml-dl-l / fl oz ja kupit, energia kcal / kJ, lämpötila °C / °F (`domain/units.ts`: muunnokset, pyöristykset, esiasetukset, alueen oletus, testattu). Muotoilu yhdessä paikassa `lib/amounts.ts` (formatEnergy, formatGrams, formatBodyWeight, formatTemperature, localizeTemperatures, kenttien muunnokset). Onboardingissa kielen jälkeen Yksiköt-näkymä (`features/settings/UnitsStep.tsx`): Metrinen / Imperiaalinen ja Mukauta, jokaisessa esimerkki; sama editori Profiili → Yksiköt (`UnitsEditor.tsx`). Painon ja pituuden syötössä kertakäyttöinen yksikkökytkin (`components/ui/UnitToggle.tsx`), energiakentät kcal/kJ (`features/shared/EnergyField.tsx`), määräkentät g/oz (oma ruoka, oma ateria, varasto, reseptituonti). Reseptien lämpötilat kirjoitettu muotoon "200 °C" (fi "°C:ssa", sv "°C"); ohjeiden lämpötilat ja määrät näytetään valituilla yksiköillä (`localizeRecipeText`: "2 dl" → "¾ kuppia", "200 °C" → "400 °F"). Puhekirjaus ymmärtää myös oz ja lb. Profiili v10: vanha metric/imperial (tai alueen automaattinen valinta) muuttuu käyttäjän omaksi asetukseksi (`withUnitPrefs`, testattu). Lint-sääntö `platepal/no-hardcoded-units` ja `i18n/units.test.ts` estävät kovakoodatut yksiköt koodissa ja käännöksissä.
 
 ## Edellinen tehtävä (valmis)
 
@@ -56,6 +60,12 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 - Puhelintestaus oikealla laitteella (puhe, kamera, widget, ilmoitukset), sitten backend-vaihe (GENERATION.md 19–22).
 
 ## Päätökset
+
+- (2026-11-17) Ravintoaineet ja makrot ovat aina grammoina (myös imperiaalisilla yksiköillä), kuten ravintoarvomerkinnöissä; ravintoarvotaulukot ovat 100 g kohden. Ruoan *määrät* seuraavat valintaa (g / oz).
+- (2026-11-17) Iso-Britannian oletus: grammat ja millilitrat, mutta paino stoneina ja pituus jalkoina. Yhdysvallat imperiaalinen, muut metrinen. Imperiaalinenkin pikavalinta käyttää kilokaloreita (myös USA:n merkinnöissä).
+- (2026-11-17) °F-pyöristys: uunilämmöt (≥ 100 °C) lähimpään 25 °F (200 °C → 400 °F), ruoan sisälämmöt lähimpään 5 °F (75 °C → 165 °F), jotta ruokaturvallisuusrajat pysyvät oikeina.
+- (2026-11-17) Yksikön vaihto profiilissa tallentuu heti ja päivittää koko sovelluksen samalla tavalla kuin kielen vaihto (näkymät renderöidään uudelleen).
+- (2026-11-17) Reseptituonnin tarkistusnäkymä näyttää nyt unssit oz-käyttäjille (edellisen tehtävän avoin kysymys).
 
 - Osat 8 ja 9 commitoitiin yhdessä, koska ne jakavat natiivipaketit ja sovelluksen entry-tiedoston (index.js).
 - Androidin share intent jätettiin pois (vaatisi lisänatiivilaajennuksen); linkin voi liittää leikepöydältä.

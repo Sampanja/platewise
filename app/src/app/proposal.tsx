@@ -35,7 +35,10 @@ import {
   swapMeal,
 } from '@/domain/generate';
 import { recipeCostCents } from '@/domain/recipes';
+import { displayEnergy } from '@/domain/units';
 import { format, formatInteger, formatMoney, formatServings, formatWholeMoney, strings } from '@/i18n';
+import { activeUnits } from '@/i18n/locale';
+import { energyUnitLabel, formatEnergy } from '@/lib/amounts';
 import { addDays, relativeDayLabel } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -190,10 +193,10 @@ export default function ProposalScreen() {
             {t.avgMacros}
           </Text>
           <View style={styles.macros}>
-            <Macro label={strings.macros.energy} unit="kcal" value={totals.kcal} />
-            <Macro label={strings.macros.protein} unit="g" value={totals.proteinG} />
-            <Macro label={strings.macros.carbs} unit="g" value={totals.carbsG} />
-            <Macro label={strings.macros.fat} unit="g" value={totals.fatG} />
+            <Macro label={strings.macros.energy} unit={energyUnitLabel()} value={displayEnergy(totals.kcal, activeUnits().energy)} />
+            <Macro label={strings.macros.protein} unit={strings.unitNames.g} value={totals.proteinG} />
+            <Macro label={strings.macros.carbs} unit={strings.unitNames.g} value={totals.carbsG} />
+            <Macro label={strings.macros.fat} unit={strings.unitNames.g} value={totals.fatG} />
           </View>
           <Text variant="caption" color="textSubtle">
             {strings.budget.explainer}
@@ -302,8 +305,8 @@ function Macro({ label, unit, value }: { label: string; unit: string; value: num
       <AnimatedNumber
         variant="number"
         value={value}
-        format={(v) => `${formatInteger(v)} ${unit}`}
-        accessibilityLabel={`${label} ${formatInteger(value)} ${unit}`}
+        format={(v) => format(strings.units.valueUnit, { value: formatInteger(v), unit })}
+        accessibilityLabel={`${label} ${format(strings.units.valueUnit, { value: formatInteger(value), unit })}`}
       />
       <Text variant="caption" color="textSubtle" numberOfLines={1}>
         {label}
@@ -353,7 +356,7 @@ function MealCard({
               {recipe.title}
             </Text>
             <Text variant="caption" color="textSubtle">
-              {formatMoney(perServing)} {strings.common.perServing} · {formatInteger(recipe.perServing.kcal)} kcal ·{' '}
+              {formatMoney(perServing)} {strings.common.perServing} · {formatEnergy(recipe.perServing.kcal)} ·{' '}
               {format(strings.common.minutes, { count: recipe.totalTimeMin })}
             </Text>
             {answers.cookDouble ? (

@@ -4,11 +4,13 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, SelectChip, Stepper, Text, TextField } from '@/components/ui';
 import type { DiaryMeal, FoodPortion, Macros } from '@/data/types';
 import { DIARY_MEALS } from '@/domain/diary';
-import { GRAMS_PER_OUNCE, gToOz } from '@/domain/units';
+import { displayFood, foodToGrams, GRAMS_PER_OUNCE } from '@/domain/units';
 import { format, formatDecimal, formatInteger, parseDecimal, strings } from '@/i18n';
-import { activeUnitSystem } from '@/i18n/locale';
-import { formatCount, formatGrams } from '@/lib/amounts';
+import { activeUnits } from '@/i18n/locale';
+import { energyToInput, energyUnitLabel, foodUnitLabel, formatCount, formatGrams, formatGramsExact, formatNutrientGrams } from '@/lib/amounts';
 import { spacing, themedStyles } from '@/theme';
+
+import { EnergyField } from '../shared/EnergyField';
 
 type FoodProps = {
   kind: 'food';
@@ -37,7 +39,8 @@ type Props = (FoodProps | RecipeProps | QuickProps) & {
 };
 
 const MAX_GRAMS = 2000;
-const HUNDRED_G = format(strings.units.g, { value: 100 });
+/** The 100 g portion every food has: nutrition labels are per 100 g everywhere. */
+const hundredGrams = () => formatNutrientGrams(100);
 
 /** Amount (portions, grams, servings or kcal), meal choice and a macro preview. */
 export function AmountEditor(props: Props) {
@@ -69,19 +72,7 @@ export function AmountEditor(props: Props) {
           <Text variant="overline" color="textSubtle" accessibilityRole="header">
             {strings.quickAdd.kcal}
           </Text>
-          <TextField
-            large
-            value={props.kcal > 0 ? String(props.kcal) : ''}
-            onChangeText={(text) => props.onKcalChange(Math.min(5000, Number(text.replace(/\D/g, ''))))}
-            keyboardType="number-pad"
-            maxLength={4}
-            accessibilityLabel={strings.quickAdd.kcal}
-            trailing={
-              <Text variant="title" color="textMuted">
-                {strings.common.kcalUnit}
-              </Text>
-            }
-          />
+          <EnergyField large value={props.kcal} onChange={props.onKcalChange} max={5000} accessibilityLabel={strings.quickAdd.kcal} />
         </View>
       )}
 
@@ -107,10 +98,10 @@ export function AmountEditor(props: Props) {
           {t.preview}
         </Text>
         <View style={styles.macros}>
-          <MacroCell value={preview.kcal} unit={strings.common.kcalUnit} label={strings.macros.energy} />
-          <MacroCell value={preview.proteinG} unit={strings.common.gUnit} label={strings.macros.protein} />
-          <MacroCell value={preview.carbsG} unit={strings.common.gUnit} label={strings.macros.carbs} />
-          <MacroCell value={preview.fatG} unit={strings.common.gUnit} label={strings.macros.fat} />
+          <MacroCell value={energyToInput(preview.kcal)} unit={energyUnitLabel()} label={strings.macros.energy} />
+          <MacroCell value={preview.proteinG} unit={strings.unitNames.g} label={strings.macros.protein} />
+          <MacroCell value={preview.carbsG} unit={strings.unitNames.g} label={strings.macros.carbs} />
+          <MacroCell value={preview.fatG} unit={strings.unitNames.g} label={strings.macros.fat} />
         </View>
       </Card>
     </View>
@@ -123,7 +114,7 @@ export function AmountEditor(props: Props) {
  */
 function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>) {
   const t = strings.food;
-  const options = [...portions, { label: HUNDRED_G, grams: 100 }];
+  const options = [...portions, { label: hundredGrams(), grams: 100 }];
   const initial = options.find((p) => Math.round(p.grams) === Math.round(grams)) ?? null;
   const [portion, setPortion] = useState<FoodPortion | null>(initial);
   const [count, setCount] = useState(1);
@@ -141,16 +132,17 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
     setPortion(null);
     onGramsChange(Math.min(MAX_GRAMS, Math.max(0, value)));
   };
-  // Imperial users type ounces (one decimal) and step by 1 oz; the entry is still saved in grams.
-  const imperial = activeUnitSystem() === 'imperial';
-  const unit = imperial ? 'oz' : strings.common.gUnit;
+  // Ounce users type ounces (one decimal) and step by 1 oz; the entry is still saved in grams.
+  const foodUnit = activeUnits().food;
+  const imperial = foodUnit === 'oz';
+  const unit = foodUnitLabel(foodUnit);
   const step = imperial ? GRAMS_PER_OUNCE : 10;
-  const stepLabel = imperial ? format(strings.units.oz, { value: 1 }) : format(strings.units.g, { value: 10 });
-  const shown = grams <= 0 ? '' : imperial ? formatDecimal(gToOz(grams), 1) : String(Math.round(grams));
+  const stepLabel = formatGramsExact(step, foodUnit);
+  const shown = grams <= 0 ? '' : imperial ? formatDecimal(displayFood(grams, foodUnit), 1) : String(Math.round(grams));
   const typed = (text: string) => {
     if (!imperial) return setGrams(Number(text.replace(/\D/g, '')));
     const oz = parseDecimal(text);
-    setGrams(Number.isFinite(oz) ? oz * GRAMS_PER_OUNCE : 0);
+    setGrams(Number.isFinite(oz) ? foodToGrams(oz, foodUnit) : 0);
   };
 
   return (
@@ -164,7 +156,7 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
             key={option.label}
             role="radio"
             label={
-              option.label === HUNDRED_G
+              option.label === hundredGrams()
                 ? option.label
                 : `${option.label} · ${formatGrams(option.grams)}`
             }
@@ -173,7 +165,7 @@ function FoodAmount({ grams, onGramsChange, portions }: Omit<FoodProps, 'kind'>)
           />
         ))}
       </View>
-      {portion && portion.label !== HUNDRED_G ? (
+      {portion && portion.label !== hundredGrams() ? (
         <View style={styles.countRow}>
           <Text variant="bodyStrong" style={styles.flex}>
             {strings.portionCount.label}

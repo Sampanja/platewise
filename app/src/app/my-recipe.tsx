@@ -13,7 +13,8 @@ import { ownRecipePerServing } from '@/domain/diary';
 import { parseAmount } from '@/domain/nutrition';
 import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
 import { NutrientTable } from '@/features/diary/NutrientTable';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { foodInputText, foodUnitLabel, formatEnergy, gramsFromInput } from '@/lib/amounts';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
 
@@ -28,7 +29,7 @@ export default function MyRecipeScreen() {
   const [name, setName] = useState(existing?.name ?? '');
   const [servings, setServings] = useState(existing?.servings ?? 4);
   const [ingredients, setIngredients] = useState<OwnRecipeIngredient[]>(existing?.ingredients ?? []);
-  const [gramsText, setGramsText] = useState<string[]>(() => (existing?.ingredients ?? []).map((i) => String(i.grams)));
+  const [gramsText, setGramsText] = useState<string[]>(() => (existing?.ingredients ?? []).map((i) => foodInputText(i.grams)));
   const [picking, setPicking] = useState(false);
 
   const perServing = ownRecipePerServing({ ingredients, servings });
@@ -40,13 +41,14 @@ export default function MyRecipeScreen() {
     if (!food) return;
     const grams = food.portions[0]?.grams ?? 100;
     setIngredients((list) => [...list, { foodId, name: food.name, grams, per100g: food.per100g }]);
-    setGramsText((list) => [...list, String(grams)]);
+    setGramsText((list) => [...list, foodInputText(grams)]);
     haptics.select();
   };
   const setGrams = (index: number, text: string) => {
     const clean = text.replace(/[^\d,.]/g, '');
     setGramsText((list) => list.map((value, i) => (i === index ? clean : value)));
-    const grams = parseAmount(clean) ?? 0;
+    // Typed in the user's food unit (g or oz), kept in grams.
+    const grams = gramsFromInput(parseAmount(clean) ?? 0);
     setIngredients((list) => list.map((item, i) => (i === index ? { ...item, grams } : item)));
   };
   const removeIngredient = (index: number) => {
@@ -126,7 +128,7 @@ export default function MyRecipeScreen() {
                     maxLength={5}
                   />
                   <Text variant="label" color="textSubtle">
-                    g
+                    {foodUnitLabel()}
                   </Text>
                   <IconButton
                     icon="close"
@@ -150,7 +152,7 @@ export default function MyRecipeScreen() {
           {ingredients.length > 0 ? (
             <View style={styles.gap}>
               <Text variant="heading">
-                {`${t.perServing}: ${format(strings.common.kcal, { value: formatInteger(perServing.kcal) })}`}
+                {`${t.perServing}: ${formatEnergy(perServing.kcal)}`}
               </Text>
               <NutrientTable values={perServing} title={t.perServing} />
             </View>

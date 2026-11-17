@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from '@jest/globals';
 
+import { IMPERIAL_UNITS, METRIC_UNITS } from '@/domain/units';
 import { formatBodyWeight, formatGrams, formatHeight, formatLiquid, formatWater } from '@/lib/amounts';
 import { longDate, shortDate } from '@/lib/dates';
 
 import { currencySymbol, formatDecimal, formatMoney, formatWholeMoney, parseDecimal } from './index';
-import { setActiveLanguage, setActivePriceRegion, setActiveUnitSystem } from './locale';
+import { setActiveLanguage, setActivePriceRegion, setActiveUnits } from './locale';
 
 const nbsp = /[  ]/g;
 const plain = (value: string) => value.replace(nbsp, ' ');
@@ -12,7 +13,7 @@ const plain = (value: string) => value.replace(nbsp, ' ');
 afterEach(() => {
   setActiveLanguage('fi');
   setActivePriceRegion('FI');
-  setActiveUnitSystem('metric');
+  setActiveUnits(METRIC_UNITS);
 });
 
 describe('money formatting by price region', () => {
@@ -71,7 +72,7 @@ describe('unit systems', () => {
 
   it('shows imperial amounts when chosen', () => {
     setActiveLanguage('en');
-    setActiveUnitSystem('imperial');
+    setActiveUnits(IMPERIAL_UNITS);
     expect(formatGrams(113)).toBe('4 oz');
     expect(formatGrams(907)).toBe('2 lb');
     expect(formatLiquid(240)).toBe('1 cup');

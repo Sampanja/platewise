@@ -18,19 +18,19 @@ import { CelebrationHost } from '@/features/game/CelebrationHost';
 import { useNotificationRouting, usePantryReminderSync } from '@/features/notifications/useNotificationRouting';
 import { useWidgetSync } from '@/features/widget/useWidgetSync';
 import { setHapticsEnabled } from '@/components/ui';
-import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnitSystem } from '@/data/hooks';
+import { useHydrated, useKeepProposalSuitable, useLanguage, usePriceRegion, useUnits } from '@/data/hooks';
 import { usePlansStore } from '@/data/stores/plans';
 import { useProfileStore } from '@/data/stores/profile';
 import {
   activeFirstWeekday,
   activeLanguage,
   activePriceRegion,
-  activeUnitSystem,
   setActiveLanguage,
   setActivePriceRegion,
-  setActiveUnitSystem,
+  setActiveUnits,
   setFirstWeekday,
 } from '@/i18n/locale';
+import { UNIT_KINDS } from '@/domain/units';
 import { useDeviceLocale } from '@/lib/deviceLocale';
 import { rescheduleReminders } from '@/services/reminders';
 import { colors, DEFAULT_CHARACTER, isCharacterId, resolveTheme, setActiveTheme, themeKey } from '@/theme';
@@ -74,11 +74,13 @@ export default function RootLayout() {
   // formatting read them at render time, and a change remounts the screens.
   const language = useLanguage();
   if (activeLanguage() !== language) setActiveLanguage(language);
-  useWidgetSync(hydrated, language);
-  const unitSystem = useUnitSystem();
-  if (activeUnitSystem() !== unitSystem) setActiveUnitSystem(unitSystem);
+  const units = useUnits();
+  setActiveUnits(units);
+  const unitsKey = UNIT_KINDS.map((kind) => units[kind]).join(',');
+  // The widget's snapshot holds finished text, so a new language or unit rebuilds it.
+  useWidgetSync(hydrated, `${language}|${unitsKey}`);
   setFirstWeekday(useDeviceLocale().firstWeekday, priceRegion);
-  const theme = `${themeName}|${priceRegion}|${language}|${unitSystem}|${activeFirstWeekday()}`;
+  const theme = `${themeName}|${priceRegion}|${language}|${unitsKey}|${activeFirstWeekday()}`;
   // Scheduled reminders keep the words they were made with: re-create them in the new language.
   const scheduledLanguage = useRef(language);
   useEffect(() => {

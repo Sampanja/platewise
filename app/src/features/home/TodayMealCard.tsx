@@ -5,7 +5,8 @@ import { RecipeImage } from '@/components/RecipeImage';
 import { Card, Chip, Icon, PressableScale, Text } from '@/components/ui';
 import type { Recipe } from '@/data/types';
 import type { DatedMeal } from '@/domain/plan';
-import { format, formatMoney, formatInteger, strings } from '@/i18n';
+import { format, formatMoney, strings } from '@/i18n';
+import { formatEnergy } from '@/lib/amounts';
 import { relativeDayLabel, today } from '@/lib/dates';
 import { radii, spacing, themedStyles } from '@/theme';
 
@@ -37,7 +38,7 @@ export function TodayMealCard({ meal, recipe, lunchRecipe }: Props) {
             <Chip tone="glass" label={format(strings.common.minutes, { count: recipe.totalTimeMin })} />
             <Chip
               tone="glass"
-              label={format(strings.common.kcal, { value: formatInteger(recipe.perServing.kcal) })}
+              label={formatEnergy(recipe.perServing.kcal)}
             />
           </View>
           <View style={styles.heroBottom}>

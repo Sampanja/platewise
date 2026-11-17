@@ -127,7 +127,7 @@ export const enFun: FunStrings = {
     preview: {
       today: 'Today',
       streak: '5-day streak',
-      progress: '{eaten} / {goal} kcal',
+      progress: '{eaten} / {goal}',
       recipe: 'Salmon soup',
       recipeMeta: '30 min · price estimate {price}',
       cta: 'Plan the week',

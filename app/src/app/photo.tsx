@@ -29,7 +29,8 @@ import type { DiaryMeal, Food } from '@/data/types';
 import { DIARY_MEALS, entryMacros, mealForHour, sumEntries } from '@/domain/diary';
 import { closestGuide, portionGuides } from '@/domain/portionGuides';
 import { FoodPickerSheet } from '@/features/diary/FoodPickerSheet';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { formatEnergy, formatGrams, formatGramsExact, formatNutrientGrams } from '@/lib/amounts';
 import { today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { foodRecognition, needsCheck, type RecognizedFood } from '@/services/foodRecognition';
@@ -200,7 +201,7 @@ export default function PhotoScreen() {
                 <Chip tone="accent" label={strings.common.estimate} />
               </View>
               <Text variant="displayLarge" color="accentText" style={styles.tabular}>
-                {format(strings.common.kcal, { value: formatInteger(total.kcal) })}
+                {formatEnergy(total.kcal)}
               </Text>
               <MacroLine proteinG={total.proteinG} carbsG={total.carbsG} fatG={total.fatG} />
               <Text variant="caption" color="textSubtle">
@@ -224,20 +225,18 @@ export default function PhotoScreen() {
                       <PressableScale
                         onPress={() => setEditing(index)}
                         accessibilityRole="button"
-                        accessibilityLabel={`${food.name}, ${item.grams} g, ${format(strings.common.kcal, {
-                          value: formatInteger(macros.kcal),
-                        })}. ${check ? `${r.checkA11y}. ` : ''}${r.edit}`}
+                        accessibilityLabel={`${food.name}, ${formatGramsExact(item.grams)}, ${formatEnergy(macros.kcal)}. ${check ? `${r.checkA11y}. ` : ''}${r.edit}`}
                         style={styles.itemBody}
                       >
                         <View style={styles.row}>
                           <Text variant="bodyStrong" style={styles.flex} numberOfLines={2}>
                             {food.name}
                           </Text>
-                          <Text variant="number">{format(strings.common.kcal, { value: formatInteger(macros.kcal) })}</Text>
+                          <Text variant="number">{formatEnergy(macros.kcal)}</Text>
                         </View>
                         <View style={styles.row}>
                           <Text variant="label" color="textMuted" style={styles.flex}>
-                            {`${item.grams} g${guide ? ` · ${format(r.about, { guide: strings.guides[guide.key].toLowerCase() })}` : ''}`}
+                            {`${formatGramsExact(item.grams)}${guide ? ` · ${format(r.about, { guide: strings.guides[guide.key].toLowerCase() })}` : ''}`}
                           </Text>
                           {check ? <Chip tone="accent" label={r.check} /> : null}
                         </View>
@@ -275,12 +274,10 @@ export default function PhotoScreen() {
           <View style={styles.gap}>
             <View style={styles.row}>
               <Text variant="displayLarge" style={[styles.flex, styles.tabular]}>
-                {`${editingItem.grams} g`}
+                {formatGramsExact(editingItem.grams)}
               </Text>
               <Text variant="number" color="accentText">
-                {format(strings.common.kcal, {
-                  value: formatInteger(entryMacros({ basis: basisOf(editingFood), quantity: editingItem.grams }).kcal),
-                })}
+                {formatEnergy(entryMacros({ basis: basisOf(editingFood), quantity: editingItem.grams }).kcal)}
               </Text>
             </View>
             <Slider
@@ -290,7 +287,7 @@ export default function PhotoScreen() {
               step={5}
               onChange={(grams) => update(editing, { grams })}
               accessibilityLabel={r.amountSlider}
-              accessibilityValueText={`${editingItem.grams} g`}
+              accessibilityValueText={formatGramsExact(editingItem.grams)}
             />
             <Text variant="overline" color="textSubtle">
               {r.guidesTitle}
@@ -300,7 +297,7 @@ export default function PhotoScreen() {
                 <SelectChip
                   key={guide.key}
                   icon="hand"
-                  label={`${strings.guides[guide.key]} · ${guide.grams} g`}
+                  label={`${strings.guides[guide.key]} · ${formatGrams(guide.grams)}`}
                   selected={editingItem.grams === guide.grams}
                   role="radio"
                   onPress={() => update(editing, { grams: guide.grams })}
@@ -357,9 +354,7 @@ export default function PhotoScreen() {
 function MacroLine({ proteinG, carbsG, fatG }: { proteinG: number; carbsG: number; fatG: number }) {
   return (
     <Text variant="caption" color="textSubtle">
-      {`${strings.macros.protein} ${formatInteger(proteinG)} g · ${strings.macros.carbs} ${formatInteger(
-        carbsG,
-      )} g · ${strings.macros.fat} ${formatInteger(fatG)} g`}
+      {`${strings.macros.protein} ${formatNutrientGrams(proteinG)} · ${strings.macros.carbs} ${formatNutrientGrams(carbsG)} · ${strings.macros.fat} ${formatNutrientGrams(fatG)}`}
     </Text>
   );
 }

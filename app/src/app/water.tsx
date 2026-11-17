@@ -22,10 +22,13 @@ import { useRecommendedWaterGoal, useWaterGoal, useWaterGoalFor } from '@/data/h
 import { useWaterStore } from '@/data/stores/water';
 import {
   DRINK_TYPES,
+  EXERCISE_ML_PER_HOUR,
+  HEAT_EXTRA_ML,
   DRINKS_WITH_ENERGY,
   isAboveCaution,
   MAX_GOAL_ML,
   MIN_GOAL_ML,
+  ML_PER_KG,
   NO_EXTRAS,
   reminderHours,
   SERVING_SIZES_ML,
@@ -37,8 +40,8 @@ import { BarChart } from '@/features/diary/BarChart';
 import { decilitres, litres } from '@/features/diary/WaterCard';
 import { useCharacter } from '@/features/mascot/useCharacter';
 import { MascotSays } from '@/features/mascot/SpeechBubble';
-import { format, formatDecimal, strings } from '@/i18n';
-import { formatWaterBare } from '@/lib/amounts';
+import { format, strings } from '@/i18n';
+import { formatBodyWeight, formatDrink, formatWaterBare } from '@/lib/amounts';
 import { addDays, diaryDayLabel, today, weekdayShort, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { ensurePermission, scheduleWaterReminders } from '@/services/reminders';
@@ -263,7 +266,7 @@ export default function WaterScreen() {
               <View style={styles.flex}>
                 <Text variant="bodyStrong">{t.exercise}</Text>
                 <Text variant="caption" color="textSubtle">
-                  {t.exerciseHint}
+                  {format(t.exerciseHint, { amount: formatDrink(EXERCISE_ML_PER_HOUR) })}
                 </Text>
               </View>
               <Stepper
@@ -278,7 +281,7 @@ export default function WaterScreen() {
             </View>
             <SwitchRow
               label={t.hot}
-              hint={t.hotHint}
+              hint={format(t.hotHint, { amount: formatDrink(HEAT_EXTRA_ML) })}
               value={extras.hot}
               onValueChange={(hot) => store().setDayExtras(date, { hot })}
             />
@@ -341,7 +344,7 @@ export default function WaterScreen() {
                     {part.key === 'base' ? (
                       <Text variant="caption" color="textSubtle">
                         {goal.basis === 'weight'
-                          ? format(t.basis.weight, { kg: formatDecimal(Math.round(goal.parts[0].ml / 24), 0) })
+                          ? format(t.basis.weight, { weight: formatBodyWeight(goal.parts[0].ml / ML_PER_KG) })
                           : t.basis[goal.basis]}
                       </Text>
                     ) : null}

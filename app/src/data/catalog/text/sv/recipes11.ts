@@ -19,7 +19,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Linssallad med rostade rotfrukter',
     description: 'Gröna linser, ugnsrostad rödbeta och morot, valnötter och vinägerdressing.',
     steps: [
-      'Sätt ugnen på 220 grader. Dela rotfrukterna i klyftor och rosta dem i hälften av oljan i 25 minuter.',
+      'Sätt ugnen på 220 °C. Dela rotfrukterna i klyftor och rosta dem i hälften av oljan i 25 minuter.',
       'Koka linserna mjuka på cirka 20 minuter och låt rinna av.',
       'Blanda resten av oljan, vinägern och salt till en dressing.',
       'Lägg upp sallad, linser och rotfrukter och strö valnötterna över.',
@@ -57,7 +57,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Buddhabowl med tahinidressing',
     description: 'Fullkornsris, rostad sötpotatis, kikärter, grönkål och avokado med tahinidressing.',
     steps: [
-      'Sätt ugnen på 220 grader. Rosta tärnad sötpotatis och kikärter i olja i 25 minuter.',
+      'Sätt ugnen på 220 °C. Rosta tärnad sötpotatis och kikärter i olja i 25 minuter.',
       'Koka riset.',
       'Blanda tahini, citronsaft, en skvätt vatten och salt till en dressing.',
       'Lägg upp ris, riven grönkål, sötpotatis, kikärter och avokado i skålar. Ringla över dressingen.',
@@ -70,7 +70,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Matlådor med ugnsgrönsaker och quinoa',
     description: 'Veckans luncher på en gång: rostad broccoli, paprika och kikärter med quinoa.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Dela broccoli, paprika och lök i bitar och blanda med kikärter, olja, paprikapulver och salt.',
       'Rosta på en plåt i 20–25 minuter.',
       'Koka quinoan och fördela den i lådor med grönsakerna. Pressa över citron.',
@@ -84,7 +84,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Matlådor med kyckling och ris',
     description: 'Paprikakyckling, fullkornsris, broccoli och morot: fyra dagars luncher på en gång.',
     steps: [
-      'Sätt ugnen på 200 grader och koka riset.',
+      'Sätt ugnen på 200 °C och koka riset.',
       'Krydda kycklingen med olja, paprikapulver och salt och tillaga den i ugnen i 20 minuter.',
       'Ånga broccoli och morot.',
       'Skiva kycklingen och fördela den i lådor med riset och grönsakerna.',
@@ -112,7 +112,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Sallad med rödbeta och getost',
     description: 'Rostad rödbeta, getost, linser, valnötter och en honungsdressing.',
     steps: [
-      'Rosta rödbetsklyftorna i ugnen på 200 grader i cirka 40 minuter.',
+      'Rosta rödbetsklyftorna i ugnen på 200 °C i cirka 40 minuter.',
       'Koka linserna och låt rinna av.',
       'Blanda olja, vinäger, honung och salt till en dressing.',
       'Lägg upp sallad, linser, rödbeta, getost och nötterna och ringla över dressingen.',
@@ -125,7 +125,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Varm sallad med sötpotatis och linser',
     description: 'Rostad sötpotatis, gröna linser, spenat och krispiga pumpafrön.',
     steps: [
-      'Sätt ugnen på 220 grader. Rosta tärnad sötpotatis i hälften av oljan i 25 minuter.',
+      'Sätt ugnen på 220 °C. Rosta tärnad sötpotatis i hälften av oljan i 25 minuter.',
       'Koka linserna mjuka och låt rinna av.',
       'Blanda linser, sötpotatis, spenat och rödlök.',
       'Smaka av med resten av oljan, citron och salt och strö fröna över.',
@@ -230,7 +230,7 @@ export const SV_RECIPES_11: Readonly<Record<string, RecipeText>> = {
     title: 'Bönenchiladas med majstortillor',
     description: 'Majstortillor fyllda med kryddiga bönor och gräddade i tomatsås.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Stek löken i olja, tillsätt bönor och tacokrydda och mosa dem delvis.',
       'Fyll de uppvärmda majstortillorna och rulla ihop dem i en form.',
       'Häll de krossade tomaterna över och grädda i 20 minuter.',

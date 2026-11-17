@@ -6,7 +6,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Crispy roasted chickpeas',
     description: 'Oven-roasted, paprika-seasoned chickpeas: a crunchy, filling snack.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Rinse and drain the chickpeas and dry them carefully with kitchen paper.',
       'Toss them with the oil, paprika and salt and spread them on a baking tray.',
       'Roast for 25–30 minutes, shaking now and then, until the chickpeas are crisp.',
@@ -15,7 +15,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
       'The drier the chickpeas, the crispier they get.',
     ],
     storage: 'Keep in an open bowl at room temperature for 1–2 days; under a lid they go soft.',
-    reheating: 'Crisp them up in the oven at 200 °C (400 °F) for 5 minutes if needed.',
+    reheating: 'Crisp them up in the oven at 200 °C for 5 minutes if needed.',
   },
   'oat-peanut-energy-balls': {
     title: 'Oat and peanut butter balls',
@@ -87,7 +87,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Guacamole with oven-baked corn chips',
     description: 'Guacamole seasoned with lime and coriander, with homemade corn tortilla chips.',
     steps: [
-      'Heat the oven to 200 °C (400 °F). Cut the tortillas into triangles, brush them with oil and sprinkle with salt.',
+      'Heat the oven to 200 °C. Cut the tortillas into triangles, brush them with oil and sprinkle with salt.',
       'Bake on a tray for 8–10 minutes until the chips are crisp.',
       'Mash the avocado and mix in the tomato, finely chopped red onion, lime juice and coriander.',
     ],
@@ -121,7 +121,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Tortilla pizza with ham',
     description: 'A crisp tortilla base, tomato sauce, mozzarella and ham: pizza in ten minutes.',
     steps: [
-      'Heat the oven to 225 °C (435 °F).',
+      'Heat the oven to 225 °C.',
       'Spread the chopped tomatoes on the tortilla and season with oregano.',
       'Add the ham and torn mozzarella.',
       'Bake in the middle of the oven for 6–8 minutes until the edges are crisp.',
@@ -134,7 +134,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Blueberry muffins',
     description: 'Moist blueberry muffins to go with coffee or in a lunch box.',
     steps: [
-      'Heat the oven to 200 °C (400 °F) and put paper cases in a muffin tin.',
+      'Heat the oven to 200 °C and put paper cases in a muffin tin.',
       'Whisk the eggs and sugar until fluffy. Add the melted butter and milk.',
       'Mix the flour and baking powder and fold them gently into the batter.',
       'Add the blueberries and divide the batter between the cases.',
@@ -150,7 +150,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Banana bread',
     description: 'A cinnamon banana bread made from overripe bananas.',
     steps: [
-      'Heat the oven to 175 °C (350 °F) and grease a loaf tin.',
+      'Heat the oven to 175 °C and grease a loaf tin.',
       'Mash the bananas and whisk in the eggs, sugar and oil.',
       'Mix the flour, baking powder and cinnamon and combine with the batter.',
       'Pour into the tin and bake for about 50 minutes.',
@@ -213,7 +213,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Spiced nut and seed mix',
     description: 'Toasted almonds, cashews and seeds with paprika and salt.',
     steps: [
-      'Heat the oven to 175 °C (350 °F).',
+      'Heat the oven to 175 °C.',
       'Mix the almonds, cashews, seeds, oil and spices.',
       'Toast on a baking tray for 10–12 minutes, stirring now and then, and let it cool.',
     ],
@@ -257,7 +257,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Oat biscuits',
     description: 'Crisp, buttery oat biscuits, easy to bake a whole tray at once.',
     steps: [
-      'Heat the oven to 200 °C (400 °F).',
+      'Heat the oven to 200 °C.',
       'Melt the butter and stir in the sugar, oats, flour and baking powder.',
       'Add the egg and mix until even.',
       'Drop small spoonfuls onto baking paper with plenty of space between them.',
@@ -273,7 +273,7 @@ export const EN_RECIPES_05: Readonly<Record<string, RecipeText>> = {
     title: 'Roasted cauliflower with yogurt dip',
     description: 'Curry-roasted cauliflower and a cool yogurt dip.',
     steps: [
-      'Heat the oven to 220 °C (425 °F).',
+      'Heat the oven to 220 °C.',
       'Break the cauliflower into florets and toss with the oil, curry powder and salt.',
       'Roast on a baking tray for 20–25 minutes until the edges brown.',
       'Mix the yogurt and lemon juice into a dip.',

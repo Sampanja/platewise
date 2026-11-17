@@ -1,4 +1,5 @@
 import type { fi } from './fi';
+import type { fiActivity } from './fiActivity';
 import type { fiCharacters } from './fiCharacters';
 import type { fiDiary } from './fiDiary';
 import type { fiFun } from './fiFun';
@@ -20,6 +21,7 @@ export type Widen<T> = T extends string
       : T;
 
 export type Strings = Widen<typeof fi>;
+export type ActivityStrings = Widen<typeof fiActivity>;
 export type DiaryStrings = Widen<typeof fiDiary>;
 export type FunStrings = Widen<typeof fiFun>;
 export type GoalStrings = Widen<typeof fiGoals>;

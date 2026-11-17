@@ -24,7 +24,7 @@ import { dayQuality } from '@/features/quality/entryQuality';
 import { WeightChart } from '@/features/weight/WeightChart';
 import { format, formatInteger, formatMoney, strings } from '@/i18n';
 import { activeFirstWeekday } from '@/i18n/locale';
-import { formatWater, formatWeightChange } from '@/lib/amounts';
+import { formatEnergy, formatEnergyBare, formatWater, formatWeightChange } from '@/lib/amounts';
 import { dayMonth, today, weekdayShort, type LocalDate } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { insights, ruleInsights, type ReportInsights } from '@/services/insights';
@@ -192,7 +192,7 @@ export function ReportsView({ bottomSpace }: ReportsViewProps) {
               <Card style={styles.gap}>
                 <Text variant="heading">{t.energyTitle}</Text>
                 <Text variant="caption" color="textSubtle">
-                  {format(t.energyAvg, { value: formatInteger(report.avg.kcal) })}
+                  {format(t.energyAvg, { value: formatEnergy(report.avg.kcal) })}
                 </Text>
                 <BarChart
                   bars={report.days.map((day, index) => ({
@@ -200,10 +200,10 @@ export function ReportsView({ bottomSpace }: ReportsViewProps) {
                     label: barLabel(day.date, index),
                     value: day.kcal,
                     muted: !day.logged,
-                    a11y: `${dayMonth(day.date)} ${formatInteger(day.kcal)} kcal`,
+                    a11y: `${dayMonth(day.date)} ${formatEnergy(day.kcal)}`,
                   }))}
                   reference={report.goals?.kcal ?? null}
-                  format={(value) => formatInteger(value)}
+                  format={(value) => formatEnergyBare(value)}
                 />
               </Card>
             )}

@@ -21,8 +21,10 @@ import { MIN_KCAL_GOAL } from '@/data/catalog';
 import { useProfileStore, type Profile } from '@/data/stores/profile';
 import type { AllergenCode, DietCode } from '@/data/types';
 import { LanguageStep } from '@/features/settings/LanguageStep';
+import { UnitsStep } from '@/features/settings/UnitsStep';
 import { DietPicker } from '@/features/shared/DietPicker';
-import { format, formatInteger, strings } from '@/i18n';
+import { format, strings } from '@/i18n';
+import { energyUnitLabel, formatEnergy, formatEnergyBare } from '@/lib/amounts';
 import { activeTheme, colors, radii, spacing, themedStyles } from '@/theme';
 
 const t = strings.onboarding;
@@ -36,23 +38,26 @@ type Draft = Pick<
 
 /**
  * First-run setup. It starts with the language (preselected from the phone),
- * then the character picker: choosing a character
+ * then the units (suggested by the region, always confirmed), then the character picker: choosing a character
  * re-themes the whole app (the navigator remounts), so the choice is saved
  * right away and the rest of the setup starts after it. Then a few short
  * screens, each one skippable. Shown only once.
  */
 export default function OnboardingScreen() {
   const languageChosen = useProfileStore((s) => s.languageChosen);
+  const unitsChosen = useProfileStore((s) => s.unitsChosen);
   const chosen = useProfileStore((s) => s.characterChosen);
   const characterId = useProfileStore((s) => s.characterId);
   const update = useProfileStore((s) => s.update);
   if (!languageChosen) return <LanguageStep />;
+  if (!unitsChosen) return <UnitsStep />;
   if (!chosen) {
     return (
       <CharacterPicker
         initial={characterId}
         mode={activeTheme()}
         onChoose={(id) => update({ characterId: id, characterChosen: true })}
+        onBack={() => update({ unitsChosen: false })}
       />
     );
   }
@@ -178,14 +183,14 @@ function Setup() {
                 max={4000}
                 step={50}
                 onChange={(kcal) => patch({ goals: { ...draft.goals, kcal } })}
-                format={(v) => formatInteger(v)}
-                accessibilityLabel={strings.profileEdit.kcal}
+                format={(v) => formatEnergyBare(v)}
+                accessibilityLabel={format(strings.profileEdit.kcal, { unit: energyUnitLabel() })}
               />
               <Text variant="label" color="textSubtle">
-                {strings.common.kcalUnit}
+                {energyUnitLabel()}
               </Text>
               <Text variant="caption" color="textSubtle" style={styles.center}>
-                {format(t.goalHint, { min: formatInteger(MIN_KCAL_GOAL) })}
+                {format(t.goalHint, { min: formatEnergy(MIN_KCAL_GOAL) })}
               </Text>
             </View>
           ) : null}

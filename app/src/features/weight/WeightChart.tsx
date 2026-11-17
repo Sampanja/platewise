@@ -4,10 +4,8 @@ import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
 import { movingAverage, type WeightEntry } from '@/domain/energy';
-import { displayWeight } from '@/domain/units';
-import { format, formatDecimal, strings } from '@/i18n';
-import { activeUnitSystem } from '@/i18n/locale';
-import { formatBodyWeight } from '@/lib/amounts';
+import { format, strings } from '@/i18n';
+import { formatBodyWeight, formatWeightBare } from '@/lib/amounts';
 import { colors, spacing, themedStyles } from '@/theme';
 
 type Props = {
@@ -50,10 +48,10 @@ export function WeightChart({ entries, targetKg }: Props) {
     >
       <View style={styles.axis}>
         <Text variant="caption" color="textSubtle">
-          {formatDecimal(displayWeight(max, activeUnitSystem()), 1)}
+          {formatWeightBare(max)}
         </Text>
         <Text variant="caption" color="textSubtle">
-          {formatDecimal(displayWeight(min, activeUnitSystem()), 1)}
+          {formatWeightBare(min)}
         </Text>
       </View>
       <View style={styles.plot} onLayout={onLayout}>

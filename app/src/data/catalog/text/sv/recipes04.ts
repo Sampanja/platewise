@@ -98,7 +98,7 @@ export const SV_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnspannkaka med jordgubbar',
     description: 'En ugnspannkaka som jäser upp och serveras med jordgubbar. En finsk helgfavorit.',
     steps: [
-      'Sätt ugnen på 225 grader. Smält smöret på en plåt med bakplåtspapper.',
+      'Sätt ugnen på 225 °C. Smält smöret på en plåt med bakplåtspapper.',
       'Vispa mjöl, socker, salt och hälften av mjölken slätt.',
       'Tillsätt resten av mjölken och äggen och häll smöret i smeten.',
       'Häll smeten på plåten och grädda i 25–30 minuter tills ytan är gyllenbrun.',
@@ -171,7 +171,7 @@ export const SV_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Blanda råg- och vetemjöl, 0,5 dl vatten och en nypa salt till en fast deg.',
       'Kavla ut degen till tunna runda skal, cirka 12 cm i diameter.',
       'Bred gröten på skalen och nyp ihop kanterna med fingrarna.',
-      'Grädda i 275 grader i 12–15 minuter och pensla de varma pirogerna med smält smör.',
+      'Grädda i 275 °C i 12–15 minuter och pensla de varma pirogerna med smält smör.',
       'Hårdkoka äggen, hacka dem och blanda med smöret till äggsmör.',
     ],
     tips: [
@@ -179,7 +179,7 @@ export const SV_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Pirogerna går utmärkt att frysa.',
     ],
     storage: 'Förvara pirogerna i kylskåpet i 3 dagar eller frys dem. Äggsmöret håller sig i kylskåpet i 2 dagar.',
-    reheating: 'Värm pirogerna i ugnen på 200 grader i cirka 8 minuter.',
+    reheating: 'Värm pirogerna i ugnen på 200 °C i cirka 8 minuter.',
   },
   'oat-rolls': {
     title: 'Havrefrallor',
@@ -189,13 +189,13 @@ export const SV_RECIPES_04: Readonly<Record<string, RecipeText>> = {
       'Tillsätt havregryn, salt och mjöl lite i taget och knåda till en slät deg. Tillsätt oljan sist.',
       'Låt jäsa under bakduk i cirka 40 minuter.',
       'Forma 12 frallor av degen på en plåt och låt dem jäsa ytterligare 20 minuter.',
-      'Grädda i 225 grader i cirka 12 minuter.',
+      'Grädda i 225 °C i cirka 12 minuter.',
     ],
     tips: [
       'Frys de avsvalnade frallorna i en påse och ta fram så många du behöver på morgonen.',
     ],
     storage: 'Förvara i en påse i rumstemperatur i 2 dagar eller frys i 3 månader.',
-    reheating: 'Värm en fryst fralla i ugnen på 200 grader i 5–8 minuter.',
+    reheating: 'Värm en fryst fralla i ugnen på 200 °C i 5–8 minuter.',
   },
   'turkey-avocado-wrap': {
     title: 'Wrap med kalkon och avokado',
@@ -260,7 +260,7 @@ export const SV_RECIPES_04: Readonly<Record<string, RecipeText>> = {
     title: 'Hemgjord granola med yoghurt',
     description: 'Ugnsrostad granola på mandel, frön och kokos, med yoghurt.',
     steps: [
-      'Sätt ugnen på 175 grader.',
+      'Sätt ugnen på 175 °C.',
       'Blanda havregryn, hackad mandel, frön, kokosflingor och kanel.',
       'Tillsätt sirap och olja och blanda tills allt är fuktat.',
       'Bred ut på en plåt och rosta i 20–25 minuter under omrörning då och då. Låt svalna.',

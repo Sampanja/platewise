@@ -90,7 +90,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
       'Skiva löken och fräs den i smör på låg värme i cirka 35 minuter tills den karamelliseras.',
       'Tillsätt 7 dl vatten och fond och koka i 10 minuter.',
       'Häll soppan i ugnssäkra skålar och lägg på en baguetteskiva och osten.',
-      'Gratinera högt upp i ugnen på 250 grader tills osten får färg.',
+      'Gratinera högt upp i ugnen på 250 °C tills osten får färg.',
     ],
     tips: [
       'Att låta löken fräsa med tålamod är soppans hemlighet.',
@@ -101,7 +101,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     description: 'En fransk paj med mör botten, bacon och en krämig ostfyllning.',
     steps: [
       'Nyp ihop mjöl och kallt smör till smulor, tillsätt en matsked kallt vatten och tryck ut i en pajform. Ställ kallt i 15 minuter.',
-      'Sätt ugnen på 200 grader och förgrädda bottnen i 10 minuter.',
+      'Sätt ugnen på 200 °C och förgrädda bottnen i 10 minuter.',
       'Stek bacon och lök och fördela över bottnen.',
       'Vispa ägg, grädde, ost och salt och häll i formen.',
       'Grädda i cirka 30 minuter tills fyllningen har stelnat.',
@@ -150,7 +150,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Äggmuffins med skinka',
     description: 'Ugnsbakade äggmuffins med skinka, paprika och spenat. Färdig frukost för veckan.',
     steps: [
-      'Sätt ugnen på 180 grader och smörj en muffinsplåt.',
+      'Sätt ugnen på 180 °C och smörj en muffinsplåt.',
       'Fördela hackad skinka, paprika och spenat i formarna.',
       'Vispa ägg och salt och häll i formarna. Strö osten över.',
       'Grädda i cirka 20 minuter tills äggen har stelnat.',
@@ -164,7 +164,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsbakad havregrynsgröt med äpple och kanel',
     description: 'Ugnsbakad havregrynsgröt med äpple, russin och kanel.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Blanda havregryn, tärnat äpple, russin, kanel och salt i en form.',
       'Häll mjölken över och rör om.',
       'Grädda i cirka 30 minuter tills ytan är gyllenbrun.',
@@ -190,7 +190,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Bondbönsbiffar med ugnspotatis',
     description: 'Veganska bondbönsbiffar kryddade med spiskummin och krispig ugnspotatis.',
     steps: [
-      'Sätt ugnen på 225 grader. Dela potatisen i klyftor, blanda med hälften av oljan och salt och rosta i 30 minuter.',
+      'Sätt ugnen på 225 °C. Dela potatisen i klyftor, blanda med hälften av oljan och salt och rosta i 30 minuter.',
       'Koka bondbönorna i 3 minuter och låt rinna av.',
       'Mixa bönor, lök, potatismjöl, spiskummin och salt till en grov smet.',
       'Forma till biffar och stek dem gyllene på båda sidor i resten av oljan.',
@@ -203,7 +203,7 @@ export const SV_RECIPES_13: Readonly<Record<string, RecipeText>> = {
     title: 'Kycklingfrestelse',
     description: 'Potatis, kyckling och lök i krämigt spad under ett osttäcke.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Skär potatis och lök i strimlor.',
       'Varva potatis, lök och kyckling i en form.',
       'Häll över grädde, mjölk och kryddor. Strö över osten och grädda i cirka en timme.',

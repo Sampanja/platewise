@@ -14,8 +14,8 @@ import {
   tdee,
   type BodyInfo,
 } from '@/domain/energy';
-import { format, formatInteger, strings } from '@/i18n';
-import { formatWeightChange } from '@/lib/amounts';
+import { format, strings } from '@/i18n';
+import { formatEnergy, formatWeightChange } from '@/lib/amounts';
 import { addDays, today } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, spacing, themedStyles } from '@/theme';
@@ -108,7 +108,7 @@ export function CheckInCard() {
       <Card style={styles.card}>
         <Header />
         <Text variant="body" color="textMuted">
-          {format(t.usingAdaptive, { value: formatInteger(goal.adaptiveTdee) })}
+          {format(t.usingAdaptive, { value: formatEnergy(goal.adaptiveTdee) })}
         </Text>
       </Card>
     ) : null;
@@ -130,22 +130,22 @@ export function CheckInCard() {
     <Card style={[styles.card, styles.highlight]}>
       <Header />
       <Text variant="title" color="accentText">
-        {format(t.estimate, { value: formatInteger(estimate.tdee) })}
+        {format(t.estimate, { value: formatEnergy(estimate.tdee) })}
       </Text>
       <Text variant="caption" color="textSubtle">
-        {format(t.formula, { value: formatInteger(result.formula) })}
+        {format(t.formula, { value: formatEnergy(result.formula) })}
       </Text>
       <Text variant="body" color="textMuted">
         {format(t.trend, {
           value: formatWeightChange(estimate.weeklyChangeKg, undefined, 2),
-          intake: formatInteger(estimate.avgIntake),
+          intake: formatEnergy(estimate.avgIntake),
         })}
       </Text>
       <Text variant="caption" color="textSubtle">
         {t.explain}
       </Text>
       {suggestion ? (
-        <Text variant="bodyStrong">{format(t.suggest, { value: formatInteger(suggestion.targetKcal) })}</Text>
+        <Text variant="bodyStrong">{format(t.suggest, { value: formatEnergy(suggestion.targetKcal) })}</Text>
       ) : null}
       <View style={styles.actions}>
         <Button label={t.apply} size="compact" onPress={apply} haptic="none" />

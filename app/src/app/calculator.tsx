@@ -15,6 +15,7 @@ import {
   Stepper,
   SwitchRow,
   Text,
+  UnitToggle,
 } from '@/components/ui';
 import { useProfileStore } from '@/data/stores/profile';
 import { useWeightStore } from '@/data/stores/weight';
@@ -44,10 +45,19 @@ import {
   type Workout,
   type WorkoutType,
 } from '@/domain/energy';
-import { CM_PER_INCH, KG_PER_POUND } from '@/domain/units';
+import { CM_PER_INCH, KG_PER_POUND, type HeightUnit, type WeightUnit } from '@/domain/units';
 import { format, formatDecimal, formatInteger, strings } from '@/i18n';
-import { activeUnitSystem } from '@/i18n/locale';
-import { formatBodyWeight, formatHeight } from '@/lib/amounts';
+import { activeUnits } from '@/i18n/locale';
+import {
+  formatBodyWeight,
+  formatEnergy,
+  formatEnergyBare,
+  formatHeight,
+  formatNutrientGrams,
+  formatWeightRange,
+  heightToggleOptions,
+  weightToggleOptions,
+} from '@/lib/amounts';
 import { numericDate, today, weekdayOrder } from '@/lib/dates';
 import { showToast } from '@/lib/toast';
 import { colors, radii, spacing, themedStyles } from '@/theme';
@@ -85,6 +95,9 @@ export default function CalculatorScreen() {
   const [sex, setSex] = useState<Sex | null>(saved.sex);
   const [age, setAge] = useState(saved.birthYear ? ageFromBirthYear(saved.birthYear, now) : 35);
   const [height, setHeight] = useState(saved.heightCm ?? 170);
+  // One-off units for typing height and weight; the setting itself stays.
+  const [heightUnit, setHeightUnit] = useState<HeightUnit>(activeUnits().height);
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>(activeUnits().weight);
   const [weight, setWeight] = useState(latestWeight ?? saved.weightKg ?? 75);
   const [pregnancy, setPregnancy] = useState<PregnancyStatus>(saved.pregnancy);
   const [bodyFat, setBodyFat] = useState<number | null>(saved.bodyFatPct);
@@ -228,25 +241,31 @@ export default function CalculatorScreen() {
             <NumberRow label={t.age}>
               <Stepper value={age} min={13} max={100} onChange={setAge} format={(v) => format(t.ageValue, { value: v })} accessibilityLabel={t.age} />
             </NumberRow>
-            <NumberRow label={t.height}>
+            <NumberRow
+              label={t.height}
+              toggle={<UnitToggle value={heightUnit} options={heightToggleOptions()} onChange={setHeightUnit} />}
+            >
               <Stepper
                 value={height}
                 min={120}
                 max={220}
                 onChange={setHeight}
-                step={activeUnitSystem() === 'imperial' ? CM_PER_INCH : 1}
-                format={(v) => formatHeight(v)}
+                step={heightUnit === 'ftin' ? CM_PER_INCH : 1}
+                format={(v) => formatHeight(v, heightUnit)}
                 accessibilityLabel={t.height}
               />
             </NumberRow>
-            <NumberRow label={t.weight}>
+            <NumberRow
+              label={t.weight}
+              toggle={<UnitToggle value={weightUnit} options={weightToggleOptions()} onChange={setWeightUnit} />}
+            >
               <Stepper
                 value={weight}
                 min={35}
                 max={250}
-                step={activeUnitSystem() === 'imperial' ? KG_PER_POUND : 0.5}
+                step={weightUnit === 'kg' ? 0.5 : KG_PER_POUND}
                 onChange={setWeight}
-                format={kg}
+                format={(v) => formatBodyWeight(v, weightUnit)}
                 accessibilityLabel={t.weight}
               />
             </NumberRow>
@@ -408,7 +427,7 @@ export default function CalculatorScreen() {
               {t.bmr}
             </Text>
             <Text variant="display" style={styles.tabular}>
-              {format(t.kcalPerDay, { value: formatInteger(spend.bmr) })}
+              {format(t.kcalPerDay, { value: formatEnergy(spend.bmr) })}
             </Text>
             <Text variant="body" color="textMuted">
               {t.bmrExplain}
@@ -428,7 +447,7 @@ export default function CalculatorScreen() {
               <Text variant="body" color="textMuted">
                 {g.exercise}
               </Text>
-              <Text variant="bodyStrong">{format(g.exerciseValue, { value: formatInteger(spend.exerciseKcal) })}</Text>
+              <Text variant="bodyStrong">{format(g.exerciseValue, { value: formatEnergy(spend.exerciseKcal) })}</Text>
             </View>
           </Card>
           <Card style={[styles.gapSm, styles.highlight]}>
@@ -436,7 +455,7 @@ export default function CalculatorScreen() {
               {t.tdee}
             </Text>
             <Text variant="display" color="accentText" style={styles.tabular}>
-              {format(t.kcalPerDay, { value: formatInteger(spend.tdee) })}
+              {format(t.kcalPerDay, { value: formatEnergy(spend.tdee) })}
             </Text>
             <Text variant="body" color="textMuted">
               {format(t.tdeeExplain, { factor: formatDecimal(spend.tdee / spend.bmr, 2) })}
@@ -501,7 +520,7 @@ export default function CalculatorScreen() {
                 </View>
                 {goalType === 'gain' ? (
                   <Text variant="caption" color="textSubtle">
-                    {g.gainRateHint}
+                    {format(g.gainRateHint, { range: formatWeightRange(GAIN_RATE_OPTIONS[0], GAIN_RATE_OPTIONS[GAIN_RATE_OPTIONS.length - 1]) })}
                   </Text>
                 ) : null}
               </View>
@@ -513,7 +532,7 @@ export default function CalculatorScreen() {
               {t.dailyKcal}
             </Text>
             <Text variant="displayLarge" color="accentText" style={styles.tabular}>
-              {format(strings.common.kcal, { value: formatInteger(plan.targetKcal) })}
+              {formatEnergy(plan.targetKcal)}
             </Text>
             <Text variant="body" color="textMuted">
               {plan.goal === 'recomp'
@@ -563,7 +582,7 @@ export default function CalculatorScreen() {
             <View style={styles.spread}>
               <Text variant="bodyStrong">{strings.profileEdit.kcal}</Text>
               <Text variant="heading" color="accentText" style={styles.tabular}>
-                {format(strings.common.kcal, { value: formatInteger(plan.targetKcal) })}
+                {formatEnergy(plan.targetKcal)}
               </Text>
             </View>
             <SwitchRow
@@ -590,14 +609,14 @@ export default function CalculatorScreen() {
                     />
                   ) : (
                     <Text variant="heading" style={styles.tabular}>
-                      {format(strings.common.grams, { value: autoMacros[key] })}
+                      {formatNutrientGrams(autoMacros[key])}
                     </Text>
                   )}
                 </NumberRow>
               );
             })}
             <Text variant="caption" color="textSubtle">
-              {format(t.macroSum, { value: formatInteger(macros.proteinG * 4 + macros.carbsG * 4 + macros.fatG * 9) })}
+              {format(t.macroSum, { value: formatEnergy(macros.proteinG * 4 + macros.carbsG * 4 + macros.fatG * 9) })}
             </Text>
           </Card>
         </View>
@@ -649,7 +668,7 @@ export default function CalculatorScreen() {
                 <View style={styles.spread}>
                   <Text variant="bodyStrong">{g.cyclingExtra}</Text>
                   <Text variant="heading" color="accentText">
-                    {format(g.cyclingExtraValue, { value: cycling.extraKcal })}
+                    {format(g.cyclingExtraValue, { value: formatEnergy(cycling.extraKcal) })}
                   </Text>
                 </View>
                 <Slider
@@ -659,7 +678,7 @@ export default function CalculatorScreen() {
                   step={50}
                   onChange={(extraKcal) => setCycling((c) => ({ ...c, extraKcal }))}
                   accessibilityLabel={g.cyclingExtra}
-                  accessibilityValueText={format(g.cyclingExtraValue, { value: cycling.extraKcal })}
+                  accessibilityValueText={format(g.cyclingExtraValue, { value: formatEnergy(cycling.extraKcal) })}
                 />
               </Card>
               <Card style={styles.gapSm}>
@@ -668,23 +687,23 @@ export default function CalculatorScreen() {
                     const kcal = week.perDay[day];
                     const high = cycling.highDays.includes(day as Weekday);
                     return (
-                      <View key={day} style={styles.weekDay} accessible accessibilityLabel={`${g.weekdaysShort[day]} ${kcal} kcal`}>
+                      <View key={day} style={styles.weekDay} accessible accessibilityLabel={`${g.weekdaysShort[day]} ${formatEnergy(kcal)}`}>
                         <Text variant="caption" color="textSubtle">
                           {g.weekdaysShort[day]}
                         </Text>
                         <Text variant="label" color={high ? 'accentText' : 'text'} style={styles.tabular}>
-                          {formatInteger(kcal)}
+                          {formatEnergyBare(kcal)}
                         </Text>
                       </View>
                     );
                   })}
                 </View>
                 <Text variant="caption" color="textSubtle">
-                  {format(g.weekBudget, { value: formatInteger(plan.targetKcal * 7) })}
+                  {format(g.weekBudget, { value: formatEnergy(plan.targetKcal * 7) })}
                 </Text>
                 {week.limited ? (
                   <Text variant="caption" color="textMuted">
-                    {format(g.cyclingLimited, { floor: formatInteger(floor) })}
+                    {format(g.cyclingLimited, { floor: formatEnergy(floor) })}
                   </Text>
                 ) : null}
               </Card>
@@ -723,16 +742,17 @@ export default function CalculatorScreen() {
   );
 }
 
-function NumberRow({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+function NumberRow({ label, hint, toggle, children }: { label: string; hint?: string; toggle?: ReactNode; children: ReactNode }) {
   return (
     <View style={styles.numberRow}>
-      <View style={styles.flex}>
+      <View style={[styles.flex, styles.gapXs]}>
         <Text variant="bodyStrong">{label}</Text>
         {hint ? (
           <Text variant="caption" color="textSubtle">
             {hint}
           </Text>
         ) : null}
+        {toggle ? <View style={styles.toggle}>{toggle}</View> : null}
       </View>
       {children}
     </View>
@@ -741,6 +761,12 @@ function NumberRow({ label, hint, children }: { label: string; hint?: string; ch
 
 const styles = themedStyles(() =>
   StyleSheet.create({
+    gapXs: {
+      gap: spacing.xs,
+    },
+    toggle: {
+      alignItems: 'flex-start',
+    },
     gap: {
       gap: spacing.lg,
     },

@@ -6,7 +6,7 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Kycklingspett med tzatziki',
     description: 'Oreganokryddade spett med kyckling och grönsaker, fräsch tzatziki och ris.',
     steps: [
-      'Sätt ugnen på 225 grader och koka riset.',
+      'Sätt ugnen på 225 °C och koka riset.',
       'Skär kyckling, paprika och zucchini i bitar och blanda med olja, oregano och salt.',
       'Trä upp på spett och tillaga på en plåt i 15–18 minuter, vänd en gång.',
       'Riv gurkan, krama ur vätskan och blanda med yoghurt och vitlök.',
@@ -87,10 +87,10 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Kycklingklubbor med ugnspotatis',
     description: 'Kycklingklubbor med krispigt skinn och ugnspotatis med paprika på samma plåt.',
     steps: [
-      'Sätt ugnen på 200 grader.',
+      'Sätt ugnen på 200 °C.',
       'Dela potatisen i klyftor och blanda med olja, paprikapulver, salt och vitlök.',
       'Lägg potatisen och kycklingklubborna på en plåt och krydda kycklingen med salt och peppar.',
-      'Tillaga i cirka 45 minuter tills skinnet är krispigt och innertemperaturen är 80 grader.',
+      'Tillaga i cirka 45 minuter tills skinnet är krispigt och innertemperaturen är 80 °C.',
     ],
     tips: [
       'Kycklingklubbor är en prisvärd och god del av kycklingen.',
@@ -180,7 +180,7 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Mjölkfria kycklingbullar, potatismos gjort med olja och lingon.',
     steps: [
       'Blanda färs, finhackad lök, ägg, glutenfritt ströbröd och salt.',
-      'Rulla till bullar och tillaga i ugnen på 200 grader i cirka 15 minuter.',
+      'Rulla till bullar och tillaga i ugnen på 200 °C i cirka 15 minuter.',
       'Koka potatisen och mosa den med olja och en skvätt av kokvattnet.',
       'Servera med lingon.',
     ],
@@ -206,7 +206,7 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     description: 'Ugnskyckling marinerad i yoghurt och kryddor, ris och gurkraita.',
     steps: [
       'Blanda hälften av yoghurten med kryddor, vitlök, ingefära och salt. Marinera kycklingen i minst 20 minuter.',
-      'Sätt ugnen på 225 grader och tillaga kycklingen på en plåt i cirka 25 minuter.',
+      'Sätt ugnen på 225 °C och tillaga kycklingen på en plåt i cirka 25 minuter.',
       'Koka riset.',
       'Blanda resten av yoghurten, den rivna gurkan och citronsaften till en raita.',
     ],
@@ -231,7 +231,7 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnskyckling med rotfrukter',
     description: 'Rostade morötter, palsternackor och rödbetor och saftiga kycklinglår.',
     steps: [
-      'Sätt ugnen på 220 grader.',
+      'Sätt ugnen på 220 °C.',
       'Skala och dela rotfrukterna och löken i klyftor. Blanda med olja, oregano och salt.',
       'Rosta rotfrukterna på en plåt i 15 minuter.',
       'Lägg kycklingen på plåten och tillaga ytterligare 25 minuter.',
@@ -289,7 +289,7 @@ export const SV_RECIPES_08: Readonly<Record<string, RecipeText>> = {
       'Låt kalkonen vila en stund och skiva den.',
     ],
     tips: [
-      'Kalkonen är klar när innertemperaturen är 72 grader.',
+      'Kalkonen är klar när innertemperaturen är 72 °C.',
     ],
   },
   'chicken-mushroom-risotto': {

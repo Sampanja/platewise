@@ -1,6 +1,6 @@
 import type { DishDefaults } from '../types';
 
-/** Default storage and reheating advice per dish type, in English. Oven temperatures give °C and °F. */
+/** Default storage and reheating advice per dish type, in English. Temperatures are written "175 °C"; the app shows them in the user's unit. */
 export const EN_DISH_DEFAULTS: DishDefaults = {
   storage: {
     soup: 'Cool quickly and keep in a covered container in the fridge for 2–3 days. The soup freezes well in portions for 3 months.',
@@ -29,19 +29,19 @@ export const EN_DISH_DEFAULTS: DishDefaults = {
     stew: 'Heat in a pan over low heat, stirring, or covered in the microwave, until hot all the way through.',
     pasta: 'Heat in a pan with a splash of water, or covered in the microwave, stirring now and then.',
     rice: 'Heat covered in the microwave or in a pan until the rice is steaming hot all the way through.',
-    potato: 'Heat covered in the microwave or in the oven at 175 °C (350 °F) for about 15 minutes.',
-    oven: 'Heat in the oven at 175 °C (350 °F) for 10–15 minutes so the top stays crisp. The microwave works when you’re in a hurry.',
-    casserole: 'Heat covered in the oven at 175 °C (350 °F) for 20–25 minutes, or a portion in the microwave.',
+    potato: 'Heat covered in the microwave or in the oven at 175 °C for about 15 minutes.',
+    oven: 'Heat in the oven at 175 °C for 10–15 minutes so the top stays crisp. The microwave works when you’re in a hurry.',
+    casserole: 'Heat covered in the oven at 175 °C for 20–25 minutes, or a portion in the microwave.',
     stir_fry: 'Heat quickly in a hot pan, stirring.',
     salad: 'Serve cold. Warm parts can be reheated separately in a pan.',
     bowl: 'Heat the warm parts in the microwave or a pan, then add the cold parts.',
     wrap: 'Heat the filling in a pan and warm the breads in a dry pan just before eating.',
-    patty: 'Heat in a pan or in the oven at 175 °C (350 °F) for about 10 minutes.',
-    pie: 'Heat in the oven at 175 °C (350 °F) for about 15 minutes so the base stays crisp.',
+    patty: 'Heat in a pan or in the oven at 175 °C for about 10 minutes.',
+    pie: 'Heat in the oven at 175 °C for about 15 minutes so the base stays crisp.',
     porridge: 'Add a splash of milk or water and heat in a pan or the microwave, stirring.',
     egg: 'Heat gently in a pan or briefly in the microwave.',
     sandwich: 'Serve as it is. A warm sandwich can be heated in a pan or the oven.',
-    pancake: 'Warm in a pan, in the microwave or in the oven at 175 °C (350 °F) for about 5 minutes.',
+    pancake: 'Warm in a pan, in the microwave or in the oven at 175 °C for about 5 minutes.',
     smoothie: 'Not heated. Shake or stir before drinking.',
     snack: 'Serve as it is.',
     other: 'Heat in a pan or the microwave until hot all the way through.',

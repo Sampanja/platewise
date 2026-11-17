@@ -33,7 +33,7 @@ export const SV_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsbakad korngrynsgröt',
     description: 'En långsamt ugnsbakad, krämigt mjuk korngrynsgröt: en helgfrukost att njuta av.',
     steps: [
-      'Sätt ugnen på 150 grader.',
+      'Sätt ugnen på 150 °C.',
       'Häll korngryn, mjölk och salt i en smord ugnsform och rör om.',
       'Låt stå i ugnen i cirka 3 timmar. Rör om i gröten en eller två gånger.',
       'Lägg en klick smör ovanpå och servera med bär eller kanelsocker.',
@@ -230,7 +230,7 @@ export const SV_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Varm macka med skinka och ost',
     description: 'Ugnsmält ost, skinka och tomat på rostbröd.',
     steps: [
-      'Sätt ugnen på 225 grader.',
+      'Sätt ugnen på 225 °C.',
       'Bred bröden och lägg på skinka, tomatskivor och riven ost.',
       'Grädda högt upp i ugnen i 5–7 minuter tills osten har smält och fått färg.',
     ],
@@ -276,7 +276,7 @@ export const SV_RECIPES_03: Readonly<Record<string, RecipeText>> = {
     title: 'Ugnsomelett med grönsaker',
     description: 'En saftig ugnsomelett med paprika, spenat och ost. Räcker till hela veckans frukostar.',
     steps: [
-      'Sätt ugnen på 200 grader och smörj en ugnsform med olja.',
+      'Sätt ugnen på 200 °C och smörj en ugnsform med olja.',
       'Vispa ägg, mjölk och salt.',
       'Fördela paprika, lök och spenat i formen och häll äggsmeten över.',
       'Strö riven ost över och grädda i 20–25 minuter tills omeletten har stelnat.',

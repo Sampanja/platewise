@@ -106,7 +106,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     title: 'Steak and roast potatoes',
     description: 'Beef sirloin steak, garlic potatoes and a green salad.',
     steps: [
-      'Cut the potatoes into wedges and toss them in olive oil and salt. Roast at 225 °C (435 °F) for 30 minutes.',
+      'Cut the potatoes into wedges and toss them in olive oil and salt. Roast at 225 °C for 30 minutes.',
       'Bring the steaks to room temperature and season with salt and pepper.',
       'Fry the steaks in a hot pan for 3 minutes per side. Add the butter and garlic at the end.',
       'Let them rest for 5 minutes and serve with the potatoes and salad.',
@@ -156,7 +156,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
     ],
     tips: [
       'The slaw is best mixed just before serving.',
-      'You can also bake the fish in the oven at 200 °C (400 °F) for 12 minutes.',
+      'You can also bake the fish in the oven at 200 °C for 12 minutes.',
     ],
     storage: 'Keep the fish and slaw separately in the fridge for 1 day.',
   },
@@ -210,7 +210,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Boil the potatoes and mash them with the milk and butter.',
       'Cut the fish into an ovenproof dish and season with salt, lemon and dill. Add the peas.',
       'Spread the mash on top and sprinkle with the cheese.',
-      'Bake at 200 °C (400 °F) for 25 minutes.',
+      'Bake at 200 °C for 25 minutes.',
     ],
     tips: [
       'Frozen fish can go straight into the dish: bake for 10 minutes longer.',
@@ -252,7 +252,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Soften the onion and garlic in oil.',
       'Add the chopped tomatoes, stock cube, sugar and 100 ml of water per serving. Simmer for 10 minutes.',
       'Add the cream and blend. Season with basil.',
-      'Sprinkle the cheese over baguette slices and bake at 225 °C (435 °F) for 5 minutes.',
+      'Sprinkle the cheese over baguette slices and bake at 225 °C for 5 minutes.',
     ],
     tips: [
       'Blend the soup smooth with a stick blender.',
@@ -359,7 +359,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Pound the meat to an even thickness so it cooks evenly.',
       'Drain the fried pieces on a rack so the underside stays crisp.',
     ],
-    reheating: 'Heat in the oven at 200 °C (400 °F) for about 10 minutes so the coating stays crisp.',
+    reheating: 'Heat in the oven at 200 °C for about 10 minutes so the coating stays crisp.',
   },
   'spinach-cannelloni': {
     title: 'Spinach and cottage cheese cannelloni',
@@ -368,7 +368,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Soften the onion and garlic. Add the spinach and let it wilt. Stir in the cottage cheese.',
       'Soften the lasagne sheets in hot water, spread the filling on them and roll them up.',
       'Pour the chopped tomatoes into an ovenproof dish, arrange the rolls on top and sprinkle with cheese.',
-      'Bake at 200 °C (400 °F) for 30 minutes.',
+      'Bake at 200 °C for 30 minutes.',
     ],
     tips: [
       'Fill the cannelloni with a piping bag or a freezer bag with a corner cut off.',
@@ -397,7 +397,7 @@ export const EN_RECIPES_02: Readonly<Record<string, RecipeText>> = {
       'Par-cook the rice. Separate the cabbage leaves and blanch them in salted water until soft.',
       'Mix the mince, rice, onion, milk and salt.',
       'Wrap the filling in the leaves, arrange them in an ovenproof dish and dot with butter.',
-      'Bake at 200 °C (400 °F) for about an hour, basting now and then. Serve with boiled potatoes and lingonberries.',
+      'Bake at 200 °C for about an hour, basting now and then. Serve with boiled potatoes and lingonberries.',
     ],
     tips: [
       'Blanch the cabbage whole so the leaves come off in one piece.',

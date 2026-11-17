@@ -1,4 +1,5 @@
-import { activeLanguage } from '@/i18n/locale';
+import { activeLanguage, activeUnits } from '@/i18n/locale';
+import { localizeRecipeText } from '@/lib/amounts';
 import type { Language } from '@/i18n/languages';
 
 import type { DishType } from '../../types';
@@ -54,6 +55,26 @@ export function recipeSourceText(id: string): readonly string[] {
 }
 
 /**
+ * Recipe texts are written metric ("200 °C", "2 dl"); users of °F, cups or
+ * ounces see them converted ("400 °F", "¾ cup"). Converted lists are cached so a recipe's steps keep their
+ * identity between renders (memoised rows, effects).
+ */
+const convertedTexts = new Map<string, readonly string[]>();
+
+function displayList(id: string, field: 'steps' | 'tips'): readonly string[] {
+  const texts = recipeText(id)[field];
+  const units = activeUnits();
+  if (units.temperature === 'c' && units.liquid === 'ml' && units.food === 'g') return texts;
+  const key = `${activeLanguage()}|${units.temperature}${units.liquid}${units.food}|${field}|${id}`;
+  let converted = convertedTexts.get(key);
+  if (!converted) {
+    converted = texts.map((text) => localizeRecipeText(text, units));
+    convertedTexts.set(key, converted);
+  }
+  return converted;
+}
+
+/**
  * Defines the display text of a recipe as getters, so the same object shows
  * the active language and every cache keyed by the object stays valid.
  * Called again after deriveRecipe, which copies plain fields.
@@ -64,10 +85,10 @@ export function withRecipeText<T extends { id: string; dishType: DishType }>(rec
   Object.defineProperties(recipe, {
     title: get(() => recipeText(id).title),
     description: get(() => recipeText(id).description),
-    steps: get(() => recipeText(id).steps),
-    tips: get(() => recipeText(id).tips),
-    storage: get(() => recipeStorage(id, dishType)),
-    reheating: get(() => recipeReheating(id, dishType)),
+    steps: get(() => displayList(id, 'steps')),
+    tips: get(() => displayList(id, 'tips')),
+    storage: get(() => localizeRecipeText(recipeStorage(id, dishType))),
+    reheating: get(() => localizeRecipeText(recipeReheating(id, dishType))),
   });
   return recipe;
 }
