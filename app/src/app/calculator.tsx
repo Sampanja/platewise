@@ -13,7 +13,17 @@ import {
   type WorkoutsAnswer,
 } from '@/features/calculator/ActivitySteps';
 import { activityInputs, DEFAULT_ACTIVITY_LEVEL, type ActivityAnswers } from '@/domain/activity';
+import {
+  scaleMacros,
+  suggestedProteinLevel,
+  type DietStyle,
+  type MacroInput,
+  type MacroKey,
+  type MealPlan,
+  type ProteinLevel,
+} from '@/domain/macros';
 import { isOccupationId } from '@/domain/occupations';
+import { MealsStep, StyleStep } from '@/features/calculator/MacroSteps';
 import {
   Button,
   Card,
@@ -34,7 +44,6 @@ import {
   ageFromBirthYear,
   BODY_FAT_RANGE,
   cycleWeek,
-  DIET_STYLES,
   expenditure,
   GAIN_RATE_OPTIONS,
   goalDate,
@@ -46,7 +55,6 @@ import {
   type Adjustment,
   type BodyInfo,
   type Cycling,
-  type DietStyle,
   type GoalType,
   type PregnancyStatus,
   type Sex,
@@ -60,7 +68,6 @@ import {
   formatEnergy,
   formatEnergyBare,
   formatHeight,
-  formatNutrientGrams,
   formatWeightRange,
   heightToggleOptions,
   weightToggleOptions,
@@ -72,7 +79,8 @@ import { colors, radii, spacing, themedStyles } from '@/theme';
 const t = strings.calculator;
 const g = strings.goals2;
 const a = strings.activity;
-const STEPS = ['body', 'work', 'everyday', 'workouts', 'result', 'goal', 'style', 'cycling'] as const;
+const m = strings.macroPlan;
+const STEPS = ['body', 'work', 'everyday', 'workouts', 'result', 'goal', 'style', 'meals', 'cycling'] as const;
 type Step = (typeof STEPS)[number];
 const GOALS: readonly GoalType[] = ['lose', 'maintain', 'gain', 'recomp'];
 
@@ -126,8 +134,12 @@ export default function CalculatorScreen() {
   const [rate, setRate] = useState(profile.weightGoal.rateKgPerWeek);
   const [target, setTarget] = useState(profile.weightGoal.targetWeightKg ?? weight - 5);
   const [style, setStyle] = useState<DietStyle>(profile.weightGoal.dietStyle);
-  const [manualMacros, setManualMacros] = useState(profile.weightGoal.manualMacros);
+  const [proteinLevel, setProteinLevel] = useState<ProteinLevel | null>(profile.weightGoal.proteinLevel);
+  // Hand-set macros (custom style), kept as grams for the energy they were set at.
   const [manual, setManual] = useState<Macros>(profile.goals);
+  const [macroInput, setMacroInput] = useState<MacroInput>(profile.weightGoal.macroInput);
+  const [lockedMacros, setLockedMacros] = useState<MacroKey[]>(profile.weightGoal.lockedMacros);
+  const [mealPlan, setMealPlan] = useState<MealPlan>(profile.weightGoal.mealPlan);
   const [cycling, setCycling] = useState<Cycling>(profile.weightGoal.cycling);
 
   const step: Step = STEPS[index];
@@ -152,8 +164,10 @@ export default function CalculatorScreen() {
   };
   const spend = expenditure(body);
   const plan = planEnergy(body, { type: goalType, rateKgPerWeek: rate, targetWeightKg: target });
-  const autoMacros = macroTargets(plan.targetKcal, plan.goal, weight, height, style);
-  const macros = manualMacros ? { ...manual, kcal: plan.targetKcal } : autoMacros;
+  const suggestedLevel = suggestedProteinLevel(plan.goal, style);
+  const autoMacros = macroTargets(plan.targetKcal, plan.goal, weight, height, style, proteinLevel);
+  // Hand-set macros follow a changed calorie target with the same shares.
+  const macros = style === 'custom' ? scaleMacros(manual, plan.targetKcal) : autoMacros;
   const floor = KCAL_FLOOR[body.sex];
   const week = cycleWeek(plan.targetKcal, cycling, floor);
 
@@ -180,7 +194,6 @@ export default function CalculatorScreen() {
       setTarget(Math.round((weight + 4) * 2) / 2);
       if (!GAIN_RATE_OPTIONS.includes(rate as (typeof GAIN_RATE_OPTIONS)[number])) setRate(0.25);
     }
-    if (type === 'recomp' && style === 'balanced') setStyle('highProtein');
   };
 
   // What the summary says about skipped questions (and the default used).
@@ -207,8 +220,12 @@ export default function CalculatorScreen() {
         targetWeightKg: plan.goal === 'lose' || plan.goal === 'gain' ? plan.targetWeightKg : null,
         startWeightKg: weight,
         setAt: now.toISOString(),
-        manualMacros,
+        manualMacros: style === 'custom',
         dietStyle: style,
+        proteinLevel,
+        macroInput,
+        lockedMacros,
+        mealPlan,
         cycling,
         // A new calculation starts from the formula; the weekly check-in refines it again.
         adaptiveTdee: null,
@@ -466,64 +483,29 @@ export default function CalculatorScreen() {
       title: g.styleTitle,
       body: g.styleBody,
       node: (
-        <View style={styles.gap}>
-          <View style={styles.gapSm} accessibilityRole="radiogroup">
-            {DIET_STYLES.map((value) => (
-              <OptionRow
-                key={value}
-                title={g.styles[value].title}
-                hint={`${g.styles[value].what} ${g.styles[value].who}`}
-                selected={style === value}
-                onPress={() => {
-                  setStyle(value);
-                  setManualMacros(false);
-                }}
-              />
-            ))}
-          </View>
-          <Card style={styles.gap}>
-            <View style={styles.spread}>
-              <Text variant="bodyStrong">{strings.profileEdit.kcal}</Text>
-              <Text variant="heading" color="accentText" style={styles.tabular}>
-                {formatEnergy(plan.targetKcal)}
-              </Text>
-            </View>
-            <SwitchRow
-              label={t.manualMacros}
-              value={manualMacros}
-              onValueChange={(value) => {
-                setManualMacros(value);
-                if (value) setManual(autoMacros);
-              }}
-            />
-            {(['proteinG', 'carbsG', 'fatG'] as const).map((key) => {
-              const label =
-                key === 'proteinG' ? strings.profileEdit.protein : key === 'carbsG' ? strings.profileEdit.carbs : strings.profileEdit.fat;
-              return (
-                <NumberRow key={key} label={label}>
-                  {manualMacros ? (
-                    <Stepper
-                      value={manual[key]}
-                      min={10}
-                      max={500}
-                      step={5}
-                      onChange={(value) => setManual((m) => ({ ...m, [key]: value }))}
-                      accessibilityLabel={label}
-                    />
-                  ) : (
-                    <Text variant="heading" style={styles.tabular}>
-                      {formatNutrientGrams(autoMacros[key])}
-                    </Text>
-                  )}
-                </NumberRow>
-              );
-            })}
-            <Text variant="caption" color="textSubtle">
-              {format(t.macroSum, { value: formatEnergy(macros.proteinG * 4 + macros.carbsG * 4 + macros.fatG * 9) })}
-            </Text>
-          </Card>
-        </View>
+        <StyleStep
+          style={style}
+          onStyle={setStyle}
+          proteinLevel={proteinLevel ?? suggestedLevel}
+          suggestedLevel={suggestedLevel}
+          onProteinLevel={setProteinLevel}
+          macros={macros}
+          weightKg={weight}
+          input={macroInput}
+          onInput={setMacroInput}
+          locked={lockedMacros}
+          onLocked={setLockedMacros}
+          onMacros={(next) => {
+            setManual(next);
+            setStyle('custom');
+          }}
+        />
       ),
+    },
+    meals: {
+      title: m.mealsTitle,
+      body: m.mealsBody,
+      node: <MealsStep plan={mealPlan} onPlan={setMealPlan} kcal={plan.targetKcal} />,
     },
     cycling: {
       title: g.cyclingTitle,

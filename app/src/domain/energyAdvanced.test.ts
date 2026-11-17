@@ -100,7 +100,7 @@ describe('diet styles', () => {
   const sum = (m: { proteinG: number; carbsG: number; fatG: number }) => m.proteinG * 4 + m.carbsG * 4 + m.fatG * 9;
 
   it('every style keeps fat at least 25 % and adds up to the target', () => {
-    for (const style of ['balanced', 'highProtein', 'lowCarb', 'plant'] as const) {
+    for (const style of ['balanced', 'highProtein', 'lowCarb', 'vegetarian'] as const) {
       const m = macroTargets(2000, 'lose', 75, 165, style);
       expect(m.fatG * 9).toBeGreaterThanOrEqual(2000 * 0.25 - 25);
       expect(Math.abs(sum(m) - 2000)).toBeLessThanOrEqual(40);
@@ -116,7 +116,7 @@ describe('diet styles', () => {
   });
 
   it('plant-based adds protein for digestibility', () => {
-    expect(macroTargets(2000, 'maintain', 75, 165, 'plant').proteinG).toBeGreaterThan(
+    expect(macroTargets(2000, 'maintain', 75, 165, 'vegetarian').proteinG).toBeGreaterThan(
       macroTargets(2000, 'maintain', 75, 165, 'balanced').proteinG,
     );
   });

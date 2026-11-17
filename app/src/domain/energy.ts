@@ -1,5 +1,7 @@
 import type { Macros } from '@/data/types';
 
+import { styleMacros, suggestedProteinLevel, type DietStyle, type ProteinLevel } from './macros';
+
 import {
   ACTIVITY_FACTORS,
   commuteKcalPerDay,
@@ -13,6 +15,7 @@ import {
   type Workout,
 } from './activity';
 
+export { DIET_STYLES, type DietStyle } from './macros';
 export {
   ACTIVITY_FACTORS,
   stepsFactor,
@@ -340,28 +343,11 @@ export function planEnergy(body: BodyInfo, choice: GoalChoice, options: PlanOpti
   };
 }
 
-/** Protein per kg of (reference) body weight by goal. Higher while losing or recomposing to keep muscle. */
-export const PROTEIN_G_PER_KG: Record<GoalType, number> = { lose: 1.8, maintain: 1.4, gain: 1.6, recomp: 2.0 };
-/** Fat at least this share of energy. */
-export const MIN_FAT_SHARE = 0.25;
-
-/** Eating styles that preset the macros. Every style keeps fat ≥ 25 % of energy. */
-export type DietStyle = 'balanced' | 'highProtein' | 'lowCarb' | 'plant';
-export const DIET_STYLES: readonly DietStyle[] = ['balanced', 'highProtein', 'lowCarb', 'plant'];
-
-/** Low-carb here is moderate: a quarter of energy, never under 100 g (not a ketogenic diet). */
-export const LOW_CARB_SHARE = 0.25;
-export const LOW_CARB_MIN_G = 100;
-
 /**
- * Macro targets for a calorie target. Protein is g/kg of a reference weight
- * (current weight, but at most the weight at BMI 25 so protein does not
- * balloon with high body weight), fat at least 25 % of energy, carbohydrates
- * the rest. The eating style shifts the split:
- * - balanced: as above, carbohydrates at least 40 % of energy;
- * - highProtein: +0.4 g/kg protein, carbohydrates at least 30 %;
- * - lowCarb: carbohydrates 25 % of energy (min 100 g), fat the rest;
- * - plant: +10 % protein (plant protein is a little less digestible).
+ * Macro targets for a calorie target: the eating style's split and a protein
+ * level in g/kg (domain/macros.ts). Without a chosen level the goal suggests
+ * one (more protein when losing weight or building muscle). The custom style
+ * starts from the balanced split before the user adjusts it by hand.
  */
 export function macroTargets(
   kcal: number,
@@ -369,35 +355,9 @@ export function macroTargets(
   weightKg: number,
   heightCm: number,
   style: DietStyle = 'balanced',
+  level: ProteinLevel | null = null,
 ): Macros {
-  const m = heightCm / 100;
-  const referenceWeight = Math.min(weightKg, 25 * m * m);
-  let perKg = PROTEIN_G_PER_KG[goal];
-  if (style === 'highProtein') perKg += 0.4;
-  if (style === 'plant') perKg *= 1.1;
-  let proteinG = perKg * referenceWeight;
-
-  if (style === 'lowCarb') {
-    const carbsG = Math.max(LOW_CARB_MIN_G, (kcal * LOW_CARB_SHARE) / 4);
-    // Protein is capped so that fat keeps at least its minimum share.
-    const maxProteinKcal = kcal - carbsG * 4 - kcal * MIN_FAT_SHARE;
-    if (proteinG * 4 > maxProteinKcal) proteinG = Math.max(0, maxProteinKcal / 4);
-    const fatG = Math.max(0, (kcal - proteinG * 4 - carbsG * 4) / 9);
-    return { kcal: Math.round(kcal), proteinG: round(proteinG, 5), carbsG: round(carbsG, 5), fatG: round(fatG, 5) };
-  }
-
-  const fatG = (kcal * MIN_FAT_SHARE) / 9;
-  const minCarbShare = style === 'highProtein' ? 0.3 : 0.4;
-  // Keep the minimum carbohydrate share by trimming protein if needed.
-  const maxProteinKcal = kcal * (1 - MIN_FAT_SHARE - minCarbShare);
-  if (proteinG * 4 > maxProteinKcal) proteinG = maxProteinKcal / 4;
-  const carbsG = Math.max(0, (kcal - proteinG * 4 - fatG * 9) / 4);
-  return {
-    kcal: Math.round(kcal),
-    proteinG: round(proteinG, 5),
-    carbsG: round(carbsG, 5),
-    fatG: round(fatG, 5),
-  };
+  return styleMacros(kcal, style === 'custom' ? 'balanced' : style, level ?? suggestedProteinLevel(goal, style), weightKg, heightCm);
 }
 
 /** Date the target is expected to be reached. */

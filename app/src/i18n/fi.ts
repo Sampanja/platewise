@@ -744,8 +744,6 @@ export const fi = {
     eta: 'Arvioitu tavoite: {date} (noin {weeks} viikkoa)',
     maintainNote: 'Syömällä kulutuksesi verran paino pysyy suunnilleen ennallaan.',
     macrosTitle: 'Makrot',
-    manualMacros: 'Säädä makroja itse',
-    macroSum: 'Makroista kertyy {value}',
     save: 'Tallenna tavoite',
     saved: 'Kaloritavoite tallennettu',
     noteTitle: 'Huomioimme turvallisuuden',

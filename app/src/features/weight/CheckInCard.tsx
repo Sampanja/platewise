@@ -7,6 +7,7 @@ import { useProfileStore, type BodyProfile } from '@/data/stores/profile';
 import { useWeightStore } from '@/data/stores/weight';
 import { sumEntries } from '@/domain/diary';
 import { activityInputs } from '@/domain/activity';
+import { scaleMacros } from '@/domain/macros';
 import {
   adaptiveExpenditure,
   ageFromBirthYear,
@@ -77,9 +78,11 @@ export function CheckInCard() {
 
   const apply = () => {
     if (!suggestion || estimate.status !== 'ok') return;
-    const macros = goal.manualMacros
-      ? { ...goals, kcal: suggestion.targetKcal }
-      : macroTargets(suggestion.targetKcal, suggestion.goal, info.weightKg, info.heightCm, goal.dietStyle);
+    // Hand-set macros keep their shares at the new target; styles recalculate.
+    const macros =
+      goal.dietStyle === 'custom'
+        ? scaleMacros(goals, suggestion.targetKcal)
+        : macroTargets(suggestion.targetKcal, suggestion.goal, info.weightKg, info.heightCm, goal.dietStyle, goal.proteinLevel);
     setGoals(macros);
     update({ weightGoal: { ...goal, adaptiveTdee: estimate.tdee, lastCheckIn: now } });
     haptics.success();

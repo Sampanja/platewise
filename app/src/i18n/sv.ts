@@ -745,8 +745,6 @@ export const sv: Strings = {
     eta: 'Uppskattat mål: {date} (cirka {weeks} veckor)',
     maintainNote: 'Om du äter lika mycket som du gör av med håller sig vikten ungefär oförändrad.',
     macrosTitle: 'Makron',
-    manualMacros: 'Justera makrona själv',
-    macroSum: 'Makrona ger {value}',
     save: 'Spara målet',
     saved: 'Kalorimålet sparat',
     noteTitle: 'Vi tar hänsyn till säkerheten',

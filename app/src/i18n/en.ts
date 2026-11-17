@@ -825,8 +825,6 @@ export const en: Strings = {
     eta: 'Estimated goal date: {date} (about {weeks} weeks)',
     maintainNote: 'Eating as much as you use keeps your weight about the same.',
     macrosTitle: 'Macros',
-    manualMacros: 'Adjust macros myself',
-    macroSum: 'The macros add up to {value}',
     save: 'Save goal',
     saved: 'Calorie goal saved',
     noteTitle: 'We keep it safe',

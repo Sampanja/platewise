@@ -6,7 +6,19 @@ import { DEFAULT_PANTRY } from '../catalog/ingredients';
 import { dropHouseholdSize, profileWithoutStore, withLanguageSettings, withUnitPrefs } from '../migrations';
 import { deviceStorage, STORAGE_PREFIX } from '../storage';
 import { DEFAULT_ACTIVITY_ANSWERS, migrateActivityAnswers, type ActivityAnswers } from '@/domain/activity';
-import { DEFAULT_CYCLING, type Cycling, type DietStyle, type GoalType, type PregnancyStatus, type Sex } from '@/domain/energy';
+import { DEFAULT_CYCLING, type Cycling, type GoalType, type PregnancyStatus, type Sex } from '@/domain/energy';
+import {
+  DEFAULT_MEAL_PLAN,
+  isMealPlan,
+  isProteinLevel,
+  MACRO_KEYS,
+  migrateDietStyle,
+  type DietStyle,
+  type MacroInput,
+  type MacroKey,
+  type MealPlan,
+  type ProteinLevel,
+} from '@/domain/macros';
 import { migrateCharacter } from '@/domain/characterMigration';
 import { convertBudget, DEFAULT_PRICE_REGION, type PriceRegionCode } from '@/domain/priceRegion';
 import { defaultUnits, type UnitPrefs } from '@/domain/units';
@@ -45,9 +57,17 @@ export type WeightGoal = {
   /** Weight when the goal was set, for progress. */
   startWeightKg: number | null;
   setAt: string | null;
-  /** Macros were adjusted by hand after the calculator. */
+  /** Macros were adjusted by hand after the calculator (the custom style). */
   manualMacros: boolean;
   dietStyle: DietStyle;
+  /** Protein level chosen by the user; null = suggested by the goal (domain/macros.ts). */
+  proteinLevel: ProteinLevel | null;
+  /** Hand adjustment in percent of energy or grams. */
+  macroInput: MacroInput;
+  /** Macros that stay put when another one is adjusted by hand. */
+  lockedMacros: MacroKey[];
+  /** Optional split of the day's targets over meals, shown in the diary. */
+  mealPlan: MealPlan;
   cycling: Cycling;
   /** Expenditure measured from the user's own data (weekly check-in), or null for the formula. */
   adaptiveTdee: number | null;
@@ -64,6 +84,19 @@ export const DEFAULT_BODY: BodyProfile = {
   pregnancy: 'none',
   bodyFatPct: null,
 };
+
+/** The saved goal with its eating style and macro settings in the current shape (profile v12). */
+function migrateWeightGoal(saved: unknown): WeightGoal {
+  const goal = { ...DEFAULT_WEIGHT_GOAL, ...((typeof saved === 'object' && saved !== null ? saved : {}) as Partial<WeightGoal>) };
+  return {
+    ...goal,
+    dietStyle: migrateDietStyle(goal.dietStyle, goal.manualMacros === true),
+    proteinLevel: isProteinLevel(goal.proteinLevel) ? goal.proteinLevel : null,
+    macroInput: goal.macroInput === 'grams' ? 'grams' : 'percent',
+    lockedMacros: Array.isArray(goal.lockedMacros) ? goal.lockedMacros.filter((k) => MACRO_KEYS.includes(k)) : [],
+    mealPlan: isMealPlan(goal.mealPlan) ? goal.mealPlan : { ...DEFAULT_MEAL_PLAN },
+  };
+}
 
 /** The saved body with its activity answers in the current shape (profile v11). */
 function migrateBody(saved: unknown): BodyProfile {
@@ -82,6 +115,10 @@ export const DEFAULT_WEIGHT_GOAL: WeightGoal = {
   setAt: null,
   manualMacros: false,
   dietStyle: 'balanced',
+  proteinLevel: null,
+  macroInput: 'percent',
+  lockedMacros: [],
+  mealPlan: { ...DEFAULT_MEAL_PLAN },
   cycling: { ...DEFAULT_CYCLING },
   adaptiveTdee: null,
   lastCheckIn: null,
@@ -213,7 +250,7 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: `${STORAGE_PREFIX}profile`,
       storage: deviceStorage,
-      version: 11,
+      version: 12,
       // v4: body and goal got new fields (body fat, steps, workouts, diet style, cycling, adaptive check-in).
       // v5: the household size was removed (single-person app; eaters are chosen per plan).
       // v6: characters; earlier users keep Nuppu, unknown ids fall back to it.
@@ -222,6 +259,7 @@ export const useProfileStore = create<ProfileState>()(
       // v9: the cast was renewed (six international characters); retired ids map to the closest one.
       // v10: units are chosen one by one; the old metric/imperial setting (or the region's) becomes the user's own.
       // v11: activity in three answers (work or school, everyday movement, workouts with intensity).
+      // v12: ten eating styles ("plant" → vegetarian, hand-set macros → custom), protein level, macro locks, meal split.
       migrate: (persisted, version) => {
         const device = deviceLocale();
         const saved = withUnitPrefs(
@@ -238,7 +276,7 @@ export const useProfileStore = create<ProfileState>()(
           // People who already finished onboarding are not sent back to the picker.
           characterChosen: saved.characterChosen ?? saved.onboardingCompleted ?? false,
           body: migrateBody(saved.body),
-          weightGoal: { ...DEFAULT_WEIGHT_GOAL, ...saved.weightGoal },
+          weightGoal: migrateWeightGoal(saved.weightGoal),
         };
       },
     },

@@ -40,6 +40,7 @@ import {
   sumEntries,
   weekKcal,
 } from '@/domain/diary';
+import { mealTargets } from '@/domain/macros';
 import { entryAmount } from '@/features/diary/entryAmount';
 import { WaterCard } from '@/features/diary/WaterCard';
 import { DayNutrientsCard } from '@/features/nutrients/DayNutrientsCard';
@@ -90,6 +91,12 @@ function DiaryScreen() {
 
   const dayEntries = useMemo(() => entriesOn(entries, date), [entries, date]);
   const totals = useMemo(() => sumEntries(dayEntries), [dayEntries]);
+  // Per-meal targets when the user split the day over meals (calculator → Meals).
+  const mealPlan = useProfileStore((s) => s.weightGoal.mealPlan);
+  const mealGoals = useMemo(
+    () => (hasGoal && mealPlan.enabled ? new Map(mealTargets(goals.kcal, mealPlan).map((target) => [target.meal, target.kcal])) : null),
+    [hasGoal, mealPlan, goals.kcal],
+  );
   // The chart shows the last seven days; an older selected day becomes the chart's last day.
   const week = useMemo(() => {
     const now = today();
@@ -242,6 +249,7 @@ function DiaryScreen() {
           {DIARY_MEALS.map((meal) => {
             const mealEntries = dayEntries.filter((entry) => entry.meal === meal);
             const mealKcal = sumEntries(mealEntries).kcal;
+            const mealGoal = hideCalories ? undefined : mealGoals?.get(meal);
             return (
               <Card key={meal} style={styles.meal} padding="flush">
                 <View style={styles.mealHeader}>
@@ -249,13 +257,27 @@ function DiaryScreen() {
                     <Text variant="heading" accessibilityRole="header">
                       {strings.diaryMeals[meal]}
                     </Text>
-                    <Text variant="caption" color="textSubtle">
-                      {mealEntries.length === 0
-                        ? t.mealEmpty
-                        : hideCalories
-                          ? format(t.entryCount, { count: mealEntries.length })
-                          : format(t.mealTotal, { value: formatEnergy(mealKcal) })}
-                    </Text>
+                    {mealGoal !== undefined ? (
+                      <Text
+                        variant="caption"
+                        color="textSubtle"
+                        accessibilityLabel={format(strings.macroPlan.diaryMealGoalA11y, {
+                          meal: strings.diaryMeals[meal],
+                          eaten: formatEnergy(mealKcal),
+                          goal: formatEnergy(mealGoal),
+                        })}
+                      >
+                        {format(strings.macroPlan.diaryMealGoal, { eaten: formatEnergyBare(mealKcal), goal: formatEnergy(mealGoal) })}
+                      </Text>
+                    ) : (
+                      <Text variant="caption" color="textSubtle">
+                        {mealEntries.length === 0
+                          ? t.mealEmpty
+                          : hideCalories
+                            ? format(t.entryCount, { count: mealEntries.length })
+                            : format(t.mealTotal, { value: formatEnergy(mealKcal) })}
+                      </Text>
+                    )}
                   </View>
                   {mealEntries.length > 0 ? (
                     <IconButton
