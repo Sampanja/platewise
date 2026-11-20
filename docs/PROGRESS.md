@@ -22,8 +22,11 @@ Lue tämä jokaisen keskustelun alussa ja päivitä ennen jokaista committia.
 - Osa 4 (widget): kolme kokoa omilla asetteluillaan (`features/widget/widgets.tsx`): pieni 2 × 2 (jäljellä oleva energia renkaana, hahmo renkaan sisällä, kamerapikanappi), keskikokoinen 4 × 2 (rengas syöty / tavoite, jäljellä, makrot palkkeina, hahmon ilme, pikanapit kamera, puhe, viivakoodi, vesi +1) ja iso 4 × 4 (lisäksi hahmon viesti, vesilasit, putki ja tehtävät, seuraava päivällinen). Tilannekuva v2 (`snapshot.ts`) sisältää raakaluvut, kielen, yksiköt ja teemavärit vaalealle ja tummalle; `model.ts` (testattu) muotoilee tekstit piirrettäessä, joten kellonajan tervehdys ja päivän vaihtuminen toimivat sovelluksen ollessa kiinni. Vesi +1 lisää lasillisen suoraan taustatehtävässä. `WidgetSync.tsx` päivittää widgetit muutoksista 0,8 s:n viiveellä. Hahmojen ilmeet (6 × 6) ja kuvakkeet generoidaan `scripts/widget/generate-widget-art.gen.tsx`:llä. Esikatselukuvat widget-valikkoon englanniksi, suomeksi ja ruotsiksi (`assets/widget/`, kieliversiot ja kuvaukset config pluginilla `plugins/withWidgetTranslations.js`). Profiilin widgettiohje näyttää jokaisen koon esikatseluna ja lisää valitun koon kotinäytölle.
 - Osa 5 (dokumentaatio): PLAN.md 4.7 (aktiivisuus, makrot, aterioiden jako), 4.11 (yksiköt), 4.17 (widget); DATA_MODEL.md (yksikkökentät, aktiivisuus, makrokentät, päätökset 34–36); CLAUDE.md (yksikkö-, widget- ja aktiivisuus/makrosäännöt).
 
+- README.md kirjoitettu uudelleen englanniksi High Up -arvioijille (yhden lauseen kuvaus, ongelma ja ratkaisu, tila, teknologiat, demo- ja APK-linkkien paikat, roadmap, yhteystieto). Salaisuustarkistus (git grep + historia): ei avaimia, salasanoja eikä .env-tiedostoja.
+
 ### Kesken
 
+- README: täytä demovideon ja APK:n linkit ("LINK TO BE ADDED").
 - Widgetin testaus kotinäytöllä: käyttäjä lisää widgetit, sitten kuvakaappaukset jokaisesta koosta (vaalea/tumma, tyhjä/täysi päivä) ja hionta, lopulliset kuvat `docs/widget/`.
 
 ## Edellinen tehtävä (valmis)
